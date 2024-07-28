@@ -1,0 +1,9 @@
+[submodule "editor/lib/glfw"]
+	path = editor/lib/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "editor/lib/cimgui"]
+	path = editor/lib/cimgui
+	url = https://github.com/cimgui/cimgui.git
+[submodule "editor/lib/cglm"]
+	path = editor/lib/cglm
+	url = https://github.com/recp/cglm.git
