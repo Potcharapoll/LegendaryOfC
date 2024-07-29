@@ -1,9 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
-/* #include "../engine/camera.h" */
-
 #include <glad/glad.h>
 #include <cglm/struct.h>
+#include "camera.h"
 
 struct Shader {
     GLuint handle, vs, fs;
@@ -18,5 +17,5 @@ void shader_uniform_float(struct Shader self, char *name, float f);
 void shader_uniform_int(struct Shader self, char *name, int i);
 void shader_uniform_int_array(struct Shader self, char *name, int count, int arr[]);
 void shader_uniform_vec2(struct Shader self, char *name, vec2s v);
-/* void shader_uniform_viewproj(struct Shader self, struct ViewProj view_proj); */
+void shader_uniform_viewproj(struct Shader self, ViewProj view_proj);
 #endif

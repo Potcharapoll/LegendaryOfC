@@ -1,6 +1,8 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "window.h"
+#include "log.h"
+
 #define WIDTH 1280
 #define HEIGHT 768
 
@@ -9,8 +11,12 @@ static void error_callback(int err, const char *dest) {
 }
 
 b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
-    if(!glfwInit()) return false;
     glfwSetErrorCallback(error_callback);
+
+    if(!glfwInit()) {
+        LOG_FETAL("Failed to initialize GLFW context"); 
+        abort();
+    }
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -27,6 +33,9 @@ b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     glfwMakeContextCurrent(self->handle);
     glfwSwapInterval(1);
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
+
+    printf("GLFW Version: %s\n", glfwGetVersionString());
+    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
     return true;
 }
 
@@ -34,15 +43,12 @@ void window_loop(struct Window *self) {
     self->init();
     f32 last_frame = glfwGetTime();
 
-    printf("GLFW Version: %s\n", glfwGetVersionString());
-    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
-
     glViewport(0, 0, WIDTH, HEIGHT);
     while (!glfwWindowShouldClose(self->handle)) {
         glfwGetCursorPos(self->handle, &self->mouse.xpos, &self->mouse.ypos);
         glfwGetWindowSize(self->handle, &self->width, &self->height);
 
-        /* glViewport(0, 0, self->width, self->height); */
+        glViewport(0, 0, self->width, self->height);
 
         // normalize mouse position
         self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0f - 1.0f;
@@ -52,8 +58,8 @@ void window_loop(struct Window *self) {
         self->delta_time = (current_frame - last_frame);
         last_frame = current_frame;
 
-        glfwPollEvents();
         self->update();
+        glfwPollEvents();
         glfwSwapBuffers(self->handle);
     }
 }
@@ -62,5 +68,6 @@ void window_destroy(struct Window *self) {
     self->cleanup();
     glfwDestroyWindow(self->handle);
     glfwTerminate();
+    LOG_DEBUG("Window destroyed");
 }
 

@@ -9,11 +9,12 @@ out vec2 tex_coord;
 out float tex_slot;
 
 uniform mat4 proj;
+uniform mat4 view;
 
 void main() {
     color = a_color;
     tex_coord = a_tex_coord;
     tex_slot = a_tex_slot;
 
-    gl_Position = proj * vec4(a_pos, 1.0);
+    gl_Position = proj * view * vec4(a_pos, 1.0);
 }

@@ -10,13 +10,32 @@
 typedef struct {
     ImGuiContext *context; 
     ImGuiIO *io;
-
     f32 mousex, mousey;
 } Editor;
 
-void editor_init(void);
-void editor_destroy(void);
+typedef struct {
+    char *selected_tileset;
+    s32 selected_tile;
+    ImTextureID textureId;
+
+    ImVec2 imageSize;
+    s32 rowsCount, colsCount;
+    s32 tileCount, tileSize;
+}TileEditorState;
+
+typedef struct {
+    u32 width, height;
+    s32 rows, cols;
+    u32 size;
+    b8 created;
+
+    f32 posx, posy;
+    f32 mousex, mousey;
+    s32 mouse_row, mouse_col;
+}CanvasState;
+
+void editor_init(Editor **editor);
+void editor_destroy(Editor *editor);
 void editor_newframe(void);
 void editor_render(void);
-Editor *get_editor_instance(void);
 #endif

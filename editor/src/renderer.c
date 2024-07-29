@@ -1,21 +1,28 @@
 #include <string.h>
+
 #include "renderer.h"
-#include "array_list.h"
+#include "camera.h"
+#include "global.h"
+#include "log.h"
+#define BATCHES_INITIAL_CAPACITY 8
 
-static array_list *batches;
+static Batch* batch_init(void) {
+    Batch *batch         = malloc(sizeof(*batch));
+    assert(batch != NULL);
 
-static Batch *batch_init(void) {
-    Batch *batch = malloc(sizeof(*batch));
-    batch->vao = vao_create();
-    batch->vbo = vbo_create(GL_ARRAY_BUFFER, true);
-    batch->ebo = vbo_create(GL_ELEMENT_ARRAY_BUFFER, false);
-    batch->count = 0;
-    batch->shader = shader_load("../shaders/default.vert", "../shaders/default.frag");
+    batch->vao           = vao_create();
+    batch->vbo           = vbo_create(GL_ARRAY_BUFFER, true);
+    batch->ebo           = vbo_create(GL_ELEMENT_ARRAY_BUFFER, false);
+    batch->shader        = shader_load("../shaders/default.vert", "../shaders/default.frag");
+    batch->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(BatchVertex));
+    batch->indices       = malloc(MAX_INDICES_PER_BATCH * sizeof(u32));
     batch->texture_count = 0;
-    batch->vertices = malloc(MAX_VERTICES_PER_BATCH * sizeof(BatchVertex));
-    batch->indices = malloc(MAX_INDICES_PER_BATCH * sizeof(u32));
+    batch->count         = 0;
 
+    assert(batch->vertices != NULL);
+    assert(batch->indices != NULL);
     memset(batch->vertices, 0, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex));
+
     for (int i = 0; i < MAX_ENTITY_PER_BATCH; i++) {
         u32 offset = i * 4;
         u32 idx    = i * 6;
@@ -42,107 +49,134 @@ static Batch *batch_init(void) {
     vao_unbind();
     vbo_unbind(batch->vbo);
     vbo_unbind(batch->ebo);
-
     return batch;
 } 
 
 static void batch_destroy(Batch *self) {
+    assert(self != NULL);
+
     vao_destroy(self->vao);
     vbo_destroy(self->vbo);
     vbo_destroy(self->ebo);
     shader_destroy(self->shader);
     for (u32 i = 0; i < self->texture_count; i++) texture_destroy(self->texture[i]);
+    free(self);
 }
 
-void renderer_init(void) {
+static void vertices_set(Batch *batch, u32 offset, vec2s size, vec3s position, vec4s color) {
+    batch->vertices[offset] = (BatchVertex) {
+        .position = position,
+            .color = color,
+            .tex_coord = {0},
+            .tex_slot = 0
+    };
+    batch->vertices[offset+1] = (BatchVertex) {
+        .position = {position.x + size.x, position.y, position.z},
+            .color = color,
+            .tex_coord = {0},
+            .tex_slot = 0
+    };
+    batch->vertices[offset+2] = (BatchVertex) {
+        .position = {position.x, position.y + size.y, position.z},
+            .color = color,
+            .tex_coord = {0},
+            .tex_slot = 0
+    };
+    batch->vertices[offset+3] = (BatchVertex) {
+        .position = {position.x + size.x, position.y + size.y, position.z},
+            .color = color,
+            .tex_coord = {0},
+            .tex_slot = 0
+    };
+}
+
+void renderer_init(Renderer **renderer) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_FRONT_AND_BACK);
     glCullFace(GL_FRONT);
 
-    batches = array_list_init(sizeof(Batch), 8);
-    assert(batches != NULL);
+    *renderer = malloc(sizeof(**renderer));
+    assert(*renderer != NULL);
+
+    (*renderer)->total_entity   = 0;
+    (*renderer)->batch_len      = 0;
+    (*renderer)->batches        = malloc(BATCHES_INITIAL_CAPACITY * sizeof(Batch*));
+    if ((*renderer)->batches == NULL) {
+        LOG_FETAL("Failed to initialize render batch");
+        abort();
+    }
 }
 
-void renderer_destroy(void) {
-    for (u32 i = 0; i < batches->len; i++) {
-        Batch *batch = batches->data + i * batches->data_size;
-        batch_destroy(batch);
+void renderer_clean(Renderer *renderer) {
+    for (u32 i = 0; i < renderer->batch_len; i++) {
+        memset(renderer->batches[i]->vertices, 0, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex));
     }
-    array_list_destroy(batches);
+}
+
+void renderer_destroy(Renderer *renderer) {
+    assert(renderer != NULL);
+    assert(renderer->batches != NULL);
+
+    for (u32 i = 0; i < renderer->batch_len; i++) {
+        batch_destroy(renderer->batches[i]);
+    }
+    free(renderer->batches);
+    free(renderer);
+
+    LOG_DEBUG("Renderer destroyed");
 }
 
 void renderer_prepare(void) {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.2,0.2,0.2,1.0);
+    glClearColor(0.0,0.0,0.0,1.0);
 }
 
-void renderer_append_quad(vec2s size, vec3s position, vec4s color) {
-    Batch *batch = NULL;
+void renderer_append_quad(Renderer* renderer, vec2s size, vec3s position, vec4s color) {
+    assert(renderer != NULL);
+    assert(renderer->batches != NULL);
 
-    printf("%lu\n", batches->len);
-    for (u32 i = 0; i < batches->len; i++) {
-        batch = batches->data + i * batches->data_size;
-        if (batch->count < MAX_ENTITY_PER_BATCH) break; 
+    s8 idx = -1;
+    for (u32 i = 0; i < renderer->batch_len; i++) {
+        if (renderer->batches[i]->hasRoom) {
+            idx = i;
+            break;
+        }
     }
 
-    if (batches->len > 0) assert(batch != NULL);
-
-    if (batch == NULL) {
-        batch = batch_init();
-        array_list_append(batches, batch);
+    if (idx == -1) {
+        idx = renderer->batch_len;
+        renderer->batches[renderer->batch_len++] = batch_init();
     }
 
-    u32 offset = batch->count * 4;
-
-    batch->count = batch->count + 1;
-
-    batch->vertices[offset] = (BatchVertex) {
-        .position = position,
-        .color = color,
-        .tex_coord = {0},
-        .tex_slot = 0
-    };
-    batch->vertices[offset+1] = (BatchVertex) {
-        .position = {position.x + size.x, position.y, position.z},
-        .color = color,
-        .tex_coord = {0},
-        .tex_slot = 0
-    };
-    batch->vertices[offset+2] = (BatchVertex) {
-        .position = {position.x, position.y + size.y, position.z},
-        .color = color,
-        .tex_coord = {0},
-        .tex_slot = 0
-    };
-    batch->vertices[offset+3] = (BatchVertex) {
-        .position = {position.x + size.x, position.y + size.y, position.z},
-        .color = color,
-        .tex_coord = {0},
-        .tex_slot = 0
-    };
+    vertices_set(renderer->batches[idx], renderer->batches[idx]->count * 4, size, position, color);
+    renderer->batches[idx]->count++;
+    renderer->total_entity++;
 }
 
-void renderer_render(void) {
-    for (u32 i = 0; i < batches->len; i++) {
-        Batch *batch = batches->data + i * batches->data_size;
+/* void renderer_push_texture(Renderer *renderer, struct Texture texture, s32 slot) { */
 
-        for (u32 j = 0; j < batch->texture_count; j++) { texture_bind(batch->texture[i], i); }
+/* } */
 
-        vbo_bind(batch->vbo);
-        vbo_subdata(batch->vbo, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex), batch->vertices);
+void renderer_render(Renderer *renderer) {
+    assert(renderer != NULL);
+    assert(renderer->batches != NULL);
 
-        mat4s proj = glms_ortho(0.0f, 1280.0f, 0.0f, 768.0f, 0.0f, 100.0f);
-        shader_bind(batch->shader);
-        shader_uniform_mat4(batch->shader, "proj", proj);
+    for (u32 i = 0; i < renderer->batch_len; i++) {
+        for (u32 j = 0; j < renderer->batches[i]->texture_count; j++) { texture_bind(renderer->batches[i]->texture[i], i); }
+        vbo_bind(renderer->batches[i]->vbo);
+        vbo_subdata(renderer->batches[i]->vbo, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex), renderer->batches[i]->vertices);
 
-        vao_bind(batch->vao);
-        printf("%lu - %d\n", batches->len, batch->count);
-        glDrawElements(GL_TRIANGLES, (batch->count * 6), GL_UNSIGNED_INT, NULL);
+        shader_bind(renderer->batches[i]->shader);
+        ViewProj view_proj = get_view_proj(global.camera);
+        shader_uniform_viewproj(renderer->batches[i]->shader, view_proj);
+
+        vao_bind(renderer->batches[i]->vao);
+        glDrawElements(GL_TRIANGLES, (renderer->batches[i]->count * 6), GL_UNSIGNED_INT, NULL);
 
         vao_unbind();
-        vbo_unbind(batch->vbo);
+        vbo_unbind(renderer->batches[i]->vbo);
         shader_unbind();
         texture_unbind();
     }

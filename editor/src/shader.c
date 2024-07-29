@@ -1,9 +1,9 @@
-#include "shader.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <glad/glad.h>
+
+#include "shader.h"
 
 static GLuint _compile(GLenum type, char *path) {
     FILE *fp;
@@ -98,10 +98,10 @@ void shader_uniform_vec2(struct Shader self, char *name, vec2s v) {
     glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]);
 }
 
-/* void shader_uniform_viewproj(struct Shader self, struct ViewProj view_proj) { */
-/*     glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw); */
-/*     glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw); */
-/* } */
+void shader_uniform_viewproj(struct Shader self, ViewProj view_proj) {
+    glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw);
+    glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw);
+}
 
 void shader_uniform_int_array(struct Shader self, char *name, int count, int arr[]) {
     glUniform1iv(glGetUniformLocation(self.handle, name), count, arr);

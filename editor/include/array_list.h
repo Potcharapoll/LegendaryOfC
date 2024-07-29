@@ -12,6 +12,7 @@ typedef struct {
 
 array_list* array_list_init(size_t data_size, size_t capacity);
 void array_list_destroy(array_list *self);
+void *array_list_get(array_list *self, size_t index);
 void array_list_append(array_list *self, void *data);
 void array_list_remove(array_list *self, size_t index);
 void array_list_pop_first(array_list *self);

@@ -16,6 +16,7 @@ void ecs_init(u32 n, ...);
 void ecs_destroy(void);
 ecs_entity_t ecs_create(void);
 void ecs_kill(u32 entity_id);
+void ecs_killall(void);
 void ecs_add(u32 entity_id, u32 component_id, void *data);
 void ecs_remove(u32 entity_id, u32 component_id);
 void* ecs_get(u32 entity_id, u32 component_id);

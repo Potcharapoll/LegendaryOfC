@@ -48,6 +48,7 @@ add_executable(${PROJECT_NAME}
     ./lib/glad/src/glad.c
 
     ./src/main.c
+    ./src/camera.c
     ./src/renderer.c
     ./src/ecs.c
     ./src/window.c

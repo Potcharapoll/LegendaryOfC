@@ -5,12 +5,12 @@
 #include <assert.h>
 
 #include "ecs.h"
+#include "log.h"
 #include "array_stack.h"
 
 #define COMPONENT_CAPACITY 32
-#define INITIAL_CAPACITY 32
-
-#define ENTITY_FLAG_ALIVE (1lu << 0)
+#define INITIAL_CAPACITY   32
+#define ENTITY_FLAG_ALIVE  (1lu << 0)
 
 typedef struct {
     size_t *component_size_arr;
@@ -72,8 +72,10 @@ void ecs_init(u32 n, ...) {
     state.entity_state.capacity = INITIAL_CAPACITY;
 
     state.query.len = 0;
-    state.query.list = malloc(INITIAL_CAPACITY * sizeof(*state.query.list));
-    state.entity_pool = array_stack_init(0, sizeof(u32));
+    state.query.capacity = INITIAL_CAPACITY;
+    state.query.list = malloc(INITIAL_CAPACITY * sizeof(u32));
+
+    state.entity_pool = array_stack_init(sizeof(u32), 0);
 }
 
 // destroy ecs
@@ -82,6 +84,7 @@ void ecs_destroy(void) {
     free(state.entity_state.entity_flag);
     free(state.components_state.data);
     array_stack_destroy(state.entity_pool);
+    LOG_DEBUG("ECS destroyed");
 }
 
 // create new entity
@@ -101,9 +104,13 @@ ecs_entity_t ecs_create(void) {
             void *new_entity_mask_arr = realloc(state.entity_state.entity_mask, state.entity_state.capacity * sizeof(u32));
             void *new_entity_flag_arr = realloc(state.entity_state.entity_flag, state.entity_state.capacity * sizeof(u32));
             void *new_data = realloc(state.components_state.data, state.components_state.capacity * state.components_state.size);
-            void *new_query = realloc(state.query.list, state.query.capacity);
+            void *new_query = realloc(state.query.list, state.query.capacity * sizeof(u32));
 
-            if (new_entity_mask_arr == NULL || new_entity_flag_arr == NULL || new_data == 0) exit(-1);
+            if (new_entity_mask_arr == NULL || new_entity_flag_arr == NULL || new_data == NULL || new_query == NULL) {
+                LOG_FETAL("Failed to reallocate memory for ecs: %s, %d", __FILE__, __LINE__);
+                abort();
+            } 
+
             state.entity_state.entity_mask = new_entity_mask_arr;
             state.entity_state.entity_flag = new_entity_flag_arr;
             state.components_state.data = new_data;
@@ -120,7 +127,7 @@ ecs_entity_t ecs_create(void) {
 
 // return component_id of entity_id 
 void* ecs_get(u32 entity_id, u32 component_id) {
-    return state.components_state.data + (entity_id * state.components_state.size + state.components_state.component_offset_arr[component_id]);
+    return (u8*)state.components_state.data + (entity_id * state.components_state.size + state.components_state.component_offset_arr[component_id]);
 }
 
 // add component data to entity
@@ -150,6 +157,16 @@ void ecs_kill(u32 entity_id) {
         state.entity_state.entity_flag[entity_id] &= ~ENTITY_FLAG_ALIVE;
         state.entity_state.entity_mask[entity_id] = 0;
         array_stack_push(state.entity_pool, &entity_id);
+    }
+}
+
+void ecs_killall(void) {
+    for (u32 id = 0; id < state.entity_state.count; ++id) {
+        if (state.entity_state.entity_flag[id] & ENTITY_FLAG_ALIVE) {
+            state.entity_state.entity_flag[id] &= ~ENTITY_FLAG_ALIVE;
+            state.entity_state.entity_mask[id] = 0;
+            array_stack_push(state.entity_pool, &id);
+        }
     }
 }
 

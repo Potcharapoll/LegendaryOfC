@@ -1,97 +1,84 @@
 #include "global.h"
-#include "renderer.h"
+#include "camera.h"
 #include "editor.h"
 #include "ecs.h"
-
+#include "components.h"
+#include "log.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
-
-#define DEBUG_INFO(...) printf("[info]: "); fprintf(stdout, __VA_ARGS__); putchar('\n');
-#define DEBUG_EVENT(...) printf("[event]: "); fprintf(stdout, __VA_ARGS__); putchar('\n');
-#define DEBUG_ERROR(...) printf("[error]: ") fprintf(stderr,  __VA_ARGS__); putchar('\n');
-
-// ====================== ECS Components ============================
-typedef struct {
-    f32 x;
-    f32 y;
-    f32 z;
-}positionComponent;
-
-typedef struct {
-    u32 textureId;
-    u32 textureWidth;
-    u32 textureHeight;
-    u32 spriteWidth;
-    u32 spriteHeight;
-}spriteComponent;
-
-typedef struct {
-    b8 update : 1;
-}updateComponent;
-
-enum Components {
-    POSITION_COMPONENT,
-    SPRITE_COMPONENT,
-    UPDATE_COMPONENT,
-
-    COMPONENT_LAST
-};
-// ==================================================================
 
 Global global;
 
 void init(void) {
+    // global settings
+    global.settings.projection_size = (vec2s){1280.0f, 768.0f};
+
     // initialize imgui editor
-    editor_init();
+    editor_init(&global.editor_state.editor);
+
+    // initialize camera
+    camera_init(&global.camera, (vec3s){0.0,0.0,0.0}, (vec2s){200.0f, 200.0f});
     
     // initialize renderer
-    renderer_init();
+    renderer_init(&global.renderer);
 
     // initialize ecs
     ecs_init(COMPONENT_LAST, sizeof(positionComponent), sizeof(spriteComponent), sizeof(updateComponent));
-
-    ecs_entity_t e;
-    for (int y = 30; y < 300; y++) {
-        for (int x = 30; x < 300; x++) {
-            e = ecs_create();
-            ecs_add(e.Id, POSITION_COMPONENT, &(positionComponent){x,y,0});
-            ecs_add(e.Id, SPRITE_COMPONENT, &(spriteComponent){0,0,0,32,32});
-            ecs_add(e.Id, UPDATE_COMPONENT, &(updateComponent){0});
-        }
-    }
-
-    ecs_query_t query = ecs_query(COMPONENT_LAST, POSITION_COMPONENT, SPRITE_COMPONENT);
-    for (u32 i = 0; i < query.len; i++) {
-        positionComponent *pos = ecs_get(query.list[i], POSITION_COMPONENT);
-        spriteComponent   *spr = ecs_get(query.list[i], SPRITE_COMPONENT);
-
-        renderer_append_quad((vec2s){spr->spriteWidth, spr->spriteHeight}, 
-                (vec3s){pos->x,pos->y,pos->z}, 
-                (vec4s){1.0,1.0,1.0,1.0});
-   }
 }
 
 void update(void) {
     if (glfwGetKey(global.window->handle, GLFW_KEY_0) == GLFW_PRESS) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        DEBUG_EVENT("Change polygon mode to GL_LINE");
+        LOG_EVENT("Change polygon mode to GL_LINE");
     }
     if (glfwGetKey(global.window->handle, GLFW_KEY_9) == GLFW_PRESS) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        DEBUG_EVENT("Change polygon mode to GL_FILL");
+        LOG_EVENT("Change polygon mode to GL_FILL");
+    }
+    if (glfwGetKey(global.window->handle, GLFW_KEY_Z) == GLFW_PRESS) {
+        global.camera->zoom *= 1.10;
+    }
+    if (glfwGetKey(global.window->handle, GLFW_KEY_X) == GLFW_PRESS) {
+        global.camera->zoom *= 0.90;
     }
 
+    // Camera movement
+    if (glfwGetKey(global.window->handle, GLFW_KEY_W) == GLFW_PRESS) {
+        global.camera->position.y += floor(global.camera->accel.y * global.window->delta_time);
+    }
+    else if (glfwGetKey(global.window->handle, GLFW_KEY_S) == GLFW_PRESS) {
+        global.camera->position.y -= floor(global.camera->accel.y * global.window->delta_time);
+    }
+    if (glfwGetKey(global.window->handle, GLFW_KEY_A) == GLFW_PRESS) {
+        global.camera->position.x -= floor(global.camera->accel.x * global.window->delta_time);
+    }
+    else if (glfwGetKey(global.window->handle, GLFW_KEY_D) == GLFW_PRESS) {
+        global.camera->position.x += floor(global.camera->accel.x * global.window->delta_time);
+    }
+
+    camera_update(global.camera);
+
+    // calculate ortho mouse coordinate
+    {
+        vec4s mouse = {global.window->mouse.normalx, global.window->mouse.normaly, 0.0f, 1.0f};
+        ViewProj inv_view_proj = get_inverse_view_proj(global.camera);
+
+        mat4s inv_vp = glms_mat4_mul(inv_view_proj.view, inv_view_proj.proj);
+        mouse = glms_mat4_mulv(inv_vp, mouse);
+        global.ortho_mouse.x = mouse.x;
+        global.ortho_mouse.y = mouse.y;
+    }
 
     // update if need
-    ecs_query_t query = ecs_query(COMPONENT_LAST, POSITION_COMPONENT, SPRITE_COMPONENT, UPDATE_COMPONENT);
-    for (u32 i = 0; i < query.len; i++) {
-        updateComponent *update = ecs_get(query.list[i], UPDATE_COMPONENT);
-        if (update->update & 1) {
-            // update to vertex
-        }
-    }
+    /* ecs_query_t query = ecs_query(COMPONENT_LAST, POSITION_COMPONENT, SPRITE_COMPONENT, UPDATE_COMPONENT); */
+    /* for (u32 i = 0; i < query.len; i++) { */
+    /*     updateComponent *update = ecs_get(query.list[i], UPDATE_COMPONENT); */
+    /*     if (update->update & 1) { */
+    /*         // update to vertex */
+    /*     } */
+    /* } */
 
     renderer_prepare();
-    renderer_render();
+    renderer_render(global.renderer);
 
     editor_newframe();
     editor_render();
@@ -99,8 +86,9 @@ void update(void) {
 
 void cleanup(void) {
     ecs_destroy();
-    editor_destroy(); 
-    renderer_destroy();
+    editor_destroy(global.editor_state.editor); 
+    camera_destroy(global.camera);
+    renderer_destroy(global.renderer);
 }
 
 int main(void) {
@@ -117,8 +105,12 @@ int main(void) {
 // TODO;
 // - Fix tile cover rect [Done]        27/7/67
 // - ECS                 [Done]        28/7/67
-// - Renderer            [Working 90%] 28/7/67 
-// - Create canvas       [Working]
+// - Renderer            [Done]        28/7/67 - 29/7/67
+// - Camera              [Done]        29/7/67    
+// - Create canvas       
+//      - Manual         [Done]        29/7/67
+//      - Auto           [Done]        29/7/67
+//      - Resize         [Not Yet]  
 // - Place tile
 // - Collision Lookup table O(1)
 // - Tile Layers (LinkedList? Bit Fleid)
