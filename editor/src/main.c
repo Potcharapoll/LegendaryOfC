@@ -26,20 +26,34 @@ void init(void) {
 }
 
 void update(void) {
-    if (glfwGetKey(global.window->handle, GLFW_KEY_0) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        LOG_EVENT("Change polygon mode to GL_LINE");
+    static const f32 DELAY = 0.1f;
+    static b8 toggle_mode = false;
+    static f32 delay = 0.0f;
+
+    if (glfwGetKey(global.window->handle, GLFW_KEY_P) == GLFW_PRESS && glfwGetKey(global.window->handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && delay <= 0) {
+        toggle_mode = !toggle_mode;
+        glPolygonMode(GL_FRONT_AND_BACK, (!toggle_mode) ? GL_LINE : GL_FILL);
+        LOG_EVENT("Change polygon mode to %s", (!toggle_mode) ? "GL_LINE" : "GL_FILL");
+        delay = DELAY;
     }
-    if (glfwGetKey(global.window->handle, GLFW_KEY_9) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        LOG_EVENT("Change polygon mode to GL_FILL");
+    else {
+        delay -= global.window->delta_time;
     }
-    if (glfwGetKey(global.window->handle, GLFW_KEY_Z) == GLFW_PRESS) {
-        global.camera->zoom *= 1.10;
+
+    int state = glfwGetMouseButton(global.window->handle, GLFW_MOUSE_BUTTON_LEFT);
+    if (state == GLFW_PRESS || state == GLFW_REPEAT) {
+        global.tile_update = true;
     }
-    if (glfwGetKey(global.window->handle, GLFW_KEY_X) == GLFW_PRESS) {
-        global.camera->zoom *= 0.90;
+    else {
+        global.tile_update = false;
     }
+
+    /* if (glfwGetKey(global.window->handle, GLFW_KEY_Z) == GLFW_PRESS) { */
+    /*     global.camera->zoom *= 1.10; */
+    /* } */
+    /* if (glfwGetKey(global.window->handle, GLFW_KEY_X) == GLFW_PRESS) { */
+    /*     global.camera->zoom *= 0.90; */
+    /* } */
 
     // Camera movement
     if (glfwGetKey(global.window->handle, GLFW_KEY_W) == GLFW_PRESS) {
@@ -67,15 +81,6 @@ void update(void) {
         global.ortho_mouse.x = mouse.x;
         global.ortho_mouse.y = mouse.y;
     }
-
-    // update if need
-    /* ecs_query_t query = ecs_query(COMPONENT_LAST, POSITION_COMPONENT, SPRITE_COMPONENT, UPDATE_COMPONENT); */
-    /* for (u32 i = 0; i < query.len; i++) { */
-    /*     updateComponent *update = ecs_get(query.list[i], UPDATE_COMPONENT); */
-    /*     if (update->update & 1) { */
-    /*         // update to vertex */
-    /*     } */
-    /* } */
 
     renderer_prepare();
     renderer_render(global.renderer);
@@ -111,7 +116,7 @@ int main(void) {
 //      - Manual         [Done]        29/7/67
 //      - Auto           [Done]        29/7/67
 //      - Resize         [Not Yet]  
-// - Place tile
+// - Place tile          [half Done]   30/7/67 **MUST REFACTOR
 // - Collision Lookup table O(1)
 // - Tile Layers (LinkedList? Bit Fleid)
 // - Serialization & Deserialization

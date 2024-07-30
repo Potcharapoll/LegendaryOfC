@@ -4,12 +4,15 @@
 #include "editor.h"
 #include "cimgui.h"
 #include "global.h"
+#include "renderer.h"
 #include "texture.h"
 #include "log.h"
 #include "ecs.h"
 #include "components.h"
 
+//temp 
 static struct Texture tileset1, tileset2;
+static u32 selectedtileRow, selectedtileCol;
 
 // we could have a linked list to store list of tileset that has pushed
 // and change it using tile editor
@@ -25,14 +28,12 @@ static struct Texture get_tileset(char *tileset) {
 static void menubar(void) {
     if (igBeginMainMenuBar()) {
         if (igBeginMenu("World", true)){
-            if (igMenuItem_Bool("Create New Canvas", "ctrl + shift + n", false, true)) { 
-                global.editor_state.visible_canvas_create = true; 
-            }
+            if (igMenuItem_Bool("Create New Canvas", "ctrl + shift + n", false, true)) { global.editor_state.visible_canvas_dialog = true; }
             igEndMenu();
         }
         if (global.editor_state.canvas_state.created) {
             if (igBeginMenu("Edit", true)){
-                if (igMenuItem_Bool("Canvas Size", "ctrl + shift + n", false, true)) { global.editor_state.visible_canvas_create = true; }
+                if (igMenuItem_Bool("Canvas Size", "ctrl + shift + n", false, true)) { global.editor_state.visible_canvas_dialog = true; }
                 igEndMenu();
             }
         }
@@ -118,10 +119,19 @@ static void tile_editor(void) {
         ImVec2 tilemapIdx = {floor((mousex - 8) / global.editor_state.tile_editor_state.tileSize), floor((mousey - 28) / global.editor_state.tile_editor_state.tileSize)};
         int selectTile = -1;
 
+        global.editor_state.tile_editor_state.mousex = mousex;
+        global.editor_state.tile_editor_state.mousey = mousey;
+        global.editor_state.tile_editor_state.mouse_row = tilemapIdx.y;
+        global.editor_state.tile_editor_state.mouse_col = tilemapIdx.x;
+
         if (tilemapIdx.x >= 0 && tilemapIdx.y >= 0 
         && tilemapIdx.x < global.editor_state.tile_editor_state.colsCount 
-        && tilemapIdx.y < global.editor_state.tile_editor_state.rowsCount) 
+        && tilemapIdx.y < global.editor_state.tile_editor_state.rowsCount) {
             selectTile = tilemapIdx.x + (tilemapIdx.y * global.editor_state.tile_editor_state.colsCount);
+            if (igGetMouseClickedCount(ImGuiMouseButton_Left)) { global.editor_state.tile_editor_state.selected_tile = selectTile; }
+            selectedtileRow = tilemapIdx.y;
+            selectedtileCol = tilemapIdx.x;
+        }
 
         // draw selected rect
         {
@@ -142,22 +152,16 @@ static void tile_editor(void) {
             }
         }
 
-        if (igGetMouseClickedCount(ImGuiMouseButton_Left)) { global.editor_state.tile_editor_state.selected_tile = selectTile; }
-
-        igText("Mouse (X, Y) : (%.2f, %.2f)", mousex, mousey);
-        igText("TileIdx (R,C): (%.2f, %.2f)", tilemapIdx.x, tilemapIdx.y);
-        igText("Selected tile: %d", selectTile);
     }
     igEnd();
 }
 
-static void createCanvas(void) {
+static void canvasDialog(void) {
     static int tileSize      = 0;
     static ivec2s canvasSize = {0,0};
-    static b8 create_new     = false;
     static b8 apply          = false;
 
-    if (igBegin("Create new canvas", &global.editor_state.visible_canvas_create, ImGuiWindowFlags_NoCollapse)) {
+    if (igBegin((global.editor_state.canvas_state.created) ? "Edit canvas" : "Create new canvas", &global.editor_state.visible_canvas_dialog, ImGuiWindowFlags_NoCollapse)) {
         if (igInputInt("Tile Size", &tileSize, 2, 2, 0)) { }
         if (igInputInt("Canvas Width", &canvasSize.x, tileSize, tileSize, 0)) { 
             if (tileSize != 0 && canvasSize.x % tileSize != 0) {
@@ -170,32 +174,31 @@ static void createCanvas(void) {
             }
         }
 
-        if (igSmallButton("Apply") && tileSize != 0 && canvasSize.x != 0 && canvasSize.y != 0) {
-            apply = true;
+        if (igButton("Apply", (ImVec2){64, 24}) && tileSize != 0 && canvasSize.x != 0 && canvasSize.y != 0) {
+            if (global.editor_state.canvas_state.created) {
+                if(igBegin("Are you sure", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
+                    if (igButton("Yes", (ImVec2){64,24})) {
+                        apply = true;
+                        renderer_clean(global.renderer);
+                        ecs_killall();
+                    }
+                    igSameLine(0.0f,12.0f);
+                    if (igButton("No", (ImVec2){64,24})) {
+                        apply = false;
+                        global.editor_state.visible_canvas_dialog = false;
+                    }
+                }
+                igEnd();
+            }
+            else {
+                apply = true;
+            }
         }
     }
     igEnd();
 
-    if (apply && !create_new && global.editor_state.canvas_state.created) {
-        if(igBegin("Are you sure", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
-            if (igButton("Yes", (ImVec2){64,24})) {
-                create_new = true;
-                renderer_clean(global.renderer);
-                ecs_killall();
-            }
-            igSameLine(0.0f,12.0f);
-            if (igButton("No", (ImVec2){64,24})) {
-                apply = false;
-                create_new = false;
-                global.editor_state.visible_canvas_create = false;
-            }
-        }
-        igEnd();
-        return;
-    }
-
     // create new canvas if apply
-    if (apply || create_new) {
+    if (apply) {
         global.editor_state.canvas_state.width   = canvasSize.x;
         global.editor_state.canvas_state.height  = canvasSize.y;
         global.editor_state.canvas_state.rows    = canvasSize.y / tileSize;
@@ -238,8 +241,7 @@ static void createCanvas(void) {
         }
 
         apply = false;
-        create_new = false;
-        global.editor_state.visible_canvas_create = false;
+        global.editor_state.visible_canvas_dialog = false;
     }
 }
 
@@ -251,6 +253,8 @@ static void debug_info(void) {
         igText("Ortho Mouse Position : %.2f, %.2f", global.ortho_mouse.x, global.ortho_mouse.y);
         igSeparator();
 
+        igText("Tile Mouse Position  : %.2f, %.2f", global.editor_state.tile_editor_state.mousex, global.editor_state.tile_editor_state.mousey);
+        igText("Tile Mouse RC        : %d, %d", global.editor_state.tile_editor_state.mouse_row, global.editor_state.tile_editor_state.mouse_col);
         igText("Selected Tile(uv)    : %d", global.editor_state.tile_editor_state.selected_tile);
         igSeparator();
 
@@ -271,6 +275,7 @@ static void debug_info(void) {
                 u32 row = global.editor_state.canvas_state.mouse_row;
                 u32 col = global.editor_state.canvas_state.mouse_col;
                 s32 entity_id = col + row * global.editor_state.canvas_state.cols;
+                global.editor_state.canvas_state.pointed_entity_id = entity_id;
 
                 if (entity_id >= 0) {
                     positionComponent *pos = ecs_get(entity_id, POSITION_COMPONENT);
@@ -281,6 +286,16 @@ static void debug_info(void) {
                     igText("Entity TextureId     : %u", spr->textureId);
                     igText("Entity TextureSize   : %u, %u", spr->textureWidth, spr->textureHeight);
                     igText("Entity Size          : %u, %u", spr->spriteWidth, spr->spriteHeight);
+
+                    // temp
+                    if (global.tile_update) {
+                        spr->textureId = tileset1.handle;
+                        spr->textureWidth = tileset1.size.x;
+                        spr->textureHeight = tileset1.size.y;
+
+                        renderer_push_texture(global.renderer, tileset1);
+                        renderer_update_vertices(global.renderer, entity_id, selectedtileRow, selectedtileCol);
+                    }
                 }
             } else {
                 igText("Entity Id            :");
@@ -338,7 +353,7 @@ void editor_newframe(void) {
 
     menubar();
     if (global.editor_state.visible_tile_editor) tile_editor();
-    if (global.editor_state.visible_canvas_create) createCanvas();
+    if (global.editor_state.visible_canvas_dialog) canvasDialog();
     if (global.editor_state.visible_debug_info) debug_info();
 }
 

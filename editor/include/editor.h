@@ -10,6 +10,7 @@
 typedef struct {
     ImGuiContext *context; 
     ImGuiIO *io;
+
     f32 mousex, mousey;
 } Editor;
 
@@ -21,6 +22,9 @@ typedef struct {
     ImVec2 imageSize;
     s32 rowsCount, colsCount;
     s32 tileCount, tileSize;
+
+    f32 mousex, mousey;
+    s32 mouse_row, mouse_col;
 }TileEditorState;
 
 typedef struct {
@@ -32,6 +36,8 @@ typedef struct {
     f32 posx, posy;
     f32 mousex, mousey;
     s32 mouse_row, mouse_col;
+
+    u32 pointed_entity_id;
 }CanvasState;
 
 void editor_init(Editor **editor);

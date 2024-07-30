@@ -41,6 +41,7 @@ void renderer_destroy(Renderer *renderer);
 void renderer_prepare(void);
 void renderer_clean(Renderer *renderer);
 void renderer_append_quad(Renderer *renderer, vec2s size, vec3s position, vec4s color);
-void renderer_push_texture(Renderer *renderer, struct Texture texture, s32 slot);
+void renderer_update_vertices(Renderer *renderer, u32 entity_id, u32 row, u32 col);
+void renderer_push_texture(Renderer *renderer, struct Texture texture);
 void renderer_render(Renderer *renderer);
 #endif

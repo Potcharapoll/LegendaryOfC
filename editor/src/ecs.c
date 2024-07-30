@@ -135,10 +135,12 @@ void ecs_add(u32 entity_id, u32 component_id, void *data) {
     size_t size = state.components_state.component_size_arr[component_id];
     void *ptr = ecs_get(entity_id, component_id);
     state.entity_state.entity_mask[entity_id] |= (1 << component_id);
+    memcpy(ptr, data, size); 
+}
 
-    assert(ptr != NULL);
-    assert(size > 0);
-
+void ecs_set(u32 entity_id, u32 component_id, void *data) {
+    size_t size = state.components_state.component_size_arr[component_id];
+    void *ptr = ecs_get(entity_id, component_id);
     memcpy(ptr, data, size); 
 }
 

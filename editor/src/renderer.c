@@ -2,9 +2,13 @@
 
 #include "renderer.h"
 #include "camera.h"
+#include "cglm/struct/vec4.h"
 #include "global.h"
 #include "log.h"
+#include "shader.h"
 #define BATCHES_INITIAL_CAPACITY 8
+
+static int texture_slot[8] = {0,1,2,3,4,5,6,7};
 
 static Batch* batch_init(void) {
     Batch *batch         = malloc(sizeof(*batch));
@@ -67,26 +71,26 @@ static void vertices_set(Batch *batch, u32 offset, vec2s size, vec3s position, v
     batch->vertices[offset] = (BatchVertex) {
         .position = position,
             .color = color,
-            .tex_coord = {0},
-            .tex_slot = 0
+            .tex_coord = {0, 1},
+            .tex_slot = -1
     };
     batch->vertices[offset+1] = (BatchVertex) {
         .position = {position.x + size.x, position.y, position.z},
             .color = color,
-            .tex_coord = {0},
-            .tex_slot = 0
+            .tex_coord = {1, 1},
+            .tex_slot = -1
     };
     batch->vertices[offset+2] = (BatchVertex) {
         .position = {position.x, position.y + size.y, position.z},
             .color = color,
-            .tex_coord = {0},
-            .tex_slot = 0
+            .tex_coord = {0, 0},
+            .tex_slot = -1
     };
     batch->vertices[offset+3] = (BatchVertex) {
         .position = {position.x + size.x, position.y + size.y, position.z},
             .color = color,
-            .tex_coord = {0},
-            .tex_slot = 0
+            .tex_coord = {1, 0},
+            .tex_slot = -1
     };
 }
 
@@ -155,22 +159,67 @@ void renderer_append_quad(Renderer* renderer, vec2s size, vec3s position, vec4s 
     renderer->total_entity++;
 }
 
-/* void renderer_push_texture(Renderer *renderer, struct Texture texture, s32 slot) { */
+void renderer_push_texture(Renderer *renderer, struct Texture texture) {
+    for (size_t i = 0; i < renderer->batch_len; i++) {
+        b8 has = false;
+        for (size_t j = 0; j < renderer->batches[i]->texture_count; j++) {
+            if (renderer->batches[i]->texture[j].handle == texture.handle) {
+                LOG_DEBUG("Texture already in render batch %lu", i);
+                has = true;
+                break;
+            }
+        }
+        if (has) {
+            continue;
+        }
+        renderer->batches[i]->texture[renderer->batches[i]->texture_count++] = texture;
+    }
+}
 
-/* } */
+// temp
+void renderer_update_vertices(Renderer *renderer, u32 entity_id, u32 row, u32 col) {
+    u32 batch_idx = entity_id / MAX_VERTICES_PER_BATCH;
+    u32 idx       = entity_id % MAX_VERTICES_PER_BATCH;
+
+    f32 tex_width  = 32.0f / (32.0f * 10.0f);
+    f32 tex_height = 32.0f / (32.0f * 13.0f);
+
+    f32 coordX = tex_width * col;
+    f32 coordY = tex_height * row;
+    
+    LOG_DEBUG("TEX WH: %f, %f", tex_width, tex_height);
+    LOG_DEBUG("COORD XY: %f, %f", coordX, coordY);
+    LOG_DEBUG("%d - %d", batch_idx, idx);
+    idx *= 4;
+    renderer->batches[batch_idx]->vertices[idx].tex_slot   = 0;
+    renderer->batches[batch_idx]->vertices[idx+1].tex_slot = 0;
+    renderer->batches[batch_idx]->vertices[idx+2].tex_slot = 0;
+    renderer->batches[batch_idx]->vertices[idx+3].tex_slot = 0;
+
+/*     renderer->batches[batch_idx]->vertices[idx].color   = glms_vec4_one(); */
+/*     renderer->batches[batch_idx]->vertices[idx+1].color = glms_vec4_one(); */
+/*     renderer->batches[batch_idx]->vertices[idx+2].color = glms_vec4_one(); */
+/*     renderer->batches[batch_idx]->vertices[idx+3].color = glms_vec4_one(); */
+
+    renderer->batches[batch_idx]->vertices[idx].tex_coord   = (vec2s){coordX, coordY + tex_height};
+    renderer->batches[batch_idx]->vertices[idx+1].tex_coord = (vec2s){coordX + tex_width, coordY + tex_height};
+    renderer->batches[batch_idx]->vertices[idx+2].tex_coord = (vec2s){coordX, coordY};
+    renderer->batches[batch_idx]->vertices[idx+3].tex_coord = (vec2s){coordX + tex_width, coordY};
+}
 
 void renderer_render(Renderer *renderer) {
     assert(renderer != NULL);
     assert(renderer->batches != NULL);
 
     for (u32 i = 0; i < renderer->batch_len; i++) {
-        for (u32 j = 0; j < renderer->batches[i]->texture_count; j++) { texture_bind(renderer->batches[i]->texture[i], i); }
         vbo_bind(renderer->batches[i]->vbo);
         vbo_subdata(renderer->batches[i]->vbo, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex), renderer->batches[i]->vertices);
 
+        for (u32 j = 0; j < renderer->batches[i]->texture_count; j++) { texture_bind(renderer->batches[i]->texture[i], i); }
         shader_bind(renderer->batches[i]->shader);
         ViewProj view_proj = get_view_proj(global.camera);
         shader_uniform_viewproj(renderer->batches[i]->shader, view_proj);
+        shader_uniform_int_array(renderer->batches[i]->shader, "tex", 8, texture_slot);
 
         vao_bind(renderer->batches[i]->vao);
         glDrawElements(GL_TRIANGLES, (renderer->batches[i]->count * 6), GL_UNSIGNED_INT, NULL);
