@@ -1,3 +1,4 @@
+#include "asset_manager.h"
 #include "global.h"
 #include "camera.h"
 #include "editor.h"
@@ -11,6 +12,9 @@ Global global;
 void init(void) {
     // global settings
     global.settings.projection_size = (vec2s){1280.0f, 768.0f};
+
+    // initialize asset manager
+    global.asset_manager = asset_manager_init();
 
     // initialize imgui editor
     editor_init(&global.editor_state.editor);
@@ -47,13 +51,6 @@ void update(void) {
     else {
         global.tile_update = false;
     }
-
-    /* if (glfwGetKey(global.window->handle, GLFW_KEY_Z) == GLFW_PRESS) { */
-    /*     global.camera->zoom *= 1.10; */
-    /* } */
-    /* if (glfwGetKey(global.window->handle, GLFW_KEY_X) == GLFW_PRESS) { */
-    /*     global.camera->zoom *= 0.90; */
-    /* } */
 
     // Camera movement
     if (glfwGetKey(global.window->handle, GLFW_KEY_W) == GLFW_PRESS) {
@@ -94,6 +91,7 @@ void cleanup(void) {
     editor_destroy(global.editor_state.editor); 
     camera_destroy(global.camera);
     renderer_destroy(global.renderer);
+    asset_manager_destroy(global.asset_manager);
 }
 
 int main(void) {
@@ -112,11 +110,18 @@ int main(void) {
 // - ECS                 [Done]        28/7/67
 // - Renderer            [Done]        28/7/67 - 29/7/67
 // - Camera              [Done]        29/7/67    
+// - Asset Manager       [Done]        30/7/67 - 01/8/67
+// - Spritesheet         [Start]       01/8/67
 // - Create canvas       
-//      - Manual         [Done]        29/7/67
-//      - Auto           [Done]        29/7/67
-//      - Resize         [Not Yet]  
+//      = Manual         [Done]        29/7/67
+//      = Auto           [Done]        29/7/67
+//      = Resize         [Not Yet]  
 // - Place tile          [half Done]   30/7/67 **MUST REFACTOR
 // - Collision Lookup table O(1)
 // - Tile Layers (LinkedList? Bit Fleid)
 // - Serialization & Deserialization
+//
+// Make renderer and ecs connected
+// Update vertex by update flag in ecs through render_update 
+// Make i batch render for i layer
+// Make layer view

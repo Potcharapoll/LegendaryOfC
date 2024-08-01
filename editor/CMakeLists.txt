@@ -26,6 +26,7 @@ target_link_libraries(cimgui GL glfw)
 # ----------------------------------------------------------------
 add_subdirectory(./lib/glfw)
 add_subdirectory(./lib/cglm)
+add_subdirectory(./lib/nativefiledialog-extended)
 
 
 list(APPEND CFLAGS "-std=c99")
@@ -59,7 +60,10 @@ add_executable(${PROJECT_NAME}
     ./src/vbo.c
     ./src/array_stack.c
     ./src/array_list.c
+    ./src/hashtable.c
+    ./src/linkedlist.c
+    ./src/asset_manager.c
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw cglm cimgui m)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw cglm cimgui nfd m)

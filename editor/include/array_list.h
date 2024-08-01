@@ -1,7 +1,6 @@
 #ifndef ARRAY_LIST_H
 #define ARRAY_LIST_H
 #include "types.h"
-#include <sys/types.h>
 
 typedef struct {
     size_t len;

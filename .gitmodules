@@ -7,3 +7,6 @@
 [submodule "editor/lib/cglm"]
 	path = editor/lib/cglm
 	url = https://github.com/recp/cglm.git
+[submodule "editor/lib/nativefiledialog-extended"]
+	path = editor/lib/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended.git
