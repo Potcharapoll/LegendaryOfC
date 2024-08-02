@@ -1,10 +1,7 @@
-#include "asset_manager.h"
 #include "global.h"
-#include "camera.h"
-#include "editor.h"
-#include "ecs.h"
-#include "components.h"
-#include "log.h"
+#include "core/components.h"
+#include "core/ecs.h"
+#include "util/log.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 
 Global global;
@@ -111,11 +108,11 @@ int main(void) {
 // - Renderer            [Done]        28/7/67 - 29/7/67
 // - Camera              [Done]        29/7/67    
 // - Asset Manager       [Done]        30/7/67 - 01/8/67
-// - Spritesheet         [Start]       01/8/67
+// - Tileset             [Done]        01/8/67 - 02/8/67
 // - Create canvas       
 //      = Manual         [Done]        29/7/67
 //      = Auto           [Done]        29/7/67
-//      = Resize         [Not Yet]  
+//      = Resize         [Not Yet]     
 // - Place tile          [half Done]   30/7/67 **MUST REFACTOR
 // - Collision Lookup table O(1)
 // - Tile Layers (LinkedList? Bit Fleid)

@@ -1,10 +1,10 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
-#include "window.h"
-#include "renderer.h"
-#include "editor.h"
-#include "asset_manager.h"
-#include "camera.h"
+#include "gfx/window.h"
+#include "core/renderer.h"
+#include "core/editor.h"
+#include "core/camera.h"
+#include "core/asset_manager.h"
 
 typedef struct {
     struct Window *window;

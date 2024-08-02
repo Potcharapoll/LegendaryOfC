@@ -3,10 +3,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-
-#include "ecs.h"
-#include "log.h"
-#include "array_stack.h"
+#include "core/ecs.h"
+#include "util/log.h"
+#include "util/array_stack.h"
 
 #define COMPONENT_CAPACITY 32
 #define INITIAL_CAPACITY   32

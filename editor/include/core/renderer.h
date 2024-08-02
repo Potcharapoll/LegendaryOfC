@@ -4,10 +4,10 @@
 #define MAX_VERTICES_PER_BATCH 40000
 #define MAX_INDICES_PER_BATCH  60000
 #define MAX_BATCH_CAPACITY     32
-#include "vao.h"
-#include "vbo.h"
-#include "shader.h"
-#include "texture.h"
+#include "../gfx/vao.h"
+#include "../gfx/vbo.h"
+#include "../gfx/shader.h"
+#include "../gfx/texture.h"
 
 typedef struct {
     vec3s position;
@@ -19,8 +19,8 @@ typedef struct {
 typedef struct {
     struct VAO vao;
     struct VBO vbo, ebo;
-    struct Shader shader;
-    struct Texture texture[8];
+    shader_t shader;
+    texture_t texture[8];
 
     u32 count;
     u32 texture_count;
@@ -42,6 +42,6 @@ void renderer_prepare(void);
 void renderer_clean(Renderer *renderer);
 void renderer_append_quad(Renderer *renderer, vec2s size, vec3s position, vec4s color);
 void renderer_update_vertices(Renderer *renderer, u32 entity_id, u32 row, u32 col);
-void renderer_push_texture(Renderer *renderer, struct Texture texture);
+void renderer_push_texture(Renderer *renderer, texture_t texture);
 void renderer_render(Renderer *renderer);
 #endif

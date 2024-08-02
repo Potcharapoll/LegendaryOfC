@@ -2,9 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <strings.h>
-#include "array_list.h"
-#include "log.h"
+#include "util/array_list.h"
+#include "util/log.h"
 
 array_list* array_list_init(size_t data_size, size_t capacity) {
     array_list *al = malloc(sizeof(*al));

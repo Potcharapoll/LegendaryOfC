@@ -1,9 +1,7 @@
 #ifndef VBO_H
 #define VBO_H
-#include "types.h"
-
 #include <glad/glad.h>
-#include <stdio.h>
+#include "../util/types.h"
 
 struct VBO {
     GLuint handle;

@@ -1,6 +1,6 @@
-#include "camera.h"
+#include "core/camera.h"
+#include "util/log.h"
 #include "global.h"
-#include "log.h"
 
 void camera_init(Camera **camera, vec3s position, vec2s accel) {
     *camera = malloc(sizeof(**camera));

@@ -1,6 +1,6 @@
 #ifndef ECS_H
 #define ECS_H
-#include "types.h"
+#include "../util/types.h"
 
 typedef struct {
     u32 Id;

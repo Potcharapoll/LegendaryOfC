@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "array_stack.h"
+#include "util/array_stack.h"
 
 array_stack* array_stack_init(size_t data_size, size_t capacity) {
     array_stack *as = malloc(sizeof(*as));

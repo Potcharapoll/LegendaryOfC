@@ -1,4 +1,4 @@
-#include "vao.h"
+#include "gfx/vao.h"
 
 struct VAO vao_create(void) {
     struct VAO vao;

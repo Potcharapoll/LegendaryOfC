@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "window.h"
-#include "log.h"
+#include "gfx/window.h"
+#include "util/log.h"
 
 #define WIDTH 1280
 #define HEIGHT 768

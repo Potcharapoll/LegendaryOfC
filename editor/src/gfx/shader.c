@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <glad/glad.h>
-
-#include "shader.h"
+#include "gfx/shader.h"
 
 static GLuint _compile(GLenum type, char *path) {
     FILE *fp;
@@ -40,8 +39,8 @@ static GLuint _compile(GLenum type, char *path) {
     return shader;
 }
 
-struct Shader shader_load(char *vs_path, char *fs_path) {
-    struct Shader shader = {
+shader_t shader_load(char *vs_path, char *fs_path) {
+    shader_t shader = {
         .handle = glCreateProgram(),
         .vs = _compile(GL_VERTEX_SHADER, vs_path),
         .fs = _compile(GL_FRAGMENT_SHADER, fs_path),
@@ -68,7 +67,7 @@ struct Shader shader_load(char *vs_path, char *fs_path) {
     return shader;
 }
 
-void shader_bind(struct Shader self) {
+void shader_bind(shader_t self) {
     glUseProgram(self.handle);
 }
 
@@ -76,33 +75,33 @@ void shader_unbind(void) {
     glUseProgram(0);
 }
 
-void shader_destroy(struct Shader self) {
+void shader_destroy(shader_t self) {
     glDeleteProgram(self.handle);
     glDeleteShader(self.vs);
     glDeleteShader(self.fs); 
 }
 
-void shader_uniform_mat4(struct Shader self, char *name, mat4s m) {
+void shader_uniform_mat4(shader_t self, char *name, mat4s m) {
     glUniformMatrix4fv(glGetUniformLocation(self.handle, name), 1, GL_FALSE, (const GLfloat*)m.raw);
 }
 
-void shader_uniform_float(struct Shader self, char *name, float f) {
+void shader_uniform_float(shader_t self, char *name, float f) {
     glUniform1f(glGetUniformLocation(self.handle, name), f);
 }
 
-void shader_uniform_int(struct Shader self, char *name, int i) {
+void shader_uniform_int(shader_t self, char *name, int i) {
     glUniform1i(glGetUniformLocation(self.handle, name), i);
 }
 
-void shader_uniform_vec2(struct Shader self, char *name, vec2s v) {
+void shader_uniform_vec2(shader_t self, char *name, vec2s v) {
     glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]);
 }
 
-void shader_uniform_viewproj(struct Shader self, ViewProj view_proj) {
+void shader_uniform_viewproj(shader_t self, ViewProj view_proj) {
     glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw);
     glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw);
 }
 
-void shader_uniform_int_array(struct Shader self, char *name, int count, int arr[]) {
+void shader_uniform_int_array(shader_t self, char *name, int count, int arr[]) {
     glUniform1iv(glGetUniformLocation(self.handle, name), count, arr);
 }

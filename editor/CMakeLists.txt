@@ -49,20 +49,20 @@ add_executable(${PROJECT_NAME}
     ./lib/glad/src/glad.c
 
     ./src/main.c
-    ./src/camera.c
-    ./src/renderer.c
-    ./src/ecs.c
-    ./src/window.c
-    ./src/editor.c
-    ./src/shader.c
-    ./src/texture.c
-    ./src/vao.c
-    ./src/vbo.c
-    ./src/array_stack.c
-    ./src/array_list.c
-    ./src/hashtable.c
-    ./src/linkedlist.c
-    ./src/asset_manager.c
+    ./src/gfx/window.c
+    ./src/gfx/vao.c
+    ./src/gfx/vbo.c
+    ./src/gfx/shader.c
+    ./src/gfx/texture.c
+    ./src/gfx/tileset.c
+    ./src/core/camera.c
+    ./src/core/renderer.c
+    ./src/core/ecs.c
+    ./src/core/editor.c
+    ./src/core/asset_manager.c
+    ./src/util/array_stack.c
+    ./src/util/array_list.c
+    ./src/util/hashtable.c
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})

@@ -1,6 +1,6 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
-#include "types.h"
+#include "../util/types.h"
 
 typedef struct {
     f32 x;

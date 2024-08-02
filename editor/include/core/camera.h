@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include <cglm/struct.h>
-#include "types.h"
+#include "../util/types.h"
 
 typedef struct {
     mat4s view;

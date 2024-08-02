@@ -1,10 +1,7 @@
 #include <string.h>
-
-#include "renderer.h"
-#include "camera.h"
+#include "core/renderer.h"
+#include "util/log.h"
 #include "global.h"
-#include "shader.h"
-#include "log.h"
 
 static const int BATCHES_INITIAL_CAPACITY = 8;
 static int texture_slot[8] = {0,1,2,3,4,5,6,7};
@@ -13,7 +10,7 @@ static Batch* batch_init(void) {
     Batch *batch = malloc(sizeof(*batch));
     assert(batch != NULL);
 
-    struct Shader *shader = asset_manager_get_shader(global.asset_manager, "default_shader"); 
+    shader_t *shader = asset_manager_get_shader(global.asset_manager, "default_shader"); 
 
     batch->vao           = vao_create();
     batch->vbo           = vbo_create(GL_ARRAY_BUFFER, true);
@@ -162,7 +159,7 @@ void renderer_append_quad(Renderer* renderer, vec2s size, vec3s position, vec4s 
     renderer->total_entity++;
 }
 
-void renderer_push_texture(Renderer *renderer, struct Texture texture) {
+void renderer_push_texture(Renderer *renderer, texture_t texture) {
     for (size_t i = 0; i < renderer->batch_len; i++) {
         b8 has = false;
         for (size_t j = 0; j < renderer->batches[i]->texture_count; j++) {

@@ -2,8 +2,8 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
-#include "hashtable.h"
-#include "log.h"
+#include "util/hashtable.h"
+#include "util/log.h"
 
 u64 hash(char *key) {
     u64 idx = 0;

@@ -1,4 +1,4 @@
-#include "vbo.h"
+#include "gfx/vbo.h"
 
 struct VBO vbo_create(GLenum type, b8 dynamic) {
     struct VBO vbo = {.type = type, .dynamic = dynamic};
