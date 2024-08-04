@@ -4,6 +4,7 @@
 #include "core/renderer.h"
 #include "core/editor.h"
 #include "core/camera.h"
+#include "core/ecs.h"
 #include "core/asset_manager.h"
 
 typedef struct {
@@ -11,6 +12,7 @@ typedef struct {
     Renderer *renderer;
     Camera *camera;
     asset_manager_t *asset_manager;
+    ecs_world_t *world;
 
     struct {
         Editor *editor;

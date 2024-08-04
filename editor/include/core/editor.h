@@ -18,16 +18,19 @@ typedef struct {
 typedef struct {
     ImTextureID texture_id;
     char *selected_tileset;
-    s32 selected_tile;
 
-    s32 rows;
-    s32 cols;
-    s32 tile_count;
-    s32 tile_size;
+    s32   selected_tile;
+    vec2s selected_tile_idx;
+    vec2s tile_stride;
+
+    s32    rows;
+    s32    cols;
+    s32    tile_count;
     ImVec2 image_size;
 
     vec2s mouse;
     struct { s32 row, col; } mouse_rc;
+
 }TileEditorState;
 
 typedef struct {

@@ -1,5 +1,4 @@
 #include "global.h"
-#include "core/components.h"
 #include "core/ecs.h"
 #include "util/log.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
@@ -13,6 +12,9 @@ void init(void) {
     // initialize asset manager
     global.asset_manager = asset_manager_init();
 
+    // initialize ecs
+    global.world = ecs_init();
+
     // initialize imgui editor
     editor_init(&global.editor_state.editor);
 
@@ -21,17 +23,15 @@ void init(void) {
     
     // initialize renderer
     renderer_init(&global.renderer);
-
-    // initialize ecs
-    ecs_init(COMPONENT_LAST, sizeof(positionComponent), sizeof(spriteComponent), sizeof(updateComponent));
 }
 
 void update(void) {
     static const f32 DELAY = 0.1f;
-    static b8 toggle_mode = false;
-    static f32 delay = 0.0f;
+    static f32 delay       = 0.0f;
+    static b8 toggle_mode  = false;
 
-    if (glfwGetKey(global.window->handle, GLFW_KEY_P) == GLFW_PRESS && glfwGetKey(global.window->handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && delay <= 0) {
+    if (glfwGetKey(global.window->handle, GLFW_KEY_P) == GLFW_PRESS 
+     && glfwGetKey(global.window->handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && delay <= 0) {
         toggle_mode = !toggle_mode;
         glPolygonMode(GL_FRONT_AND_BACK, (!toggle_mode) ? GL_LINE : GL_FILL);
         LOG_EVENT("Change polygon mode to %s", (!toggle_mode) ? "GL_LINE" : "GL_FILL");
@@ -84,7 +84,7 @@ void update(void) {
 }
 
 void cleanup(void) {
-    ecs_destroy();
+    ecs_destroy(global.world);
     editor_destroy(global.editor_state.editor); 
     camera_destroy(global.camera);
     renderer_destroy(global.renderer);

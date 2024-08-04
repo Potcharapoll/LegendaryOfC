@@ -3,29 +3,31 @@
 #include "../util/types.h"
 
 typedef struct {
-    f32 x;
-    f32 y;
-    f32 z;
-}positionComponent;
+    f32 x, y, z;
+}Position;
 
 typedef struct {
     u32 textureId;
-    u32 textureWidth;
-    u32 textureHeight;
     u32 spriteWidth;
     u32 spriteHeight;
-}spriteComponent;
+}Sprite;
 
 typedef struct {
-    b8 update : 1;
-}updateComponent;
+    u8 update_flag;
+}Updatable;
 
-enum Components {
+typedef enum {
+    UPDATE_POSITION  = (1 << 0),
+    UPDATE_TEXTURE   = (1 << 1),
+    UPDATE_SIZE      = (1 << 2),
+} UpdateFlag;
+
+typedef enum {
     POSITION_COMPONENT,
     SPRITE_COMPONENT,
-    UPDATE_COMPONENT,
+    UPDATABLE_COMPONENT,
 
     COMPONENT_LAST
-};
+}Components;
 
 #endif

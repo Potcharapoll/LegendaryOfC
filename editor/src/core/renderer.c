@@ -1,10 +1,60 @@
 #include <string.h>
 #include "core/renderer.h"
+#include "core/asset_manager.h"
+#include "core/components.h"
+#include "core/ecs.h"
 #include "util/log.h"
 #include "global.h"
 
 static const int BATCHES_INITIAL_CAPACITY = 8;
+
 static int texture_slot[8] = {0,1,2,3,4,5,6,7};
+static ecs_world_t *_world = NULL;
+
+static void renderer_update_vertices(Renderer *renderer, ecs_entity_t entity_id, vec2s stride, vec2s uv) {
+    u32 batch_idx = entity_id / MAX_VERTICES_PER_BATCH;
+    u32 idx       = entity_id % MAX_VERTICES_PER_BATCH;
+
+    f32 coordX = stride.x * uv.x;
+    f32 coordY = stride.y * uv.y;
+
+    tileset_t *tileset = asset_manager_get_tileset(global.asset_manager, global.editor_state.tile_editor_state.selected_tileset);
+    f32 tex_slot = 0;
+    for (u32 i = 0; i < renderer->batches[batch_idx]->texture_count; i++) {
+        if (tileset->texture.handle == renderer->batches[batch_idx]->texture[i].handle) {
+            tex_slot = i;
+        } 
+    }
+    
+    idx *= 4;
+    renderer->batches[batch_idx]->vertices[idx+0].tex_slot = tex_slot;
+    renderer->batches[batch_idx]->vertices[idx+1].tex_slot = tex_slot;
+    renderer->batches[batch_idx]->vertices[idx+2].tex_slot = tex_slot;
+    renderer->batches[batch_idx]->vertices[idx+3].tex_slot = tex_slot;
+
+    renderer->batches[batch_idx]->vertices[idx+0].tex_coord = (vec2s){coordX, coordY};
+    renderer->batches[batch_idx]->vertices[idx+1].tex_coord = (vec2s){coordX + stride.x, coordY};
+    renderer->batches[batch_idx]->vertices[idx+2].tex_coord = (vec2s){coordX, coordY + stride.y};
+    renderer->batches[batch_idx]->vertices[idx+3].tex_coord = (vec2s){coordX + stride.x, coordY + stride.y};
+}
+
+static void _update_ecs_state(void) {
+    ecs_query_t *query = ecs_query(_world);
+
+    for (ecs_entity_t id = 0; id < query->len; id++) {
+        const Updatable *state = ecs_get(_world,id,UPDATABLE_COMPONENT);
+
+        ecs_flag_t flag = state->update_flag;
+        if (flag & UPDATE_TEXTURE) {
+            const Sprite *spr = ecs_get(_world, id, SPRITE_COMPONENT);
+            tileset_t *tileset = asset_manager_get_tileset(global.asset_manager, global.editor_state.tile_editor_state.selected_tileset);
+            ecs_set(_world, id, SPRITE_COMPONENT, &(Sprite){tileset->texture.handle, spr->spriteWidth, spr->spriteHeight});
+            renderer_update_vertices(global.renderer, id, global.editor_state.tile_editor_state.tile_stride, global.editor_state.tile_editor_state.selected_tile_idx);
+
+            ecs_set(_world, id, UPDATABLE_COMPONENT, &(Updatable){0});
+        }
+    }
+}
 
 static Batch* batch_init(void) {
     Batch *batch = malloc(sizeof(*batch));
@@ -111,6 +161,8 @@ void renderer_init(Renderer **renderer) {
     }
     
     asset_manager_push_shader(global.asset_manager, "default_shader", "../shaders/default.vert", "../shaders/default.frag");
+
+    _world = global.world;
 }
 
 void renderer_clean(Renderer *renderer) {
@@ -175,41 +227,18 @@ void renderer_push_texture(Renderer *renderer, texture_t texture) {
     }
 }
 
-// temp
-void renderer_update_vertices(Renderer *renderer, u32 entity_id, u32 row, u32 col) {
-    u32 batch_idx = entity_id / MAX_VERTICES_PER_BATCH;
-    u32 idx       = entity_id % MAX_VERTICES_PER_BATCH;
-
-    f32 tex_width  = 16.0f / (16.0f * 10.0f);
-    f32 tex_height = 16.0f / (16.0f * 13.0f);
-
-    f32 coordX = tex_width * col;
-    f32 coordY = tex_height * row;
-    
-    LOG_DEBUG("TEX WH: %f, %f", tex_width, tex_height);
-    LOG_DEBUG("COORD XY: %f, %f", coordX, coordY);
-    LOG_DEBUG("%d - %d", batch_idx, idx);
-    idx *= 4;
-    renderer->batches[batch_idx]->vertices[idx+0].tex_slot   = 0;
-    renderer->batches[batch_idx]->vertices[idx+1].tex_slot = 0;
-    renderer->batches[batch_idx]->vertices[idx+2].tex_slot = 0;
-    renderer->batches[batch_idx]->vertices[idx+3].tex_slot = 0;
-
-    renderer->batches[batch_idx]->vertices[idx+0].tex_coord   = (vec2s){coordX, coordY + tex_height};
-    renderer->batches[batch_idx]->vertices[idx+1].tex_coord = (vec2s){coordX + tex_width, coordY + tex_height};
-    renderer->batches[batch_idx]->vertices[idx+2].tex_coord = (vec2s){coordX, coordY};
-    renderer->batches[batch_idx]->vertices[idx+3].tex_coord = (vec2s){coordX + tex_width, coordY};
-}
-
 void renderer_render(Renderer *renderer) {
     assert(renderer != NULL);
     assert(renderer->batches != NULL);
 
     for (u32 i = 0; i < renderer->batch_len; i++) {
+
+        _update_ecs_state();
+
         vbo_bind(renderer->batches[i]->vbo);
         vbo_subdata(renderer->batches[i]->vbo, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex), renderer->batches[i]->vertices);
 
-        for (u32 j = 0; j < renderer->batches[i]->texture_count; j++) { texture_bind(renderer->batches[i]->texture[i], i); }
+        for (u32 j = 0; j < renderer->batches[i]->texture_count; j++) { texture_bind(renderer->batches[i]->texture[i], j); }
         shader_bind(renderer->batches[i]->shader);
         ViewProj view_proj = get_view_proj(global.camera);
         shader_uniform_viewproj(renderer->batches[i]->shader, view_proj);

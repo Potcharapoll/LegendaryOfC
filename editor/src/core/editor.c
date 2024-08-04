@@ -1,12 +1,18 @@
 #include <nfd.h>
 #include <string.h>
 #include "core/editor.h"
+#include "cimgui.h"
 #include "core/asset_manager.h"
 #include "core/renderer.h"
 #include "core/components.h"
 #include "core/ecs.h"
 #include "util/log.h"
 #include "global.h"
+
+const u32 BASE_SIZE = 16;
+const u32 SCALE     = 2;
+const u32 TILE_SIZE = BASE_SIZE * SCALE;
+static ecs_world_t *_world = NULL;
 
 static void asset_manager(void) {
     if (igBegin("Asset Manager", &global.editor_state.visible_asset_manager, ImGuiWindowFlags_NoCollapse)) {
@@ -78,24 +84,22 @@ static void menubar(void) {
 static void tile_editor(void) {
     array_list *tilesets = asset_manager_get_all_tileset(global.asset_manager);
 
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoResize;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysAutoResize;
     if (igBegin("Tile Editor", &global.editor_state.visible_tile_editor, flags)) {
 
         ImDrawList *drawlist = igGetWindowDrawList();
         tileset_t *tileset   = asset_manager_get_tileset(global.asset_manager, global.editor_state.tile_editor_state.selected_tileset);
 
         if (tileset) {
-            u8          scale      = 2;
+            u8          scale      = SCALE;
             ImTextureID texture_id = (void*)(size_t)tileset->texture.handle;
             ImVec2      image_size = {tileset->texture.size.x * scale, tileset->texture.size.y * scale};
-            u32         tile_size  = (tileset->stride * scale);
-            u32         rows       = image_size.y / tile_size;
-            u32         cols       = image_size.x / tile_size;
+            u32         rows       = image_size.y / TILE_SIZE;
+            u32         cols       = image_size.x / TILE_SIZE;
             u32         tile_count = tileset->tile_count;
 
 
             // set to global state
-            global.editor_state.tile_editor_state.tile_size  = tile_size;
             global.editor_state.tile_editor_state.texture_id = texture_id;
             global.editor_state.tile_editor_state.image_size = image_size;
             global.editor_state.tile_editor_state.tile_count = tile_count;
@@ -126,8 +130,8 @@ static void tile_editor(void) {
                 // draw vertical lines
                 for (u32 y = 0; y < rows; y++) {
                     for (u32 x = 0; x < cols; x++) {
-                        ImVec2 p1 = {tileset_pos.x + x * tile_size, tileset_pos.y + y * tile_size};
-                        ImVec2 p2 = {tileset_pos.x + x * tile_size, tileset_pos.y + (y + 1) * tile_size};
+                        ImVec2 p1 = {tileset_pos.x + x * TILE_SIZE, tileset_pos.y + y * TILE_SIZE};
+                        ImVec2 p2 = {tileset_pos.x + x * TILE_SIZE, tileset_pos.y + (y + 1) * TILE_SIZE};
                         ImDrawList_AddLine(drawlist, p1, p2, uGridColor, gridThickness);
                     }
                 }
@@ -135,8 +139,8 @@ static void tile_editor(void) {
                 // draw horizontal lines
                 for (u32 x = 0; x < cols; x++) {
                     for (u32 y = 1; y < rows; y++) {
-                        ImVec2 p1 = {tileset_pos.x + x * tile_size, tileset_pos.y + y * tile_size};
-                        ImVec2 p2 = {tileset_pos.x + (x+1) * tile_size, tileset_pos.y + y * tile_size};
+                        ImVec2 p1 = {tileset_pos.x + x * TILE_SIZE, tileset_pos.y + y * TILE_SIZE};
+                        ImVec2 p2 = {tileset_pos.x + (x+1) * TILE_SIZE, tileset_pos.y + y * TILE_SIZE};
                         ImDrawList_AddLine(drawlist, p1, p2, uGridColor, gridThickness);
                     }
                 }
@@ -147,7 +151,7 @@ static void tile_editor(void) {
             f32 mousey = global.window->mouse.ypos - window_pos.y + igGetScrollY();
 
             // convert mouse position to tileIndex
-            ImVec2 tileset_idx = {floor((mousex - tileset_margin.x) / tile_size), floor((image_size.y - (mousey - tileset_margin.y)) / tile_size)};
+            ImVec2 tileset_idx = {floor((mousex - tileset_margin.x) / TILE_SIZE), floor((image_size.y - (mousey - tileset_margin.y)) / TILE_SIZE)};
             s32 selectTile     = -1;
 
             global.editor_state.tile_editor_state.mouse.x      = mousex;
@@ -186,8 +190,8 @@ static void tile_editor(void) {
     igText("Selected Tile: ");
     igSameLine(0.0f, 2.0f);
     if (global.editor_state.tile_editor_state.selected_tile >= 0) {
-        f32 sizeX = global.editor_state.tile_editor_state.tile_size / global.editor_state.tile_editor_state.image_size.x;
-        f32 sizeY = global.editor_state.tile_editor_state.tile_size / global.editor_state.tile_editor_state.image_size.y;
+        f32 sizeX = TILE_SIZE / global.editor_state.tile_editor_state.image_size.x;
+        f32 sizeY = TILE_SIZE / global.editor_state.tile_editor_state.image_size.y;
 
         u32 cols = global.editor_state.tile_editor_state.cols;
 
@@ -196,8 +200,12 @@ static void tile_editor(void) {
 
         ImVec2 uv0  = {idxX * sizeX, idxY * sizeY + sizeY};
         ImVec2 uv1  = {idxX * sizeX + sizeX, idxY * sizeY};
-        ImVec2 size = {32, 32};
+        ImVec2 size = {TILE_SIZE, TILE_SIZE};
         igImage(global.editor_state.tile_editor_state.texture_id, size, uv0, uv1, (ImVec4){1.0,1.0,1.0,1.0}, (ImVec4){1.0,1.0,1.0,1.0}); 
+
+        global.editor_state.tile_editor_state.selected_tile_idx = (vec2s){idxX,idxY};
+        global.editor_state.tile_editor_state.tile_stride = (vec2s){sizeX,sizeY};
+
     }
     igEnd();
 }
@@ -208,25 +216,24 @@ static void canvasDialog(void) {
 
     if (igBegin((global.editor_state.canvas_state.created) ? "Edit canvas" : "Create new canvas", &global.editor_state.visible_canvas_dialog, ImGuiWindowFlags_NoCollapse)) {
 
-        u32 tile_size   = global.editor_state.tile_editor_state.tile_size;
         ImVec2 btn_size = {64,24};
-        if (igInputInt("Canvas Width", &canvas_size.x, tile_size, tile_size, 0)) { 
-            if (tile_size != 0 && canvas_size.x % tile_size != 0) {
-                canvas_size.x -= (canvas_size.x % tile_size);
+        if (igInputInt("Canvas Width", &canvas_size.x, TILE_SIZE, TILE_SIZE, 0)) { 
+            if (TILE_SIZE != 0 && canvas_size.x % TILE_SIZE != 0) {
+                canvas_size.x -= (canvas_size.x % TILE_SIZE);
             }
         }
-        if (igInputInt("Canvas Height", &canvas_size.y, tile_size, tile_size, 0)) { 
-            if (tile_size != 0 && canvas_size.y % tile_size != 0) {
-                canvas_size.y -= (canvas_size.y % tile_size); 
+        if (igInputInt("Canvas Height", &canvas_size.y, TILE_SIZE, TILE_SIZE, 0)) { 
+            if (TILE_SIZE != 0 && canvas_size.y % TILE_SIZE != 0) {
+                canvas_size.y -= (canvas_size.y % TILE_SIZE); 
             }
         }
 
-        if (igButton("Apply", btn_size) && tile_size != 0 && canvas_size.x != 0 && canvas_size.y != 0) {
+        if (igButton("Apply", btn_size) && TILE_SIZE != 0 && canvas_size.x != 0 && canvas_size.y != 0) {
             if (global.editor_state.canvas_state.created) {
                 if(igBegin("Are you sure", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
                     if (igButton("Yes", btn_size)) {
                         renderer_clean(global.renderer);
-                        ecs_killall();
+                        ecs_killall(_world);
 
                         apply = true;
                     }
@@ -248,46 +255,41 @@ static void canvasDialog(void) {
 
     // create new canvas if apply
     if (apply) {
-        u32 tile_size = global.editor_state.tile_editor_state.tile_size;
         global.editor_state.canvas_state.width      = canvas_size.x;
         global.editor_state.canvas_state.height     = canvas_size.y;
-        global.editor_state.canvas_state.rows       = canvas_size.y / tile_size;
-        global.editor_state.canvas_state.cols       = canvas_size.x / tile_size;
-        global.editor_state.canvas_state.stride     = tile_size;
+        global.editor_state.canvas_state.rows       = canvas_size.y / TILE_SIZE;
+        global.editor_state.canvas_state.cols       = canvas_size.x / TILE_SIZE;
+        global.editor_state.canvas_state.stride     = TILE_SIZE;
         global.editor_state.canvas_state.position.x = 0;
         global.editor_state.canvas_state.position.y = 0;
         global.editor_state.canvas_state.created    = true;
 
-        ecs_entity_t entity;
         for (s32 y = 0; y < global.editor_state.canvas_state.rows; y++) {
             for (s32 x = 0; x < global.editor_state.canvas_state.cols; x++) {
-                entity = ecs_create();
+                ecs_entity_t entity_id = ecs_create(_world, (ecs_desc_t){3, {POSITION_COMPONENT, SPRITE_COMPONENT, UPDATABLE_COMPONENT} });
 
                 f32 posX = x * global.editor_state.canvas_state.stride;
                 f32 posY = y * global.editor_state.canvas_state.stride;
-                ecs_add(entity.Id, POSITION_COMPONENT, &(positionComponent){posX, posY, 0});
-                ecs_add(entity.Id, SPRITE_COMPONENT, &(spriteComponent){0, 0, 0,tile_size, tile_size});
-                ecs_add(entity.Id, UPDATE_COMPONENT, &(updateComponent){0});
+                ecs_set(_world, entity_id, POSITION_COMPONENT, &(Position){posX, posY, 0});
+                ecs_set(_world, entity_id, SPRITE_COMPONENT, &(Sprite){0, TILE_SIZE, TILE_SIZE});
+                ecs_set(_world, entity_id, UPDATABLE_COMPONENT, &(Updatable){0});
             }
         }
 
-        ecs_query_t query = ecs_query(COMPONENT_LAST, POSITION_COMPONENT, SPRITE_COMPONENT, UPDATE_COMPONENT);
-        f32 strip_color[] = {0.1f, 0.2f};
 
-        for (u32 i = 0; i < query.len; i++) {
-            positionComponent *pos = ecs_get(query.list[i], POSITION_COMPONENT);
-            spriteComponent   *spr = ecs_get(query.list[i], SPRITE_COMPONENT);
+        ecs_query_t* query = ecs_query(_world);
+        vec4s color = glms_vec4_zero();
+        for (u32 i = 0; i < query->len; i++) {
+            const Position *pos = ecs_get(_world,query->list[i], POSITION_COMPONENT);
+            const Sprite   *spr = ecs_get(_world,query->list[i], SPRITE_COMPONENT);
 
-            if ((i+1) % global.editor_state.canvas_state.cols == 0) {
-                f32 swap = strip_color[1];
-                strip_color[1] = strip_color[0];
-                strip_color[0] = swap;
+            if (i % 2 == 0) {
+                color = (vec4s){0.1f, 0.1f, 0.1f, 1.0};
             }
-
-            renderer_append_quad(global.renderer,
-                    (vec2s){spr->spriteWidth, spr->spriteHeight}, 
-                    (vec3s){pos->x,pos->y,pos->z}, 
-                    (vec4s){strip_color[i%2],strip_color[i%2],strip_color[i%2],1.0});
+            else {
+                color = (vec4s){0.2f, 0.2f, 0.2f, 1.0};
+            }
+            renderer_append_quad(global.renderer, (vec2s){spr->spriteWidth, spr->spriteHeight}, (vec3s){pos->x,pos->y,pos->z}, color);
         }
 
         apply = false;
@@ -297,6 +299,10 @@ static void canvasDialog(void) {
 
 static void debug_info(void) {
     if (igBegin("Debug Info", &global.editor_state.visible_debug_info, ImGuiWindowFlags_NoCollapse)) {
+        igText("ECS count (alive)  : %lu (%lu)", _world->entities->count, _world->entities->count_alive);
+        igText("ECS component count: %u", _world->components->count);
+        igSeparator();
+
         igText("Projection Size      : %.2f, %.2f", global.settings.projection_size.x, global.settings.projection_size.y);
         igText("Camera Position      : %.2f, %.2f, %.2f", global.camera->position.x, global.camera->position.y, global.camera->position.z);
         igText("Window Mouse Position: %.2f, %.2f", global.window->mouse.xpos, global.window->mouse.ypos);
@@ -328,24 +334,21 @@ static void debug_info(void) {
                 global.editor_state.canvas_state.point_entity_id = entity_id;
 
                 if (entity_id >= 0) {
-                    positionComponent *pos = ecs_get(entity_id, POSITION_COMPONENT);
-                    spriteComponent   *spr = ecs_get(entity_id, SPRITE_COMPONENT);
+                    const Position *pos = ecs_get(_world, entity_id, POSITION_COMPONENT);
+                    const Sprite   *spr = ecs_get(_world, entity_id, SPRITE_COMPONENT);
 
                     igText("Entity Id            : %lu", entity_id);
                     igText("Entity Pos           : %.2f, %.2f, %.2f", pos->x, pos->y, pos->z);
                     igText("Entity TextureId     : %u", spr->textureId);
-                    igText("Entity TextureSize   : %u, %u", spr->textureWidth, spr->textureHeight);
                     igText("Entity Size          : %u, %u", spr->spriteWidth, spr->spriteHeight);
 
                     /* // temp */
-                    /* if (global.tile_update) { */
-                    /*     spr->textureId = tileset1.handle; */
-                    /*     spr->textureWidth = tileset1.size.x; */
-                    /*     spr->textureHeight = tileset1.size.y; */
+                    if (global.tile_update) {
+                        tileset_t *tileset = asset_manager_get_tileset(global.asset_manager, global.editor_state.tile_editor_state.selected_tileset);
 
-                    /*     renderer_push_texture(global.renderer, tileset1); */
-                    /*     renderer_update_vertices(global.renderer, entity_id, selectedtileRow, selectedtileCol); */
-                    /* } */
+                        renderer_push_texture(global.renderer, tileset->texture);
+                        ecs_set(_world, entity_id, UPDATABLE_COMPONENT, &(Updatable){UPDATE_TEXTURE});
+                    }
                 }
             } 
             else {
@@ -362,8 +365,10 @@ static void debug_info(void) {
 
 void editor_init(Editor **editor) {
     *editor = malloc(sizeof(**editor));
+    assert(*editor != NULL);
+
     (*editor)->context = igCreateContext(NULL);
-    (*editor)->io = igGetIO();
+    (*editor)->io      = igGetIO();
 
     ImGui_ImplGlfw_InitForOpenGL(global.window->handle, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
@@ -371,8 +376,9 @@ void editor_init(Editor **editor) {
 
     global.editor_state.tile_editor_state.selected_tile    = -1;
     global.editor_state.tile_editor_state.selected_tileset = NULL;
+    global.editor_state.canvas_state.created               = false;
 
-    global.editor_state.canvas_state.created = false;
+    _world = global.world;
 }
 
 void editor_destroy(Editor *editor) {
