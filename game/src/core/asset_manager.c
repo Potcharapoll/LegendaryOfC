@@ -1,10 +1,9 @@
-#include "core/asset_manager.h"
+#include "asset_manager.h"
 
-AssetManager* asset_manager_init(void) {
-    AssetManager *am = malloc(sizeof(*am));
-    am->tilesets = hashtable_init(sizeof(tileset_t));
-    am->shaders  = hashtable_init(sizeof(shader_t));
-    return am;
+void asset_manager_init(AssetManager **self) {
+    *self = malloc(sizeof(**self));
+    (*self)->tilesets = hashtable_init(sizeof(tileset_t));
+    (*self)->shaders  = hashtable_init(sizeof(Shader));
 }
 
 void asset_manager_destroy(AssetManager *self) {
@@ -19,7 +18,7 @@ void asset_manager_push_tileset(AssetManager *self, char *name, u32 stride) {
 }
 
 void asset_manager_push_shader(AssetManager *self, char *name, char *vs_path, char *fs_path) {
-    shader_t shader = shader_load(vs_path, fs_path);
+    Shader shader = shader_load(vs_path, fs_path);
     hashtable_insert(self->shaders, name, &shader);
 }
 
@@ -59,7 +58,7 @@ tileset_t* asset_manager_get_tileset(AssetManager *self, char *name) {
     return rel ? rel->value : NULL;
 }
 
-shader_t* asset_manager_get_shader(AssetManager *self, char *name) {
+Shader* asset_manager_get_shader(AssetManager *self, char *name) {
     if (name == NULL) return NULL;
     const entry_t* rel = hashtable_search(self->shaders, name);
     return rel ? rel->value : NULL;

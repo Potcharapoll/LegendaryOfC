@@ -10,3 +10,9 @@
 [submodule "editor/lib/nativefiledialog-extended"]
 	path = editor/lib/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended.git
+[submodule "game/lib/glfw"]
+	path = game/lib/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "game/lib/cglm"]
+	path = game/lib/cglm
+	url = https://github.com/recp/cglm.git

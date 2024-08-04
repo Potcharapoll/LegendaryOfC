@@ -1,0 +1,28 @@
+#include "vbo.h"
+
+VBO vbo_create(GLenum type, b8 dynamic) {
+    VBO vbo = {.type = type, .dynamic = dynamic};
+    glGenBuffers(1, &vbo.handle);
+    return vbo;
+}
+
+void vbo_destroy(VBO self) {
+    glDeleteBuffers(1, &self.handle);
+}
+
+void vbo_bind(VBO self){
+    glBindBuffer(self.type, self.handle);
+}
+
+void vbo_unbind(VBO self) {
+    glBindBuffer(self.type, 0);
+}
+
+void vbo_data(VBO self, size_t size, void *data) {
+    glBufferData(self.type, size, data, (self.dynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+}
+
+void vbo_subdata(VBO self, size_t size, void *data) {
+    glBufferSubData(self.type, 0, size, data);
+}
+

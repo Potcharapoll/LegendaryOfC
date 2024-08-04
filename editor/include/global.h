@@ -11,7 +11,7 @@ typedef struct {
     struct Window *window;
     Renderer *renderer;
     Camera *camera;
-    asset_manager_t *asset_manager;
+    AssetManager *asset_manager;
     ecs_world_t *world;
 
     struct {
