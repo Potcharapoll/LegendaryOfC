@@ -99,7 +99,7 @@ void renderer_init(Camera *camera, AssetManager *assetmanager) {
 
 void renderer_clean(void) {
     for (u32 i = 0; i < LAYER_COUNT; i++) {
-        memset(&_batches[i].vertices, 0, MAX_VERTICES_PER_BATCH * sizeof(BatchVertex));
+        _batches[i].count = 0;
     }
 }
 
