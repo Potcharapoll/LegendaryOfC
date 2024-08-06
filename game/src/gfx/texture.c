@@ -29,6 +29,7 @@ texture_t texture_load(const char *path) {
     int width, height, bpp;
     stbi_set_flip_vertically_on_load(1);
     unsigned char *pixels = stbi_load(path, &width, &height, &bpp, 0);
+    puts(path);
     if (pixels == NULL) {
         fprintf(stderr, "Failed to image from path \'%s\'\n", path);
         exit(1);

@@ -45,6 +45,5 @@ void renderer_destroy(void);
 void renderer_prepare(void);
 void renderer_render(void);
 void renderer_clean(void);
-void renderer_append_quad(RenderLayer layer, vec2s size, vec3s position, vec4s color);
-void renderer_push_texture(texture_t texture);
+void renderer_append_quad(RenderLayer layer, vec2s size, vec3s position, vec4s color, texture_t *texture, s32 uv);
 #endif

@@ -4,7 +4,7 @@
 #define WIDTH     1280
 #define HEIGHT    768
 #define TITLE     "LegendaryOfC"
-#define TILE_SIZE 32
+#define TILE_SIZE 16
 
 #define PROJECTION_WIDTH  1280
 #define PROJECTION_HEIGHT  768
