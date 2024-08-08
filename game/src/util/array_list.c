@@ -25,7 +25,7 @@ void array_list_destroy(array_list *self) {
     free(self);
 }
 
-void array_list_append(array_list *self, void *data) {
+u32 array_list_append(array_list *self, void *data) {
     assert(self != NULL);
     assert(self->data != NULL);
     assert(data != NULL);
@@ -43,6 +43,8 @@ void array_list_append(array_list *self, void *data) {
 
     memcpy((u8*)self->data + self->len * self->data_size, data, self->data_size);
     self->len++;
+
+    return self->len - 1;
 }
 
 void *array_list_get(array_list *self, size_t index) {

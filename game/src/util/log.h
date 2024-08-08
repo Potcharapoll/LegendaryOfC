@@ -5,5 +5,5 @@
 #define LOG_ERROR(...) fprintf(stderr, "[ERROR]: "); fprintf(stderr,  __VA_ARGS__); putchar('\n');
 #define LOG_FETAL(...) fprintf(stderr, "[FETAL_ERROR]: "); fprintf(stderr,  __VA_ARGS__); putchar('\n');
 
-#define ASSERT_MSG(condition, ...) if(condition) {fprintf(stdout, "[ASSERT]: "); fprintf(stdout, __VA_ARGS__); putchar('\n'); exit(1); }
+#define ASSERT_MSG(condition, ...) if(!( condition )) {fprintf(stdout, "[ASSERT]: "); fprintf(stdout, __VA_ARGS__); putchar('\n'); exit(1); }
 #endif

@@ -45,5 +45,6 @@ void renderer_destroy(void);
 void renderer_prepare(void);
 void renderer_render(void);
 void renderer_clean(void);
-void renderer_append_quad(RenderLayer layer, vec2s size, vec3s position, vec4s color, texture_t *texture, s32 uv);
+void renderer_render_quad(RenderLayer layer, vec2s size, vec3s position, vec4s color);
+void renderer_render_sprite_sheet(RenderLayer layer, spritesheet_t *spritesheet, vec2s size, vec3s position, u32 row, u32 col);
 #endif

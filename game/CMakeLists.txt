@@ -22,12 +22,15 @@ include_directories(lib/stb)
 
 add_executable(${PROJECT_NAME} 
     lib/glad/src/glad.c
+
     src/gfx/window.c
     src/gfx/vao.c
     src/gfx/vbo.c
     src/gfx/shader.c
     src/gfx/texture.c
-    src/gfx/tileset.c
+    src/gfx/spritesheet.c
+    src/gfx/animation.c
+
     src/core/camera.c
     src/core/renderer.c
     src/core/asset_manager.c
