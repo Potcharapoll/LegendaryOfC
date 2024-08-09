@@ -11,19 +11,13 @@ AssetManager *asset_manager = NULL;
 Camera *camera = NULL;
 struct Window window;
 
-enum Direction { UP,DOWN,LEFT,RIGHT };
+enum Direction { UP,DOWN,LEFT,RIGHT, DIRECTION_LAST };
 
-u32 adef_idle;
-u32 adef_down;
-u32 adef_up;
-u32 adef_right;
-u32 adef_left;
+u32 adef_idle[DIRECTION_LAST];
+u32 adef_walk[DIRECTION_LAST];
 
-u32 animation_idle;
-u32 animation_down;
-u32 animation_up;
-u32 animation_right;
-u32 animation_left;
+u32 animation_idle[DIRECTION_LAST];
+u32 animation_walk[DIRECTION_LAST];
 
 typedef struct {
     vec2s size;
@@ -265,18 +259,29 @@ void setup(void) {
     curr_chunk = chunk_list[0];
 
     spritesheet_t *player_spritesheet = asset_manager_get_spritesheet(asset_manager, "../res/characters/1.png");
-    adef_idle  = animation_definition_create(player_spritesheet, (f32[]){0,0,0,0}, (u8[]){0,1,2,3}, (u8[]){0,0,0,0}, 4);
-    adef_left  = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){0,0,0,0,0,0,0,0},(u8[]){0,1,2,3,4,5,6,7}, 8);
-    adef_right = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){1,1,1,1,1,1,1,1},(u8[]){0,1,2,3,4,5,6,7}, 8);
-    adef_up    = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){2,2,2,2,2,2,2,2},(u8[]){0,1,2,3,4,5,6,7}, 8);
-    adef_down  = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){3,3,3,3,3,3,3,3},(u8[]){0,1,2,3,4,5,6,7}, 8);
+
+    adef_idle[LEFT]  = animation_definition_create(player_spritesheet, (f32[]){0},(u8[]){0},(u8[]){0},1);
+    adef_idle[RIGHT] = animation_definition_create(player_spritesheet, (f32[]){0},(u8[]){1},(u8[]){0},1);
+    adef_idle[UP]    = animation_definition_create(player_spritesheet, (f32[]){0},(u8[]){2},(u8[]){0},1);
+    adef_idle[DOWN]  = animation_definition_create(player_spritesheet, (f32[]){0},(u8[]){3},(u8[]){0},1);
+
+    adef_walk[LEFT]  = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){0,0,0,0,0,0,0,0},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[RIGHT] = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){1,1,1,1,1,1,1,1},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[UP]    = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){2,2,2,2,2,2,2,2},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[DOWN]  = animation_definition_create(player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){3,3,3,3,3,3,3,3},(u8[]){0,1,2,3,4,5,6,7}, 8);
     
-    animation_idle  = animation_create(adef_idle, false);
-    animation_down  = animation_create(adef_down, true);
-    animation_up    = animation_create(adef_up, true);
-    animation_right = animation_create(adef_right, true);
-    animation_left = animation_create(adef_left, true);
-    player.animation_id = animation_idle;
+
+    animation_walk[LEFT]  = animation_create(adef_walk[LEFT], true);
+    animation_walk[RIGHT] = animation_create(adef_walk[RIGHT], true);
+    animation_walk[UP]    = animation_create(adef_walk[UP], true);
+    animation_walk[DOWN]  = animation_create(adef_walk[DOWN], true);
+
+    animation_idle[LEFT]  = animation_create(adef_idle[LEFT], false);
+    animation_idle[RIGHT] = animation_create(adef_idle[RIGHT], false);
+    animation_idle[UP]    = animation_create(adef_idle[UP], false);
+    animation_idle[DOWN]  = animation_create(adef_idle[DOWN], false);
+
+    player.animation_id = animation_idle[DOWN];
     player_direction = DOWN;
 }
 
@@ -294,28 +299,28 @@ void update(void) {
 
     if (up == GLFW_PRESS) {
         player.pos.y += 200 * window.delta_time;
-        player.animation_id = animation_up;
+        player.animation_id = animation_walk[UP];
         player_direction    = UP;
     }
     else if (down == GLFW_PRESS) {
         player.pos.y -= 200 * window.delta_time;
-        player.animation_id = animation_down;
+        player.animation_id = animation_walk[DOWN];
         player_direction    = DOWN;
     }
 
     if (right == GLFW_PRESS) {
         player.pos.x += 200 * window.delta_time;
-        player.animation_id = animation_right;
+        player.animation_id = animation_walk[RIGHT];
         player_direction    = RIGHT;
     }
     else if (left == GLFW_PRESS) {
         player.pos.x -= 200 * window.delta_time;
-        player.animation_id = animation_left;
+        player.animation_id = animation_walk[LEFT];
         player_direction    = LEFT;
     }
 
     if (!up && !down && !right && !left) {
-        player.animation_id = animation_idle;
+        player.animation_id = animation_idle[player_direction];
     }
 
     if (glfwGetKey(window.handle, GLFW_KEY_X) == GLFW_PRESS) {
@@ -407,7 +412,9 @@ int main(void) {
  * 24/08/08
  *  - Spritesheet Animation (COMPLETED)
  *  - Refactor Renderer 1 (COMPLETED)
- * 24/08/09 (PLAN)
+ * 24/08/09
+ *  - Fix walk and idle animation (COMPLETED)
+ * 24/08/10 (PLAN)
  *  - Refactor Animation
  *  - Refactor Chunk
  */
