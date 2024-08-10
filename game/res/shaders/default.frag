@@ -8,6 +8,7 @@ uniform sampler2D tex[8];
 
 void main() {
     int slot = int(tex_slot);
+
     switch (slot) {
         case -1:
             fragColor = color;

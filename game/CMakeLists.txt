@@ -14,10 +14,12 @@ list(APPEND CFLAGS "-O2")
 
 add_subdirectory(lib/glfw)
 add_subdirectory(lib/cglm)
+add_subdirectory(lib/freetype)
 
 include_directories(lib/glfw/include)
 include_directories(lib/cglm/include)
 include_directories(lib/glad/include)
+include_directories(lib/freetype)
 include_directories(lib/stb)
 
 add_executable(${PROJECT_NAME} 
@@ -34,9 +36,13 @@ add_executable(${PROJECT_NAME}
     src/core/camera.c
     src/core/renderer.c
     src/core/asset_manager.c
+    src/core/chunk.c
+
     src/util/hashtable.c
     src/util/array_list.c
-    src/main.c)
+
+    src/main.c
+)
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw cglm m)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw cglm freetype m)

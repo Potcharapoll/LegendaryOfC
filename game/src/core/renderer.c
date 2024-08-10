@@ -119,7 +119,7 @@ void renderer_init(Camera *camera, AssetManager *assetmanager) {
 
     _asset_manager = assetmanager;
     _camera        = camera;
-    asset_manager_push_shader(_asset_manager, "default_shader", "../res/shaders/default.vert", "../res/shaders/default.frag");
+    asset_manager_push_shader(_asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
 
     for (int i = 0; i < LAYER_COUNT; i++) {
         _batches[i] = NULL;
@@ -191,6 +191,58 @@ void renderer_render_sprite_sheet(RenderLayer layer, spritesheet_t *spritesheet,
     _append_quad(layer, size, position, WHITE, tex_coord, slot);
 }
 
+void renderer_render_sprite_sheet_from(RenderLayer layer, spritesheet_t *spritesheet, vec2s size, vec3s position, 
+        u32 start_row, u32 start_col, u32 end_row, u32 end_col) {
+    if (_batches[layer] == NULL) {
+        batch_init(&_batches[layer]);
+    }
+
+    if (!_batches[layer]->hasRoom) {
+        LOG_ERROR("Layer %d is full", layer);
+        return;
+    }
+
+    f32 slot = renderer_push_texture(_batches[layer], spritesheet->texture);
+    f32 n_w  = 1.0f / spritesheet->cols;
+    f32 n_h  = 1.0f / spritesheet->rows;
+
+    f32 s_x = n_w * start_col;
+    f32 s_y = n_h * start_row;
+    f32 e_x = n_w * end_col;
+    f32 e_y = n_h * end_row;
+
+    vec2s tex_coord[4];
+    tex_coord[0] = (vec2s){s_x    , s_y    };
+    tex_coord[1] = (vec2s){s_x+e_x, s_y    };
+    tex_coord[2] = (vec2s){s_x    , s_y+e_y};
+    tex_coord[3] = (vec2s){s_x+e_x, s_y+e_y};
+
+    _append_quad(layer, size, position, WHITE, tex_coord, slot);
+}
+
+// fix later
+void renderer_render_chunk(Chunk *chunk) {
+    spritesheet_t *texture = asset_manager_get_spritesheet(_asset_manager, TEXTURE_CHUNK);
+    for (u32 i = 0; i < (chunk->cols * chunk->rows); i++) {
+        u32 texture_row = chunk->tile_texture_uv[i] / texture->rows;
+        u32 texture_col = chunk->tile_texture_uv[i] % texture->cols;
+
+        renderer_render_sprite_sheet(TERRAIN_LAYER, texture, chunk->tiles[i].size, chunk->tiles[i].position, texture_row, texture_col); 
+    }
+
+    for (u32 i = 0; i < chunk->structures->len; i++) {
+        Structure *s = array_list_get(chunk->structures, i);
+        renderer_render_sprite_sheet_from(STRUCTURE_LAYER, texture, s->size, s->position, s->row, s->col, s->row_width, s->col_width);
+    }
+
+    spritesheet_t *npc_texture = asset_manager_get_spritesheet(_asset_manager, TEXTURE_NPC);
+    for (u32 i = 0; i < chunk->npcs->len; i++) {
+        NPC *npc = array_list_get(chunk->npcs, i);
+        renderer_render_sprite_sheet(STRUCTURE_LAYER, npc_texture, npc->size, npc->position, npc->row, npc->col);
+    }
+    
+}
+
 void renderer_render(void) {
     for (u32 i = 0; i < LAYER_COUNT; i++) {
         if (_batches[i] == NULL || _batches[i]->count <= 0) continue;
@@ -213,3 +265,4 @@ void renderer_render(void) {
         texture_unbind();
     }
 }
+

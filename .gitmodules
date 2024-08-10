@@ -16,3 +16,6 @@
 [submodule "game/lib/cglm"]
 	path = game/lib/cglm
 	url = https://github.com/recp/cglm.git
+[submodule "game/lib/freetype"]
+	path = game/lib/freetype
+	url = https://github.com/freetype/freetype.git
