@@ -6,11 +6,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 list(APPEND CFLAGS "-Wall")
 list(APPEND CFLAGS "-Wextra")
 list(APPEND CFLAGS "-std=c99")
+list(APPEND CFLAGS "-g3")
+list(APPEND CFLAGS "-O2")
 list(APPEND CFLAGS "-Wno-missing-braces")
 list(APPEND CFLAGS "-Wno-unused-parameter")
 list(APPEND CFLAGS "-Wno-unused-result")
-list(APPEND CFLAGS "-g3")
-list(APPEND CFLAGS "-O2")
 
 add_subdirectory(lib/glfw)
 add_subdirectory(lib/cglm)
@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
     src/core/camera.c
     src/core/renderer.c
     src/core/asset_manager.c
+    src/core/dialog.c
     src/core/chunk.c
 
     src/util/hashtable.c

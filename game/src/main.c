@@ -1,5 +1,6 @@
 #include <string.h>
 
+
 #include "gfx/window.h"
 #include "gfx/spritesheet.h"
 #include "gfx/animation.h"
@@ -8,6 +9,7 @@
 #include "core/asset_manager.h"
 #include "core/entity.h"
 #include "core/chunk.h"
+#include "core/dialog.h"
 #include "defs.h"
 
 #define CHUNK1_SPAWN_X 600 
@@ -22,19 +24,21 @@ enum Direction {
     DIRECTION_LAST 
 };
 
-static AssetManager *asset_manager = NULL;
-static Camera *camera = NULL;
-static Entity player;
-static enum Direction player_direction;
-static struct Window window;
 static u32 adef_idle[DIRECTION_LAST];
 static u32 adef_walk[DIRECTION_LAST];
 static u32 animation_idle[DIRECTION_LAST];
 static u32 animation_walk[DIRECTION_LAST];
+static enum Direction player_direction;
+static struct Window window;
 static Chunk *chunk_list[2];
-static u64 curr_chunk_idx = 0;
-static Chunk *curr_chunk  = NULL;
-static b8 next_chunk      = false;
+
+static AssetManager *asset_manager = NULL;
+static Camera *camera              = NULL;
+static Entity player               = {0};
+static u64 curr_chunk_idx          = 0;
+static dialog_t *test_dialog       = NULL;
+static Chunk *curr_chunk           = NULL;
+static b8 next_chunk               = false;
 
 static u32 chunk1_uv[] = {
     45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,
@@ -175,6 +179,46 @@ static void camera_center_to_entity(vec3s *a, vec3s entity_pos, vec2s entity_siz
     a->y = entity_pos.y - PROJECTION_HEIGHT/2.0f - entity_size.y / 2.0f;
 }
 
+static void input_handling(void) {
+    s32 up    = glfwGetKey(window.handle, GLFW_KEY_W);
+    s32 down  = glfwGetKey(window.handle, GLFW_KEY_S);
+    s32 right = glfwGetKey(window.handle, GLFW_KEY_D);
+    s32 left  = glfwGetKey(window.handle, GLFW_KEY_A);
+
+    if (up == GLFW_PRESS) {
+        player.position.y += 200 * window.delta_time;
+        player.animation_id = animation_walk[UP];
+        player_direction    = UP;
+    }
+    else if (down == GLFW_PRESS) {
+        player.position.y -= 200 * window.delta_time;
+        player.animation_id = animation_walk[DOWN];
+        player_direction    = DOWN;
+    }
+
+    if (right == GLFW_PRESS) {
+        player.position.x += 200 * window.delta_time;
+        player.animation_id = animation_walk[RIGHT];
+        player_direction    = RIGHT;
+    }
+    else if (left == GLFW_PRESS) {
+        player.position.x -= 200 * window.delta_time;
+        player.animation_id = animation_walk[LEFT];
+        player_direction    = LEFT;
+    }
+
+    if (!up && !down && !right && !left) {
+        player.animation_id = animation_idle[player_direction];
+    }
+
+    if (glfwGetKey(window.handle, GLFW_KEY_X) == GLFW_PRESS) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else if (glfwGetKey(window.handle, GLFW_KEY_Z) == GLFW_PRESS) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+}
+
 void setup(void) {
     asset_manager_init(&asset_manager);
 
@@ -184,6 +228,8 @@ void setup(void) {
 
     animation_init();
 
+    dialog_init();
+
     // add needed resources
     asset_manager_push_spritesheet(asset_manager, TEXTURE_CHUNK2, 12, 3, 4, 16);
     asset_manager_push_spritesheet(asset_manager, TEXTURE_CHUNK, 49, 7, 7, 16);
@@ -191,13 +237,24 @@ void setup(void) {
     asset_manager_push_spritesheet(asset_manager, TEXTURE_NPC, 32, 4, 8, 16);
     asset_manager_push_spritesheet(asset_manager, TEXTURE_NPC2, 12, 3, 4, 16);
 
+    // add dialog
+    test_dialog = dialog_create(0.1f, -1, (dialog_desc_t){ 
+            .count = 2, 
+            .texts = (dialog_text_t[]){
+                { .text = "Hi this is a test text dialog", .length = 30},
+                { .text = "This is page 2 of the dialog",  .length = 29},
+            } 
+    });
+
+    printf("0 - %s - %lu\n", test_dialog->texts[0].text, strlen(test_dialog->texts[0].text));
+    printf("1 - %s - %lu\n", test_dialog->texts[1].text, strlen(test_dialog->texts[1].text));
+
     // initialize player
     player = (Entity){HUMAN_SCALE, (vec3s){CHUNK1_SPAWN_X, CHUNK1_SPAWN_Y}, WHITE, .animation_id = -1};
 
     // initialize chunks
     chunk_init(&chunk_list[0], 60, 60, (vec2s){0,0}, chunk1_uv);
     chunk_init(&chunk_list[1], 60, 60, (vec2s){chunk_list[0]->end_position.x, 0}, chunk2_uv);
-
 
     curr_chunk = chunk_list[0];
 
@@ -248,44 +305,7 @@ void update(void) {
             player.position.x, player.position.y,
             curr_chunk->uid, chunk_rc_pos.x, chunk_rc_pos.y);
 
-
-    s32 up    = glfwGetKey(window.handle, GLFW_KEY_W);
-    s32 down  = glfwGetKey(window.handle, GLFW_KEY_S);
-    s32 right = glfwGetKey(window.handle, GLFW_KEY_D);
-    s32 left  = glfwGetKey(window.handle, GLFW_KEY_A);
-
-    if (up == GLFW_PRESS) {
-        player.position.y += 200 * window.delta_time;
-        player.animation_id = animation_walk[UP];
-        player_direction    = UP;
-    }
-    else if (down == GLFW_PRESS) {
-        player.position.y -= 200 * window.delta_time;
-        player.animation_id = animation_walk[DOWN];
-        player_direction    = DOWN;
-    }
-
-    if (right == GLFW_PRESS) {
-        player.position.x += 200 * window.delta_time;
-        player.animation_id = animation_walk[RIGHT];
-        player_direction    = RIGHT;
-    }
-    else if (left == GLFW_PRESS) {
-        player.position.x -= 200 * window.delta_time;
-        player.animation_id = animation_walk[LEFT];
-        player_direction    = LEFT;
-    }
-
-    if (!up && !down && !right && !left) {
-        player.animation_id = animation_idle[player_direction];
-    }
-
-    if (glfwGetKey(window.handle, GLFW_KEY_X) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-    else if (glfwGetKey(window.handle, GLFW_KEY_Z) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
+    input_handling();
 
     // go between two chunk
     {
@@ -326,14 +346,19 @@ void update(void) {
     renderer_render_chunk(curr_chunk);
 
     renderer_render();
+
+    renderer_render_dialog(test_dialog, window.delta_time);
 }
 
 void cleanup(void) {
     chunk_destroy(chunk_list[0]);
     chunk_destroy(chunk_list[1]);
 
+    dialog_delete(test_dialog);
+
     animation_destroy();
     renderer_destroy();
+    dialog_destroy();
     asset_manager_destroy(asset_manager);
     camera_destroy(camera);
 }
@@ -355,7 +380,7 @@ int main(void) {
  *
  * 24/08/06
  *  - Chunk with Texture          (COMPLETED)
- *  - Player with Texture         (BUG - FIXED)
+ *  - Player with Texture         (BUG|FIXED)
  *
  * 24/08/07
  *  - Spritesheet                 (COMPLETED)
@@ -374,9 +399,11 @@ int main(void) {
  *  - Refactor Chunk              (COMPLETED)
  *  - Add Freetype Library        
  *
- * 24/08/11
- *  - Render free type text
- *  - Dialog system
+ *  24/08/11 - 24/08/12
+ *  - Freetype Text Render        (COMPLETED)    
+ *  - Dialog system               (15%)
+ *
+ * (PLAN)
  *  - Refactor Animation
  *  - Entity system
  */

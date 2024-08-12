@@ -9,6 +9,7 @@
 #include "../gfx/texture.h"
 #include "asset_manager.h"
 #include "camera.h"
+#include "dialog.h"
 #include "chunk.h"
 
 typedef enum {
@@ -50,4 +51,5 @@ void renderer_render_quad(RenderLayer layer, vec2s size, vec3s position, vec4s c
 void renderer_render_sprite_sheet(RenderLayer layer, spritesheet_t *spritesheet, vec2s size, vec3s position, u32 row, u32 col);
 void renderer_render_sprite_sheet_from(RenderLayer layer, spritesheet_t *spritesheet, vec2s size, vec3s position, u32 start_row, u32 start_col, u32 end_row, u32 end_col);
 void renderer_render_chunk(Chunk *chunk);
+void renderer_render_dialog(dialog_t *dialog, f32 dt);
 #endif

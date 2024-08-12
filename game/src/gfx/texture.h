@@ -11,8 +11,8 @@ typedef struct {
     ivec2s size;
 }texture_t;
 
-texture_t texture_framebuffer(u32 width, u32 height);
 texture_t texture_load(const char *path);
+GLuint texture_character(u32 width, u32 height, u8 *pixels);
 void texture_destroy(texture_t self);
 void texture_bind(texture_t self, u32 slot);
 void texture_unbind(void);

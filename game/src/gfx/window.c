@@ -50,6 +50,11 @@ void window_loop(struct Window *self) {
 
         glViewport(0, 0, self->width, self->height);
 
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            fprintf(stderr, "OpenGL error: %d\n", err);
+        }
+
         // normalize mouse position
         self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0f - 1.0f;
         self->mouse.normaly = ((self->height - self->mouse.ypos) / self->height) * 2.0f - 1.0f;
@@ -58,8 +63,8 @@ void window_loop(struct Window *self) {
         self->delta_time = (current_frame - last_frame);
         last_frame = current_frame;
 
-        self->update();
         glfwPollEvents();
+        self->update();
         glfwSwapBuffers(self->handle);
     }
 }

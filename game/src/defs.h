@@ -22,4 +22,7 @@
 #define TEXTURE_NPC2   "res/characters/hero-edit.png"
 #define TEXTURE_CHUNK  "res/tilesets/chunk1_test.png"
 #define TEXTURE_CHUNK2 "res/tilesets/tilemap.png"
+
+#define FONT1 "res/fonts/UniversCondensed.ttf"
+#define FONT2 "res/fonts/JetBrainsMonoNerdFont-Medium.ttf"
 #endif

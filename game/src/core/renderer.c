@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "../util/log.h"
 #include "../defs.h"
+#include "dialog.h"
 
 static int texture_slot[8] = {0,1,2,3,4,5,6,7};
 
@@ -11,6 +12,11 @@ static AssetManager *_asset_manager = NULL;
 static Camera *_camera              = NULL;
 static Batch **_batches             = NULL;
 
+static VAO _dialog_vao       = GL_NONE;
+static VBO _dialog_vbo       = {0};
+static VBO _dialog_ebo       = {0};
+static Shader _dialog_shader = {0};
+static vec4s _dialog_vertices[4];
 
 static void batch_init(Batch **batch) {
     *batch                = malloc(sizeof(Batch));
@@ -108,21 +114,38 @@ static f32 renderer_push_texture(Batch *batch, texture_t texture) {
 }
 
 void renderer_init(Camera *camera, AssetManager *assetmanager) {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-    glEnable(GL_FRONT_AND_BACK);
-    glCullFace(GL_FRONT);
-
     _batches = malloc(LAYER_COUNT * sizeof(Batch*));
     ASSERT_MSG(_batches != NULL, "Failed to allocate memory for batches");
 
     _asset_manager = assetmanager;
     _camera        = camera;
-    asset_manager_push_shader(_asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
 
-    for (int i = 0; i < LAYER_COUNT; i++) {
-        _batches[i] = NULL;
+    asset_manager_push_shader(_asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
+    asset_manager_push_shader(_asset_manager, "dialog_shader", "res/shaders/dialog.vert", "res/shaders/dialog.frag");
+
+    for (int i = 0; i < LAYER_COUNT; i++) { _batches[i] = NULL; }
+
+
+    { // Initialize dialog buffer
+        _dialog_vao    = vao_create();
+        _dialog_vbo    = vbo_create(GL_ARRAY_BUFFER, true);
+        _dialog_ebo    = vbo_create(GL_ELEMENT_ARRAY_BUFFER, false);
+        _dialog_shader = *(Shader*)asset_manager_get_shader(_asset_manager, "dialog_shader");
+
+        u8 indices[] = {0,1,2,0,2,3};
+        vao_bind(_dialog_vao);
+
+        vbo_bind(_dialog_vbo);
+        vbo_data(_dialog_vbo, sizeof(_dialog_vertices), NULL);
+
+        vbo_bind(_dialog_ebo);
+        vbo_data(_dialog_ebo, sizeof(indices), indices);
+
+        vao_attr(0, 4, GL_FLOAT, GL_FALSE, 0);
+
+        vao_unbind();
+        vbo_unbind(_dialog_vbo);
+        vbo_unbind(_dialog_ebo);
     }
 }
 
@@ -140,10 +163,22 @@ void renderer_destroy(void) {
         }
     }
     free(_batches);
+
+    vao_destroy(_dialog_vao);
+    vbo_destroy(_dialog_vbo);
+    vbo_destroy(_dialog_ebo);
+    shader_destroy(_dialog_shader);
+
     LOG_DEBUG("Renderer destroyed");
 }
 
 void renderer_prepare(void) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_FRONT_AND_BACK);
+    glCullFace(GL_FRONT);
+
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0,0.0,0.0,1.0);
 
@@ -241,6 +276,64 @@ void renderer_render_chunk(Chunk *chunk) {
         renderer_render_sprite_sheet(STRUCTURE_LAYER, npc_texture, npc->size, npc->position, npc->row, npc->col);
     }
     
+}
+
+// temp
+void renderer_render_dialog(dialog_t *dialog, f32 dt) {
+    /* glDisable(GL_BLEND); */
+    /* glEnable(GL_BLEND); */
+    /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+
+    static u32 current_idx = 1;
+    static f32 delay       = 0;
+
+    delay    = dialog->delay;
+    float _x = dialog->position.x;
+    float _y = dialog->position.y;
+
+    vao_bind(_dialog_vao);
+    shader_bind(_dialog_shader);
+    ViewProj view_proj = get_view_proj(_camera);
+    shader_uniform_mat4(_dialog_shader, "proj", view_proj.proj);
+
+    u32 len    = dialog->texts[dialog->current_text_idx].length;
+    char *text = dialog->texts[dialog->current_text_idx].text;
+
+    printf("%u, %s - %u\n", len, text, current_idx);
+
+    for (u32 i = 0; i < current_idx; i++) {
+        while (delay > 0) delay -= dt;
+
+        if (delay <= 0) {
+            character_info_t c = get_character_info((u8)text[i]);
+
+            float xpos = _x + c.bearing.x * 1.0f;
+            float ypos = _y - (c.size.y - c.bearing.y) * 1.0f;
+            float w    = c.size.x;
+            float h    = c.size.y;
+
+            _dialog_vertices[0] = (vec4s){xpos,     ypos,     1,0};
+            _dialog_vertices[1] = (vec4s){xpos + w, ypos,     1,1};
+            _dialog_vertices[2] = (vec4s){xpos + w, ypos + h, 0,1};
+            _dialog_vertices[3] = (vec4s){xpos,     ypos + h, 0,0};
+            vbo_bind(_dialog_vbo);
+            vbo_subdata(_dialog_vbo, sizeof(_dialog_vertices), _dialog_vertices);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, c.texture_id);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+
+            delay = dialog->delay;
+            _x += (c.advance >> 6) * 1.0f;
+        }
+    }
+
+    if (current_idx < len) current_idx++;
+
+    vao_unbind();
+    vbo_unbind(_dialog_vbo);
+    shader_unbind();
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void renderer_render(void) {
