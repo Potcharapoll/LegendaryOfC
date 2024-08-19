@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "chunk.h"
+#include "../global.h"
 #include "../defs.h"
 
 void chunk_init(Chunk **chunk, u32 rows, u32 cols, vec2s start_position, u32 *tile_texture_uv) {
@@ -50,6 +51,15 @@ void chunk_push_structure(Chunk *chunk, vec2s size, vec2s chunk_rc, u32 row, u32
     Structure s    = { .size = size, .color = WHITE, .position = position, .row = row, .col = col, .row_width = row_width, .col_width = col_width };
 
     array_list_append(chunk->structures, &s);
+}
+
+void chunk_update(void) {
+    if (global.ChunkState.next_chunk) {
+        /* global.ChunkState.chunk_idx          = (curr_chunk_idx + 1) % 2; */
+        /* global.ChunkState.chunk              = chunk_list[global.ChunkState.chunk_idx]; */
+        /* global.PlayerState.player.position.x = global.ChunkState.chunk->start_position.x; */
+        global.ChunkState.next_chunk         = false;
+    }
 }
 
 void chunk_destroy(Chunk *chunk) {

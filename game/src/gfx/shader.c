@@ -1,8 +1,10 @@
+#include "shader.h"
+#include "../global.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <glad/glad.h>
-#include "shader.h"
 
 static GLuint _compile(GLenum type, char *path) {
     FILE *fp;
@@ -25,83 +27,87 @@ static GLuint _compile(GLenum type, char *path) {
     fclose(fp);
 
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, (const GLchar* const *)&txt, (const GLint*)&len);
-    glCompileShader(shader);
+    GL_TRY(glShaderSource(shader, 1, (const GLchar* const *)&txt, (const GLint*)&len));
+    GL_TRY(glCompileShader(shader));
     
     int check;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &check);
+    GL_TRY(glGetShaderiv(shader, GL_COMPILE_STATUS, &check));
     if(check == GL_FALSE) {
         char log[512];
-        glGetShaderInfoLog(shader, 512, NULL, log);
+        GL_TRY(glGetShaderInfoLog(shader, 512, NULL, log));
         puts(log);
     }
     free(txt);
     return shader;
 }
 
-Shader shader_load(char *vs_path, char *fs_path) {
-    Shader shader = {
+struct Shader shader_load(char *vs_path, char *fs_path) {
+    struct Shader shader = {
         .handle = glCreateProgram(),
         .vs = _compile(GL_VERTEX_SHADER, vs_path),
         .fs = _compile(GL_FRAGMENT_SHADER, fs_path),
     };
-    glAttachShader(shader.handle, shader.vs);
-    glAttachShader(shader.handle, shader.fs);
+    GL_TRY(glAttachShader(shader.handle, shader.vs));
+    GL_TRY(glAttachShader(shader.handle, shader.fs));
 
     int check;
-    glLinkProgram(shader.handle);
-    glGetProgramiv(shader.handle, GL_LINK_STATUS, &check);
+    GL_TRY(glLinkProgram(shader.handle));
+    GL_TRY(glGetProgramiv(shader.handle, GL_LINK_STATUS, &check));
     if(check == GL_FALSE) {
         char log[512];
-        glGetProgramInfoLog(shader.handle, 512, NULL, log);
+        GL_TRY(glGetProgramInfoLog(shader.handle, 512, NULL, log));
         puts(log);
     }
 
-    glValidateProgram(shader.handle);
-    glGetProgramiv(shader.handle, GL_VALIDATE_STATUS, &check);
+    GL_TRY(glValidateProgram(shader.handle));
+    GL_TRY(glGetProgramiv(shader.handle, GL_VALIDATE_STATUS, &check));
     if(check == GL_FALSE) {
         char log[512];
-        glGetProgramInfoLog(shader.handle, 512, NULL, log);
+        GL_TRY(glGetProgramInfoLog(shader.handle, 512, NULL, log));
         puts(log);
     }
     return shader;
 }
 
-void shader_bind(Shader self) {
-    glUseProgram(self.handle);
+void shader_bind(struct Shader self) {
+    GL_TRY(glUseProgram(self.handle));
 }
 
 void shader_unbind(void) {
-    glUseProgram(0);
+    GL_TRY(glUseProgram(0));
 }
 
-void shader_destroy(Shader self) {
-    glDeleteProgram(self.handle);
-    glDeleteShader(self.vs);
-    glDeleteShader(self.fs); 
+void shader_destroy(struct Shader self) {
+    GL_TRY(glDeleteProgram(self.handle));
+    GL_TRY(glDeleteShader(self.vs));
+    GL_TRY(glDeleteShader(self.fs);) 
 }
 
-void shader_uniform_mat4(Shader self, char *name, mat4s m) {
-    glUniformMatrix4fv(glGetUniformLocation(self.handle, name), 1, GL_FALSE, (const GLfloat*)m.raw);
+void shader_uniform_mat4(struct Shader self, char *name, mat4s m) {
+    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, name), 1, GL_FALSE, (const GLfloat*)m.raw));
 }
 
-void shader_uniform_float(Shader self, char *name, float f) {
-    glUniform1f(glGetUniformLocation(self.handle, name), f);
+void shader_uniform_float(struct Shader self, char *name, float f) {
+    GL_TRY(glUniform1f(glGetUniformLocation(self.handle, name), f));
 }
 
-void shader_uniform_int(Shader self, char *name, int i) {
-    glUniform1i(glGetUniformLocation(self.handle, name), i);
+void shader_uniform_int(struct Shader self, char *name, int i) {
+    GL_TRY(glUniform1i(glGetUniformLocation(self.handle, name), i));
 }
 
-void shader_uniform_vec2(Shader self, char *name, vec2s v) {
-    glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]);
+void shader_uniform_vec2(struct Shader self, char *name, vec2s v) {
+    GL_TRY(glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]));
 }
 
-void shader_uniform_viewproj(Shader self, ViewProj view_proj) {
-    glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw);
-    glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw);
+void shader_uniform_vec4(struct Shader self, char *name, vec4s v) {
+    GL_TRY(glUniform4f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1], v.raw[2], v.raw[3]));
 }
 
-void shader_uniform_int_array(Shader self, char *name, int count, int arr[]) {
-    glUniform1iv(glGetUniformLocation(self.handle, name), count, arr);
+void shader_uniform_viewproj(struct Shader self, struct ViewProj view_proj) {
+    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw));
+    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw));
+}
+
+void shader_uniform_int_array(struct Shader self, char *name, int count, int arr[]) {
+    GL_TRY(glUniform1iv(glGetUniformLocation(self.handle, name), count, arr));
 }

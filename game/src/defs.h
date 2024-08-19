@@ -25,4 +25,5 @@
 
 #define FONT1 "res/fonts/UniversCondensed.ttf"
 #define FONT2 "res/fonts/JetBrainsMonoNerdFont-Medium.ttf"
+
 #endif

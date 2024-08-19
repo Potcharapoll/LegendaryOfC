@@ -2,14 +2,13 @@
 #include "../defs.h"
 #include "../util/log.h"
 
-void camera_init(Camera **camera, vec3s position, vec2s accel) {
+void camera_init(struct Camera **camera, vec3s position, vec2s accel) {
     *camera = malloc(sizeof(**camera));
     if (*camera == NULL) {
         LOG_FETAL("Failed to initialize camera");
         abort();
     }
 
-    (*camera)->zoom     = 1.0f;
     (*camera)->accel    = accel;
     (*camera)->position = position;
 
@@ -23,21 +22,23 @@ void camera_init(Camera **camera, vec3s position, vec2s accel) {
     (*camera)->inverse_view_proj.proj = glms_mat4_inv((*camera)->view_proj.proj);
 }
 
-void camera_update(Camera *camera) {
-    camera->up = (vec3s){0.0f, camera->zoom, 0.0f};
-    camera->view_proj.view = glms_lookat(camera->position, glms_vec3_add(camera->front, camera->position), camera->up);
+void camera_update(struct Camera *camera) {
+    camera->up = (vec3s){0.0f, 0.0f, 0.0f};
+
+    camera->view_proj.view         = glms_lookat(camera->position, glms_vec3_add(camera->front, camera->position), camera->up);
     camera->inverse_view_proj.view = glms_mat4_inv(camera->view_proj.view);
 }
 
-void camera_destroy(Camera *camera) {
+void camera_destroy(struct Camera *camera) {
     free(camera);
-    LOG_DEBUG("Camera destroyed");
+
+    LOG_DEBUG("struct Camera destroyed");
 }
 
-ViewProj get_view_proj(Camera *camera) {
+struct ViewProj get_view_proj(struct Camera *camera) {
     return camera->view_proj;
 }
 
-ViewProj get_inverse_view_proj(Camera *camera) {
+struct ViewProj get_inverse_view_proj(struct Camera *camera) {
     return camera->inverse_view_proj;
 }

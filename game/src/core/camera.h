@@ -1,26 +1,25 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include <cglm/struct.h>
-#include "../util/types.h"
 
-typedef struct {
+struct ViewProj {
     mat4s view;
     mat4s proj;
-}ViewProj;
+};
 
-typedef struct {
+struct Camera {
     vec3s position;
     vec2s accel;
 
-    vec3s front, up;
-    ViewProj view_proj;
-    ViewProj inverse_view_proj;
-    f32 zoom;
-}Camera;
+    vec3s front;
+    vec3s up;
+    struct ViewProj view_proj;
+    struct ViewProj inverse_view_proj;
+};
 
-void camera_init(Camera **camera, vec3s position, vec2s accel);
-void camera_destroy(Camera *camera);
-void camera_update(Camera *camera);
-ViewProj get_view_proj(Camera *camera);
-ViewProj get_inverse_view_proj(Camera *camera);
+void camera_init(struct Camera **camera, vec3s position, vec2s accel);
+void camera_destroy(struct Camera *camera);
+void camera_update(struct Camera *camera);
+struct ViewProj get_view_proj(struct Camera *camera);
+struct ViewProj get_inverse_view_proj(struct Camera *camera);
 #endif

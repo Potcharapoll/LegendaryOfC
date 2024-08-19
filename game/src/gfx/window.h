@@ -10,8 +10,6 @@ typedef void (*wfunc)(void);
 struct Window {
     GLFWwindow *handle;
     wfunc init, update, cleanup;
-
-    f32 delta_time;
     s32 width, height;
 
     struct {

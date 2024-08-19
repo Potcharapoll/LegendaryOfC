@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "window.h"
 #include "../util/log.h"
+#include "../global.h"
 #include "../defs.h"
-#include "GLFW/glfw3.h"
 
 static void error_callback(int err, const char *dest) {
     printf("GLFW Error Callback %d: %s\n", err, dest);
@@ -13,7 +13,6 @@ b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     glfwSetErrorCallback(error_callback);
 
     if(!glfwInit()) {
-        LOG_FETAL("Failed to initialize GLFW context"); 
         abort();
     }
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -50,17 +49,12 @@ void window_loop(struct Window *self) {
 
         glViewport(0, 0, self->width, self->height);
 
-        GLenum err;
-        while ((err = glGetError()) != GL_NO_ERROR) {
-            fprintf(stderr, "OpenGL error: %d\n", err);
-        }
-
         // normalize mouse position
         self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0f - 1.0f;
         self->mouse.normaly = ((self->height - self->mouse.ypos) / self->height) * 2.0f - 1.0f;
         
         f32 current_frame = glfwGetTime();
-        self->delta_time = (current_frame - last_frame);
+        global.dt = (current_frame - last_frame);
         last_frame = current_frame;
 
         glfwPollEvents();

@@ -6,7 +6,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-static texture_t _dialog_tex = {0};
+static struct Texture _dialog_tex = {0};
 static FT_Library _lib;
 static FT_Face    _font;
 static character_info_t *_characters_info = NULL;
@@ -16,7 +16,7 @@ void dialog_init(void) {
         LOG_ERROR("Failed to initialize FreeType Library");
         return;
     }
-    if (FT_New_Face(_lib, FONT1, 0, &_font)) {
+    if (FT_New_Face(_lib, FONT2, 0, &_font)) {
         LOG_ERROR("Failed to load font");
         return;
     }

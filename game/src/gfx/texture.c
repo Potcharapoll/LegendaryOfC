@@ -19,8 +19,8 @@ GLuint texture_character(u32 width, u32 height, u8 *pixels) {
     return texture;
 }
 
-texture_t texture_load(const char *path) {
-    texture_t texture;
+struct Texture texture_load(const char *path) {
+    struct Texture texture;
 
     glGenTextures(1, &texture.handle);
     glBindTexture(GL_TEXTURE_2D, texture.handle);
@@ -47,11 +47,11 @@ texture_t texture_load(const char *path) {
     return texture;
 }
 
-void texture_destroy(texture_t self) {
+void texture_destroy(struct Texture self) {
     glDeleteTextures(1, &self.handle);
 }
 
-void texture_bind(texture_t self, u32 slot) {
+void texture_bind(struct Texture self, u32 slot) {
     glActiveTexture(GL_TEXTURE0+slot);
     glBindTexture(GL_TEXTURE_2D, self.handle);
 }

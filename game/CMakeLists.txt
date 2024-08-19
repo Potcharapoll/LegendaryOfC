@@ -38,6 +38,7 @@ add_executable(${PROJECT_NAME}
     src/core/asset_manager.c
     src/core/dialog.c
     src/core/chunk.c
+    src/core/physics.c
 
     src/util/hashtable.c
     src/util/array_list.c

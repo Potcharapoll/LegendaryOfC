@@ -53,5 +53,6 @@ void chunk_init(Chunk **chunk, u32 rows, u32 cols, vec2s start_position, u32 *ti
 void chunk_push_npc(Chunk *chunk, vec2s size, vec2s chunk_rc, u32 row, u32 col);
 void chunk_push_structure(Chunk *chunk, vec2s size, vec2s chunk_rc, u32 row, u32 col, u32 row_width, u32 col_width);
 ivec2s chunk_get_row_col_position(Chunk *chunk, vec3s position);
+void chunk_update(void);
 void chunk_destroy(Chunk *chunk);
 #endif

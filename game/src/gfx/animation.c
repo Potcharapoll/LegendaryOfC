@@ -40,7 +40,7 @@ void animation_update(f32 dt) {
     }
 }
 
-u32 animation_definition_create(spritesheet_t *spritesheet, f32 *durations, u8 *rows, u8 *cols, u8 frame_count) {
+u32 animation_definition_create(struct Spritesheet *spritesheet, f32 *durations, u8 *rows, u8 *cols, u8 frame_count) {
     ASSERT_MSG(frame_count <= MAX_FRAMES, "Max frame at %d", MAX_FRAMES);
 
     animation_definition_t def = {0};
