@@ -7,24 +7,17 @@
 #include "core/renderer.h"
 #include "core/chunk_internal.h"
 
+enum Direction { UP, DOWN, LEFT, RIGHT, DIRECTION_LAST };
 
 struct Global global;
-
-enum Direction { 
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT, 
-
-    DIRECTION_LAST 
-};
 
 static u32 adef_idle[DIRECTION_LAST];
 static u32 adef_walk[DIRECTION_LAST];
 static u32 animation_idle[DIRECTION_LAST];
 static u32 animation_walk[DIRECTION_LAST];
-static enum Direction player_direction;
+
 static Entity player  = {0};
+static enum Direction player_direction;
 
 static Chunk *chunk_list[2];
 
@@ -83,11 +76,8 @@ static void input_handling(void) {
 
 void setup(void) {
     asset_manager_init(&global.asset_manager);
-
     camera_init(&global.camera, (vec3s){0,0,0}, (vec2s){100,100});
-
     renderer_init();
-
     animation_init();
 
     // add needed resources
@@ -148,13 +138,6 @@ void setup(void) {
 }
 
 void update(void) {
-   /* ivec2s chunk_rc_pos = chunk_get_row_col_position(curr_chunk, player.position); */
-   /*  LOG_DEBUG("FPS: %f\tCAMPOS: %f,%f\tPLAYERPOS: %f,%f\tChunkId: %lu\tChunk Position RC: %u,%u\n", */
-   /*          1 / window.delta_time, */
-   /*          camera->position.x, camera->position.y, */
-   /*          player.position.x, player.position.y, */
-   /*          curr_chunk->uid, chunk_rc_pos.x, chunk_rc_pos.y); */
-
     input_handling();
 
     { // go between two chunk
@@ -175,7 +158,6 @@ void update(void) {
     }
 
     animation_update(global.dt);
-    /* physics_update(global.dt); */
 
     chunk_update();
 
@@ -189,13 +171,8 @@ void cleanup(void) {
     chunk_destroy(chunk_list[1]);
 
     camera_destroy(global.camera);
-
     renderer_destroy();
-
     animation_destroy();
-
-    /* physics_destroy(); */
-    /* dialog_destroy(); */
 
     asset_manager_destroy(global.asset_manager);
 }

@@ -1,0 +1,53 @@
+|================ TASK =====================
+| 24/08/05
+|  - Chunk render                (COMPLETED)
+|  - Dump Player                 (COMPLETED)
+|  - Move between Chunk          (COMPLETED)
+| 
+| 24/08/06
+|  - Chunk with Texture          (COMPLETED)
+|  - Player with Texture         (BUG|FIXED)
+| 
+| 24/08/07
+|  - Spritesheet                 (COMPLETED)
+|  - Remove Tileset              (COMPLETED)
+| 
+| 24/08/08
+|  - Spritesheet Animation       (COMPLETED)
+|  - Refactor Renderer 1         (COMPLETED)
+| 
+| 24/08/09
+|  - Fix walk and idle animation (COMPLETED)
+| 
+| 24/08/10
+|  - Render test tileset         (COMPLETED)
+|  - Render test npc             (COMPLETED)
+|  - Refactor Chunk              (COMPLETED)
+|  - Add Freetype Library        
+| 
+| 24/08/11 - 24/08/12
+|  - Freetype Text Render        (COMPLETED)    
+|  - Dialog system               (15%)
+| 
+| 24/08/13 - 24/08/14
+|  - AABB collision research     
+| 
+| 24/08/15 24/08/16              (REST)
+| 
+| 24/08/17
+|  - Dialog System               (50%)
+| 
+| 24/08/18
+|  - Dialog System               (80%)
+|
+| 24/08/19
+|  - Dialog System               (90%)
+| 
+| 24/08/20
+|  - Refactor Dialog System      (95%)
+|
+| (PLAN)
+|  - Remake render pipeline
+|  - Refactor code base
+|  - Refactor Animation
+|  - Entity system

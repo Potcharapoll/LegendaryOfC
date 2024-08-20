@@ -30,14 +30,15 @@ static Batch* batch_init(void) {
     }
 
     GL_TRY(glGenVertexArrays(1, &batch->vao));
-    GL_TRY(glGenBuffers(1, &batch->vbo));
-    GL_TRY(glGenBuffers(1, &batch->ebo));
-
     GL_TRY(glBindVertexArray(batch->vao));
 
+
+
+    GL_TRY(glGenBuffers(1, &batch->vbo));
     GL_TRY(glBindBuffer(GL_ARRAY_BUFFER, batch->vbo));
     GL_TRY(glBufferData(GL_ARRAY_BUFFER, MAX_BATCH_VERTICES * sizeof(Vertex), NULL, GL_DYNAMIC_DRAW));
 
+    GL_TRY(glGenBuffers(1, &batch->ebo));
     GL_TRY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->ebo));
     GL_TRY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_BATCH_INDICES * sizeof(u32), batch->indices, GL_STATIC_DRAW));
 
@@ -51,10 +52,12 @@ static Batch* batch_init(void) {
     GL_TRY(glEnableVertexAttribArray(2));
     GL_TRY(glEnableVertexAttribArray(3));
 
-    struct Shader *_shader = asset_manager_get_shader(global.asset_manager, "default_shader");  
-    ASSERT_MSG(_shader != NULL, "Shader not found");
+    {
+        struct Shader *_shader = asset_manager_get_shader(global.asset_manager, "default_shader");  
+        ASSERT_MSG(_shader != NULL, "Shader not found");
 
-    batch->shader = *_shader;
+        batch->shader = *_shader;
+    }
 
     batch->texture_count = 0;
     batch->quad_count    = 0;
@@ -240,15 +243,16 @@ void renderer_render(void) {
             texture_bind(_batches[i]->texture[j], j); 
         }
 
-        shader_bind(_batches[i]->shader);
+        GL_TRY(shader_bind(_batches[i]->shader));
+
         struct ViewProj view_proj = get_view_proj(global.camera);
-        shader_uniform_viewproj(_batches[i]->shader, view_proj);
-        shader_uniform_int_array(_batches[i]->shader, "tex", 8, texture_slot);
+        GL_TRY(shader_uniform_viewproj(_batches[i]->shader, view_proj));
+        GL_TRY(shader_uniform_int_array(_batches[i]->shader, "tex", 8, texture_slot));
 
         GL_TRY(glDrawElements(GL_TRIANGLES, (_batches[i]->quad_count * 6), GL_UNSIGNED_INT, NULL));
 
-        GL_TRY(glBindVertexArray(0));
-        shader_unbind();
-        texture_unbind();
+        GL_TRY(vao_unbind());
+        GL_TRY(shader_unbind());
+        GL_TRY(texture_unbind());
     }
 }

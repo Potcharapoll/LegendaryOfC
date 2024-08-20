@@ -1,5 +1,6 @@
 */.cache/*
 */build/*
+*/build-master/*
 */build-x11/*
 *compile_commands.json
 *.o
