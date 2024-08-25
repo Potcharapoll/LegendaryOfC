@@ -3,4 +3,5 @@
 */build-master/*
 */build-x11/*
 *compile_commands.json
+*dialog_render/*
 *.o
