@@ -38,9 +38,11 @@ struct Dialog {
     b8 hidden_name;
 };
 
+void dialog_init(void);
+void dialog_destroy(void);
 struct Dialog* dialog_create(char *name);
 void dialog_delete(struct Dialog *dialog);
 void dialog_append(struct Dialog *dialog, enum DialogType type, void *data);
 void dialog_render(void);
-void dialog_input(GLFWwindow *window);
+void dialog_input(void);
 #endif

@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}
     lib/glad/src/glad.c
     src/window.c
     src/dialog.c
+    src/batch_render.c
     src/renderer_internal.c
     src/renderer.c
     src/main.c

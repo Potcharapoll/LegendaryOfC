@@ -1,29 +1,6 @@
 #include "renderer_internal.h"
 #include "global.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-void _renderer_init_dialog(void) {
-    glGenTextures(1, &global.DialogState.dialog_texture);
-    glBindTexture(GL_TEXTURE_2D, global.DialogState.dialog_texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_set_flip_vertically_on_load(1);
-
-    s32 width, height, bpp;
-    u8 *pixels = stbi_load("images/dialog_box.png", &width, &height, &bpp, 0);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    stbi_image_free(pixels);
-}
-
 GLuint _renderer_compile_shader(GLenum type, char *path) {
     FILE *fp;
     long len;

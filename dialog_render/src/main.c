@@ -32,17 +32,25 @@ void setup(void) {
     global.fonts.rows         = 10;
 
     renderer_init();
+    dialog_init();
 
-    /* dialog = dialog_create("Benny"); dialog_append(dialog, DIALOG_TEXT, &(struct DialogText){.text = "Hi! I'm Benny. Welcome to CVillage, I'm here to guide you look around\\the village."}); */
-    /* dialog_append(dialog, DIALOG_TEXT, &(struct DialogText){.text = "This is another dialog text."}); */
+    dialog = dialog_create("Benny"); 
 
-    /* dialog_append(dialog, DIALOG_QUESTION, &(struct DialogQuestion){ */
-    /*         .question = "Which keyword in C is used to skip the current iteration in the loop?", */
-    /*         .answer   = {"goto","continue","break","for"}, */
-    /*         .correct_answer_text = "Oh! you're right. Well done.", */
-    /*         .wrong_answer_text = "Unfortunally, you're wrong. Try again next time.", */
-    /*         .corrent_answer_idx = 1, */
-    /* }); */
+    dialog_append(dialog, DIALOG_TEXT, &(struct DialogText){
+            .text = "Hi! I'm Benny. Welcome to CVillage, I'm here to guide you look around\\the village."
+    });
+
+    dialog_append(dialog, DIALOG_TEXT, &(struct DialogText){
+            .text = "This is another dialog text."
+    });
+
+    dialog_append(dialog, DIALOG_QUESTION, &(struct DialogQuestion){
+            .question = "Which keyword in C is used to skip the current iteration in the loop?",
+            .answer   = {"goto","continue","break","for"},
+            .correct_answer_text = "Oh! you're right. Well done.",
+            .wrong_answer_text = "Unfortunally, you're wrong. Try again next time.",
+            .corrent_answer_idx = 1,
+    });
 }
 
 static void normalInput(void) {
@@ -56,7 +64,7 @@ static void normalInput(void) {
     }
 
     if (glfwGetKey(global.window->handle, GLFW_KEY_D) == GLFW_PRESS && global.input_delay >= 0.5) {
-        /* _set_dialog(dialog); */
+        _set_dialog(dialog);
         global.input_delay = 0.0f; 
     }
 }
@@ -65,29 +73,32 @@ void update(void) {
 
     global.input_delay += global.dt;
 
-    /* if (global.DialogState.curr_dialog_node != NULL) { */
-    /*     dialog_input(global.window->handle); */
-    /* } */
+    if (global.DialogState.curr_dialog_node != NULL) {
+        dialog_input();
+    }
 
     normalInput();
 
     renderer_prepare();
 
-    // render dialog if dialog in DialogState isn't NULL
-    /* dialog_render(); */
-
-    renderer_render_quad((vec3s){100, 100, 0}, (vec2s){100,100}, (vec4s){1,0,0,1});
+    /* renderer_render_quad((vec3s){100, 100, 0}, (vec2s){100,100}, (vec4s){1,0,0,1}); */
     renderer_render_quad((vec3s){300, 300, 0}, (vec2s){100,100}, (vec4s){1,0,1,1});
 
     renderer_render_quad_texture((vec3s){500, 500, 0}, (vec2s){140,140}, (vec4s){1,1,1,1}, global.fonts.atlas);
 
+    renderer_render_quad((vec3s){100, 500, 0}, (vec2s){100,100}, (vec4s){1,0,1,1});
     renderer_render_text((vec3s){100, 500, 0}, (vec4s){1,1,1,1}, "Hello Traveller! I'm Timmy");
 
+    /* renderer_render_quad((vec3s){100, 100, 0}, (vec2s){800,300}, (vec4s){0,0,1,1}); */
+    /* renderer_render_dialog_text_animation((vec3s){100, 200, 0}, (vec4s){1,1,1,1}, "Hello Traveller! I'm Timmy. I'm here to guide you around village."); */
+
+    // we have to manual layering the render
+    dialog_render();
     renderer_render();
 }
 
 void cleanup(void) {
-    /* dialog_delete(dialog); */
+    dialog_delete(dialog);
     renderer_destroy();
 }
 

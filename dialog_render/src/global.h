@@ -1,7 +1,10 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
+#include "types.h"
+
 #include <stdio.h>
-#include "window.h"
+#include <glad/glad.h>
+#include <cglm/struct.h>
 
 #define WIDTH  1280
 #define HEIGHT  768
@@ -19,18 +22,18 @@ struct Global {
         u32 selected_idx;
 
         b8  onAnimation;
-
-        GLuint dialog_texture; // temp
     } DialogState;
 
     struct {
         GLuint atlas;
-        s32 atlas_width, atlas_height;
-        s32 glyph_width, glyph_height;
-        u32 rows, cols;
+        s32    atlas_width, atlas_height;
+        s32    glyph_width, glyph_height;
+        u32    rows, cols;
     } fonts;
 
     f32 input_delay;
+
+    mat4s proj;
 };
 
 extern struct Global global;
