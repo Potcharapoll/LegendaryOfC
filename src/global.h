@@ -19,6 +19,15 @@ struct Global {
     } ChunkState;
 
     struct {
+        char *name;
+        struct DialogNode *curr_dialog_node;
+
+        u32 curr_animation_idx;
+        u32 selected_idx;
+        b8  on_animation;
+    } DialogState;
+
+    struct {
         enum Direction direction;
         u32            animation_id;
         u32            body_id;

@@ -14,7 +14,10 @@ static b8 player_collision = false;
 static void collision_response(Body *body, Static_Body *static_body, AABB minkowski) {
     if ((static_body->collision_mask & body->collision_flag) != body->collision_flag) return;
 
+    if (static_body->on_hit_by_body) { static_body->on_hit_by_body(static_body, body); }
+
     if (static_body->collision_flag & COLLISION_SOLID) {
+
         vec2s pv;
         aabb_penetration_vector(&pv, minkowski);
         body->position.x += pv.x;
@@ -23,6 +26,7 @@ static void collision_response(Body *body, Static_Body *static_body, AABB minkow
     else if (static_body->collision_flag & COLLISION_TELEPORTER) {
 
     }
+
 }
 
 static void collision_check(Body *body) {
@@ -113,7 +117,7 @@ Body* physics_body_get(u64 body_id) {
     return array_list_get(_body_list, body_id);
 }
 
-u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag) {
+u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, void(*on_hit_by_body)(Static_Body *body, Body *other)) {
     Static_Body body = {
         .aabb = { 
             .center    = (vec2s){position.x + size.x * 0.5, position.y + size.y * 0.5},
@@ -121,6 +125,7 @@ u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u
         },
         .collision_mask = collision_mask,
         .collision_flag = collision_flag,
+        .on_hit_by_body = (on_hit_by_body) ? on_hit_by_body : NULL,
     };
 
     array_list_append(_static_body_list, &body);

@@ -15,6 +15,11 @@ void asset_manager_destroy(struct AssetManager *self) {
     free(self);
 }
 
+void asset_manager_push_texture(struct AssetManager *self, char *name, char *path) {
+    struct Texture texture = texture_load(path);
+    hashtable_insert(self->textures, name, &texture);
+}
+
 void asset_manager_push_spritesheet(struct AssetManager *self, char *name, u32 count, u32 rows, u32 cols, u32 stride) {
     struct Spritesheet spritesheet = spritesheet_load(name, count, rows, cols, stride);
     hashtable_insert(self->spritesheets, name, &spritesheet);
@@ -34,5 +39,11 @@ struct Spritesheet* asset_manager_get_spritesheet(struct AssetManager *self, cha
 struct Shader* asset_manager_get_shader(struct AssetManager *self, char *name) {
     if (name == NULL) return NULL;
     const entry_t* rel = hashtable_search(self->shaders, name);
+    return rel ? rel->value : NULL;
+}
+
+struct Texture* asset_manager_get_texture(struct AssetManager *self, char *name) {
+    if (name == NULL) return NULL;
+    const entry_t* rel = hashtable_search(self->textures, name);
     return rel ? rel->value : NULL;
 }

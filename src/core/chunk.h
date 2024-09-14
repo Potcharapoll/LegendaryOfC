@@ -6,7 +6,12 @@
 typedef struct {
     u32 uv;
     u32 static_body_id;
+    u32 teleport_id; // no is -1 
 } Tile;
+
+typedef struct {
+    u32 chunkId;
+} Teleporter;
 
 typedef struct {
     vec4s  position; // {startX, startY, endX, endY}

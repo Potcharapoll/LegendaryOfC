@@ -38,6 +38,7 @@ add_executable(${PROJECT_NAME}
     src/core/physics.c
     src/core/batch_render.c
     src/core/player.c
+    src/core/prefab.c
 
     src/util/hashtable.c
     src/util/array_list.c

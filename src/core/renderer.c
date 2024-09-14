@@ -1,10 +1,12 @@
 #include "renderer.h"
+#include "asset_manager.h"
 #include "batch_render.h"
 #include "animation.h"
 #include "../global.h"
 #include "../defs.h"
 #include "chunk.h"
 #include "physics.h"
+#include "prefab.h"
 
 static struct BatchRender *_render_batch   = NULL;
 static struct LineBatchRender *_line_batch = NULL;
@@ -55,15 +57,20 @@ void renderer_init(void) {
     camera_init(&global.camera, (vec2s){0,0});
     physics_init();
     animation_init();
-    player_init();
     chunk_init();
+    prefab_init();
+
+    player_init();
 
     _render_batch = batch_render_init();
     _line_batch   = line_batch_render_init();
 
-    CHUNKS = malloc(sizeof(CHUNKS) * CHUNK_LAST);
+    // load prefabs
+    struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_BASIC);
+    prefab_create("bus_stop_station", sp, WHITE, (vec2s){96,96}, (vec4s){0,4,3,7});
+    prefab_create("bus_stop_sign", sp, WHITE, (vec2s){32,64}, (vec4s){3,4,3,6});
 
-    // load from file
+    CHUNKS = malloc(sizeof(CHUNKS) * CHUNK_LAST);
     CHUNKS[CHUNK_SPAWN]   = chunk_load_from_file("res/data/chunk_home");
     CHUNKS[CHUNK_VILLAGE] = chunk_load_from_file("res/data/chunk_village");
 
@@ -81,6 +88,7 @@ void renderer_destroy(void) {
     physics_destroy();
     animation_destroy();
     chunk_destroy();
+    prefab_destroy();
 
     batch_render_destroy(_render_batch);
     line_batch_render_destroy(_line_batch);

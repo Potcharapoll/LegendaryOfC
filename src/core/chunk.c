@@ -60,6 +60,7 @@ u64 chunk_load_from_file(char *path) {
             &chunk.tilemap[idx+28].uv, &chunk.tilemap[idx+29].uv);
     }
 
+    // Make teleport callback function
     u32 collision = 0;
     for (int i = 0; i < (CHUNK_SIZE_X*CHUNK_SIZE_Y); ++i) {
         fscanf(stream, "%u ", &collision);
@@ -69,11 +70,15 @@ u64 chunk_load_from_file(char *path) {
             u32 y = i / CHUNK_SIZE_X;
 
             if (collision == 1) {
-                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_SOLID);
+                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_SOLID, NULL);
             }
             else if (collision == 2) {
-                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_TELEPORTER);
+                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_TELEPORTER, NULL);
             }
+        }
+        else {
+            chunk.tilemap[i].static_body_id = -1;
+            chunk.tilemap[i].teleport_id    = -1;
         }
     }
 

@@ -8,7 +8,8 @@ typedef enum {
     COLLISION_PLAYER      = 1 << 1,
     COLLISION_SOLID       = 1 << 2,
     COLLISION_TELEPORTER  = 1 << 3,
-} Collisions;
+    COLLISION_DIALOG      = 1 << 4
+} CollisionLayer;
 
 typedef struct {
     vec2s center;
@@ -23,10 +24,12 @@ typedef struct {
     u8 collision_flag;
 } Body;
 
-typedef struct {
+typedef struct Static_Body {
     AABB aabb;
     u8 collision_mask;
     u8 collision_flag;
+
+    void (*on_hit_by_body)(struct Static_Body *body, Body *other);
 } Static_Body;
 
 // Explaination: collision_mask is the object that can collide with a specify object
@@ -40,7 +43,7 @@ void physics_render_collider(void);
 u64  physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag);
 Body* physics_body_get(u64 body_id);
 
-u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag);
+u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, void(*on_hit_by_body)(Static_Body *body, Body *other));
 Static_Body* physics_static_body_get(u64 body_id);
 
 void aabb_min_max(AABB aabb, vec2s *min, vec2s *max);

@@ -8,6 +8,12 @@
 #include "global.h"
 #include "defs.h"
 
+// TODO: Text Render    -- ON GOING --
+//       Dialog System  -- PLANNED  --
+//       Teleport       -- PLANNED  --
+//       Map            -- PLANNED  --
+
+
 struct Global global;
 
 static void border_collision(vec2s *a, vec2s size, vec4s position) {
