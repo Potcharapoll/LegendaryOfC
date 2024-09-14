@@ -1,8 +1,8 @@
 #ifndef BATCH_RENDER_H
 #define BATCH_RENDER_H
-#define MAX_QUAD_PER_BATCH 10000
+#define MAX_QUAD_PER_BATCH     10000
 #define MAX_VERTICES_PER_BATCH 40000
-#define MAX_INDICES_PER_BATCH 60000
+#define MAX_INDICES_PER_BATCH  60000
 
 #include "../gfx/shader.h"
 #include "../gfx/texture.h"
@@ -18,6 +18,11 @@ struct Vertex {
     f32   tex_slot; // -1 for none, and 0 - 8 slot of texture
 };
 
+struct LineVertex {
+    vec2s position;
+    vec4s color;
+};
+
 struct BatchRender {
     GLuint vao;
     GLuint vbo;
@@ -31,11 +36,25 @@ struct BatchRender {
     struct Vertex *vertices;
 };
 
+struct LineBatchRender {
+    GLuint vao;
+    GLuint vbo;
+    struct Shader shader;
+
+    u32 line_count;
+    struct LineVertex *vertices;
+};
+
 struct BatchRender *batch_render_init(void);
 void batch_render_render(struct BatchRender *batch);
 void batch_render_destroy(struct BatchRender *batch);
 u32  batch_render_append_texture(struct BatchRender *batch, struct Texture texture);
-u32 batch_render_get_texture_slot(struct BatchRender *batch, struct Texture texture);
+u32  batch_render_get_texture_slot(struct BatchRender *batch, struct Texture texture);
 void batch_render_append_quad(struct BatchRender *batch, vec3s position, vec2s size, vec4s color);
 void batch_render_append_quad_texture(struct BatchRender *batch, vec3s position, vec2s size, vec4s color, struct Texture texture, f32 *tex_coord);
+
+struct LineBatchRender *line_batch_render_init(void);
+void line_batch_render_render(struct LineBatchRender *batch);
+void line_batch_render_destroy(struct LineBatchRender *batch);
+void line_batch_render_append_line(struct LineBatchRender *batch, vec2s p_a, vec2s p_b, vec4s color);
 #endif

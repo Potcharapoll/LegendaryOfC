@@ -6,7 +6,7 @@ static array_list *_animation_storage;
 static array_list *_animation_definition_storage;
 
 void animation_init(void) {
-    _animation_storage = array_list_init(sizeof(animation_t), 0);
+    _animation_storage            = array_list_init(sizeof(animation_t), 0);
     _animation_definition_storage = array_list_init(sizeof(animation_definition_t), 0);
 }
 
@@ -58,7 +58,7 @@ u32 animation_definition_create(struct Spritesheet *spritesheet, f32 *durations,
     return array_list_append(_animation_definition_storage, &def);
 }
 
-u32 animation_create(u32 animation_definition_id, b8 does_loop) {
+u32 animation_create(u32 animation_definition_id, b8 does_loop, b8 flipped) {
     animation_definition_t *adef = array_list_get(_animation_definition_storage, animation_definition_id);
     ASSERT_MSG(adef != NULL, "Failed to get animation definition of id %u", animation_definition_id);
 
@@ -68,8 +68,9 @@ u32 animation_create(u32 animation_definition_id, b8 does_loop) {
 
     *animation = (animation_t){
         .definition = adef,
-        .does_loop = does_loop,
-        .active = true,
+        .does_loop  = does_loop,
+        .flipped    = flipped,
+        .active     = true,
     };
 
     return id;

@@ -11,23 +11,17 @@ struct Global {
     struct Camera        *camera;
     struct AssetManager  *asset_manager;
 
-    f32   dt;
+    f32 dt;
 
     struct {
         Chunk *chunk;
-        u32   chunk_idx;
-        b8    next_chunk;
+        u64    chunk_id;
     } ChunkState;
 
     struct {
-    } DialogState;
-
-    struct {
-        vec3s position;
         enum Direction direction;
-
-        u32 animation_id;
-        u32 body_id;
+        u32            animation_id;
+        u32            body_id;
     } PlayerState;
 };
 

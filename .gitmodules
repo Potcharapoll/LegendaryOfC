@@ -1,9 +1,9 @@
-[submodule "game/lib/glfw"]
+[submodule "lib/glfw"]
 	path = lib/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "game/lib/cglm"]
+[submodule "lib/cglm"]
 	path = lib/cglm
 	url = https://github.com/recp/cglm.git
-[submodule "game/lib/freetype"]
+[submodule "lib/freetype"]
 	path = lib/freetype
 	url = https://github.com/freetype/freetype.git

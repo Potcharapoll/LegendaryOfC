@@ -29,6 +29,6 @@ void animation_init(void);
 void animation_destroy(void);
 void animation_update(f32 dt);
 u32 animation_definition_create(struct Spritesheet *spritesheet, f32 *durations, u8 *rows, u8 *col, u8 frame_count);
-u32 animation_create(u32 animation_definition_id, b8 does_loop);
+u32 animation_create(u32 animation_definition_id, b8 does_loop, b8 flipped);
 animation_t* animation_get(u32 animation_id);
 #endif

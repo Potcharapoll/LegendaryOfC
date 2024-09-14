@@ -191,3 +191,65 @@ void batch_render_append_quad_texture(struct BatchRender *batch, vec3s position,
         .tex_slot  = tex_slot 
     };
 }
+
+struct LineBatchRender *line_batch_render_init(void) {
+    struct LineBatchRender *new_batch = malloc(sizeof(*new_batch));
+
+    new_batch->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(*new_batch->vertices));
+    new_batch->line_count    = 0;
+    new_batch->shader        = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "line_shader"); 
+
+    memset(new_batch->vertices, 0, MAX_VERTICES_PER_BATCH * sizeof(*new_batch->vertices));
+
+    GL_TRY(glGenVertexArrays(1, &new_batch->vao));
+    GL_TRY(glGenBuffers(1, &new_batch->vbo));
+
+    GL_TRY(glBindVertexArray(new_batch->vao));
+
+    GL_TRY(glBindBuffer(GL_ARRAY_BUFFER, new_batch->vbo));
+    GL_TRY(glBufferData(GL_ARRAY_BUFFER, MAX_VERTICES_PER_BATCH * sizeof(struct LineVertex), NULL, GL_DYNAMIC_DRAW));
+
+    GL_TRY(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct LineVertex), (void*)offsetof(struct LineVertex, position)));
+    GL_TRY(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(struct LineVertex), (void*)offsetof(struct LineVertex, color)));
+
+    GL_TRY(glEnableVertexAttribArray(0));
+    GL_TRY(glEnableVertexAttribArray(1));
+
+    GL_TRY(glBindVertexArray(0));
+    return new_batch;
+}
+
+void line_batch_render_render(struct LineBatchRender *batch) {
+    shader_bind(batch->shader);
+    shader_uniform_viewproj(batch->shader, get_view_proj(global.camera));
+
+    GL_TRY(glBindBuffer(GL_ARRAY_BUFFER, batch->vbo));
+    GL_TRY(glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES_PER_BATCH * sizeof(struct LineVertex), batch->vertices));
+
+    GL_TRY(glBindVertexArray(batch->vao));
+    GL_TRY(glDrawArrays(GL_LINES, 0, (2 * batch->line_count)));
+
+    GL_TRY(glBindVertexArray(0));
+    shader_unbind();
+}
+
+void line_batch_render_destroy(struct LineBatchRender *batch) {
+    glDeleteVertexArrays(1, &batch->vao);
+    glDeleteBuffers(1, &batch->vbo);
+
+    free(batch->vertices);
+    free(batch);
+}
+
+void line_batch_render_append_line(struct LineBatchRender *batch, vec2s p_a, vec2s p_b, vec4s color) {
+    u32 idx = batch->line_count++;
+
+    batch->vertices[idx * 2 + 0] = (struct LineVertex){ 
+        .position  = p_a,
+        .color     = color, 
+    };
+    batch->vertices[idx * 2 + 1] = (struct LineVertex){ 
+        .position  = p_b,
+        .color     = color, 
+    };
+}
