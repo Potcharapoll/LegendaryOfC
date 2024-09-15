@@ -98,6 +98,7 @@ u64 chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, "%u", &size);
             chunk.teleporter = malloc(size * sizeof(*chunk.teleporter));
+            chunk.teleporter_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
                 fscanf(stream, "%u %u %u", &chunk.teleporter[i].coord.x, &chunk.teleporter[i].coord.y, &chunk.teleporter[i].chunkId);
@@ -108,6 +109,7 @@ u64 chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, "%u", &size);
             chunk.dialog = malloc(size * sizeof(*chunk.dialog));
+            chunk.dialog_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
                 fscanf(stream, "%u %u %u", &chunk.dialog[i].coord.x, &chunk.dialog[i].coord.y, &chunk.dialog[i].dialogId);
@@ -135,14 +137,13 @@ void chunk_prepare(void) {
         }
     }
 
-    // bug at teleporter_count and dialog_count
-    for (u32 i = 0; i < 3; ++i) {
+    for (u32 i = 0; i < chunk->teleporter_count; ++i) {
         physics_static_body_create(
                 (vec2s){TILE_SIZE * chunk->teleporter[i].coord.x, TILE_SIZE * chunk->teleporter[i].coord.y}, 
                 DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_TELEPORTER, NULL); 
     } 
 
-    for (u32 i = 0; i < 1; ++i) {
+    for (u32 i = 0; i < chunk->dialog_count; ++i) {
         physics_static_body_create(
                 (vec2s){TILE_SIZE * chunk->dialog[i].coord.x, TILE_SIZE * chunk->dialog[i].coord.y}, 
                 DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_DIALOG, NULL); 
