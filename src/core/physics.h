@@ -45,6 +45,7 @@ Body* physics_body_get(u64 body_id);
 
 u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, void(*on_hit_by_body)(Static_Body *body, Body *other));
 Static_Body* physics_static_body_get(u64 body_id);
+void physics_static_body_reset(void);
 
 void aabb_min_max(AABB aabb, vec2s *min, vec2s *max);
 AABB aabb_minkowski_diff(AABB a, AABB b);

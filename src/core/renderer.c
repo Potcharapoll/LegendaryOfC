@@ -1,12 +1,14 @@
+#include "../global.h"
+#include "../defs.h"
+
 #include "renderer.h"
 #include "asset_manager.h"
 #include "batch_render.h"
 #include "animation.h"
-#include "../global.h"
-#include "../defs.h"
-#include "chunk.h"
 #include "physics.h"
 #include "prefab.h"
+#include "dialog.h"
+#include "chunk.h"
 
 static struct BatchRender *_render_batch   = NULL;
 static struct LineBatchRender *_line_batch = NULL;
@@ -16,12 +18,16 @@ static u64 *CHUNKS;
 
 // MARK: All line render is for Debugging 
 static void _set_chunk(Chunks chunkId) {
+    physics_static_body_reset();
+
     global.ChunkState.chunk_id = CHUNKS[chunkId];
     Body *player_body = physics_body_get(global.PlayerState.body_id);
     Chunk *chunk      = chunk_get(global.ChunkState.chunk_id);
 
     global.ChunkState.chunk = chunk;
     player_body->position   = (vec2s){chunk->position.x + chunk->spawn.x * TILE_SIZE, chunk->position.y + chunk->spawn.y * TILE_SIZE};
+
+    chunk_prepare();
 }
 
 void renderer_append_line_segment(vec2s a, vec2s b, vec4s color) {
@@ -48,6 +54,7 @@ void renderer_init(void) {
         asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
         asset_manager_push_shader(global.asset_manager, "line_shader", "res/shaders/line.vert", "res/shaders/line.frag");
 
+        asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,    81, 3,27, 32);
         asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TESTING,  9, 3, 3, 16);
         asset_manager_push_spritesheet(global.asset_manager, TEXTURE_BASIC,   49, 7, 7, 16);
         asset_manager_push_spritesheet(global.asset_manager, TEXTURE_NPC,     32, 4, 8, 16);
@@ -58,6 +65,7 @@ void renderer_init(void) {
     physics_init();
     animation_init();
     chunk_init();
+    dialog_init();
     prefab_init();
 
     player_init();
@@ -68,11 +76,11 @@ void renderer_init(void) {
     // load prefabs
     struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_BASIC);
     prefab_create("bus_stop_station", sp, WHITE, (vec2s){96,96}, (vec4s){0,4,3,7});
-    prefab_create("bus_stop_sign", sp, WHITE, (vec2s){32,64}, (vec4s){3,4,3,6});
+    prefab_create("bus_stop_sign", sp, WHITE, (vec2s){32,64}, (vec4s){3,4,4,6});
 
     CHUNKS = malloc(sizeof(CHUNKS) * CHUNK_LAST);
     CHUNKS[CHUNK_SPAWN]   = chunk_load_from_file("res/data/chunk_home");
-    CHUNKS[CHUNK_VILLAGE] = chunk_load_from_file("res/data/chunk_village");
+    /* CHUNKS[CHUNK_VILLAGE] = chunk_load_from_file("res/data/chunk_village"); */
 
     _set_chunk(CHUNK_SPAWN);
 
@@ -109,6 +117,13 @@ void renderer_render(void) {
     // TODO: Remove dialog_render and implement dialog rendering in this project
     // TODO: We need to make a collider box from the center or the render object, so we need to fix the spritesheet to fit this 
     
+
+    // test prefab in _render_batch
+    // add before player to make sure it render below player
+    renderer_append_prefab((ivec2s){3,10}, "bus_stop_station");
+    renderer_append_prefab((ivec2s){7,10}, "bus_stop_sign");
+
+
     { // get player information and then add to _render_batch to render at the end
         Body *player_body = physics_body_get(global.PlayerState.body_id);
         struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
@@ -119,7 +134,7 @@ void renderer_render(void) {
     }
 
     if (global.ChunkState.chunk) { chunk_render(); }
-
+    if (global.DialogState.curr_dialog_node) { dialog_render(); }
     physics_render_collider();
     batch_render_render(_render_batch);
     line_batch_render_render(_line_batch);
@@ -127,4 +142,16 @@ void renderer_render(void) {
 
 void renderer_append_aabb(AABB aabb, vec4s color) {
         renderer_append_quad_line(aabb.center, aabb.half_size, color);
+}
+
+void renderer_append_prefab(ivec2s coord, char *prefab_name) {
+    Prefab *prefab = prefab_get(prefab_name);
+
+    vec3s position = { 
+        global.ChunkState.chunk->position.x + TILE_SIZE * coord.x, 
+        global.ChunkState.chunk->position.x + TILE_SIZE * coord.y, 
+        0.0f
+    };
+
+    batch_render_append_quad_texture(_render_batch, position, prefab->size, prefab->color, prefab->spritesheet->texture, prefab->tex_coord);
 }

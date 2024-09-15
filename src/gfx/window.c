@@ -71,3 +71,7 @@ void window_destroy(struct Window *self) {
     LOG_DEBUG("Window destroyed");
 }
 
+
+b8   window_get_key(struct Window *self, int key) {
+    return (glfwGetKey(self->handle, key) == GLFW_PRESS);
+}

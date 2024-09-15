@@ -1,0 +1,40 @@
+1. Create DialogText or DialogQuestion and then create Dialog Handle
+{
+    struct DialogText text1 = {.text = "HI, WELCOME TO CVILLAGE! ARE YOU READY FOR THE QUESTION?"};
+    struct DialogText text2 = {.text = "IF YOU NOT, GET OUT"};
+
+    struct DialogQuestion question1 = {
+        .answer              = {"C", "A", "F", "G"},
+        .question            = "WHAT IS THE LANGUAGE WE GONNA LEARN TODAY?",
+        .wrong_answer_text   = "UNFORTUNATELY, YOU'RE WRONG! TRY AGAIN.",
+        .correct_answer_text = "OH! YOU'RE RIGHT! KEEP IT UP",
+        .correct_answer_idx  = 0 
+    };
+
+    dialog = dialog_create("BENNY");
+}
+
+2. Add created DialogText or DialogQuestion to Dialog Handle in order
+{
+    dialog_append(dialog, DIALOG_TEXT, &text1);
+    dialog_append(dialog, DIALOG_TEXT, &text2);
+    dialog_append(dialog, DIALOG_QUESTION, &question1);
+}
+
+3. Set to global.DialogState to make it show the dialog
+{
+    // set dialog
+    global.DialogState.name             = dialog->name;
+    global.DialogState.curr_dialog_node = dialog->DialogList.dialog;
+    global.DialogState.selected_answer  = 0;
+}
+
+4. While dialog is running, your input will switch from normal input to dialog input 
+{
+    if (global.DialogState.curr_dialog_node) {
+        dialog_input();
+    }
+    else {
+        normal_input();
+    }
+}

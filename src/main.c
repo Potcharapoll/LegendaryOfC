@@ -1,20 +1,27 @@
 #include "core/asset_manager.h"
-#include "core/camera.h"
-#include "core/player.h"
-#include "core/renderer.h"
 #include "core/animation.h"
-#include "core/physics.h"
+#include "core/renderer.h"
+#include "core/dialog.h"
+
+/* #define DEBUG_INPUT */
+/* #define TEST_DIALOG */
 
 #include "global.h"
 #include "defs.h"
 
-// TODO: Text Render    -- ON GOING --
-//       Dialog System  -- PLANNED  --
-//       Teleport       -- PLANNED  --
-//       Map            -- PLANNED  --
+//   ~70%
+//   Teleport&Dialog Callback -- ON GOING --
+//   Map                      -- PLANNED  --
+//   Progression system       -- PLANNED  --
+//   Scnces system            -- PLANNED  --
+//   Sounds system            -- PLANNED  --
+//   Fade in/fade out (**IF POSSIBLE)
 
+//   Attach body to prefab
 
-struct Global global;
+//   Main Program #1 Batch Render & Layering
+
+struct Dialog *dialog;
 
 static void border_collision(vec2s *a, vec2s size, vec4s position) {
     if (a->y < position.y) a->y = position.y;
@@ -25,19 +32,49 @@ static void border_collision(vec2s *a, vec2s size, vec4s position) {
 }
 
 static void input_handling(void) {
-    player_input();
+    if (global.DialogState.curr_dialog_node) {
+        dialog_input();
+    }
+    else {
+        player_input();
+    }
 
-    if (glfwGetKey(global.window->handle, GLFW_KEY_X) == GLFW_PRESS) {
+#ifdef DEBUG_INPUT
+    if (window_get_key(global.window, GLFW_KEY_X)) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
-    else if (glfwGetKey(global.window->handle, GLFW_KEY_Z) == GLFW_PRESS) {
+    else if (window_get_key(global.window, GLFW_KEY_Z)) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+#endif
 }
 
 void setup(void) {
     asset_manager_init(&global.asset_manager);
     renderer_init();
+
+#ifdef TEST_DIALOG
+    struct DialogText text1 = {.text = "HI, WELCOME TO CVILLAGE! ARE YOU READY FOR THE QUESTION?"};
+    struct DialogText text2 = {.text = "IF YOU NOT, GET OUT"};
+
+    struct DialogQuestion question1 = {
+        .answer   = {"C", "A", "F", "G"},
+        .question = "WHAT IS THE LANGUAGE WE GONNA LEARN TODAY?",
+        .wrong_answer_text   = "UNFORTUNATELY, YOU'RE WRONG! TRY AGAIN.",
+        .correct_answer_text = "OH! YOU'RE RIGHT! KEEP IT UP",
+        .correct_answer_idx  = 0 
+    };
+
+    dialog = dialog_create("BENNY");
+    dialog_append(dialog, DIALOG_TEXT, &text1);
+    dialog_append(dialog, DIALOG_TEXT, &text2);
+    dialog_append(dialog, DIALOG_QUESTION, &question1);
+
+    // set dialog
+    global.DialogState.name             = dialog->name;
+    global.DialogState.curr_dialog_node = dialog->DialogList.dialog;
+    global.DialogState.selected_answer  = 0;
+#endif
 }
 
 void update(void) {
@@ -63,6 +100,11 @@ void update(void) {
 }
 
 void cleanup(void) {
+
+#ifdef TEST_DIALOG
+    dialog_delete(dialog);
+#endif
+
     asset_manager_destroy(global.asset_manager);
     renderer_destroy();
 }

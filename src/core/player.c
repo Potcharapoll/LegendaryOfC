@@ -1,8 +1,9 @@
-#include "player.h"
-#include "animation.h"
 #include "../util/types.h"
 #include "../global.h"
 #include "../defs.h"
+
+#include "player.h"
+#include "animation.h"
 #include "physics.h"
 
 #include <string.h>
@@ -12,7 +13,7 @@ static u32 adef_walk[DIRECTION_LAST];
 static u32 animation_idle[DIRECTION_LAST];
 static u32 animation_walk[DIRECTION_LAST];
 
-static f32 SPEED = 200.0f;
+static f32 SPEED = 100.0f;
 static Body *player_body;
 
 void player_init(void) {
@@ -46,10 +47,10 @@ void player_init(void) {
 void player_input(void) {
     player_body = physics_body_get(global.PlayerState.body_id);
 
-    s32 up    = glfwGetKey(global.window->handle, GLFW_KEY_W);
-    s32 down  = glfwGetKey(global.window->handle, GLFW_KEY_S);
-    s32 right = glfwGetKey(global.window->handle, GLFW_KEY_D);
-    s32 left  = glfwGetKey(global.window->handle, GLFW_KEY_A);
+    s32 up    = window_get_key(global.window, GLFW_KEY_W);
+    s32 down  = window_get_key(global.window, GLFW_KEY_S);
+    s32 right = window_get_key(global.window, GLFW_KEY_D);
+    s32 left  = window_get_key(global.window, GLFW_KEY_A);
 
     if (up) {
         player_body->velocity.y         = SPEED;

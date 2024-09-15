@@ -26,3 +26,8 @@ void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec
 
     hashtable_insert(prefabs, name, &prefab);
 }
+
+Prefab* prefab_get(char *name) {
+    const entry_t *entry = hashtable_search(prefabs, name);
+    return entry->value;
+}

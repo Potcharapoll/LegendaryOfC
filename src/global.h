@@ -6,12 +6,18 @@
 #include "core/player.h"
 #include "core/chunk.h"
 
+typedef enum {
+    FREE,
+    ON_DIALOG
+} GameState;
+
 struct Global {
     struct Window        *window;
     struct Camera        *camera;
     struct AssetManager  *asset_manager;
 
     f32 dt;
+    GameState game_state;
 
     struct {
         Chunk *chunk;
@@ -19,12 +25,10 @@ struct Global {
     } ChunkState;
 
     struct {
-        char *name;
+        char   *name;
         struct DialogNode *curr_dialog_node;
 
-        u32 curr_animation_idx;
-        u32 selected_idx;
-        b8  on_animation;
+        u8 selected_answer;
     } DialogState;
 
     struct {

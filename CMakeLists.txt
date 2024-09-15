@@ -14,12 +14,10 @@ list(APPEND CFLAGS "-Wno-unused-result")
 
 add_subdirectory(lib/glfw)
 add_subdirectory(lib/cglm)
-add_subdirectory(lib/freetype)
 
 include_directories(lib/glfw/include)
 include_directories(lib/cglm/include)
 include_directories(lib/glad/include)
-include_directories(lib/freetype)
 include_directories(lib/stb)
 
 add_executable(${PROJECT_NAME} 
@@ -39,11 +37,13 @@ add_executable(${PROJECT_NAME}
     src/core/batch_render.c
     src/core/player.c
     src/core/prefab.c
+    src/core/dialog.c
 
     src/util/hashtable.c
     src/util/array_list.c
 
     src/main.c
+    src/global.c
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${CFLAGS})

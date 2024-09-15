@@ -26,7 +26,6 @@ static void collision_response(Body *body, Static_Body *static_body, AABB minkow
     else if (static_body->collision_flag & COLLISION_TELEPORTER) {
 
     }
-
 }
 
 static void collision_check(Body *body) {
@@ -134,6 +133,10 @@ u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u
 
 Static_Body* physics_static_body_get(u64 body_id) {
     return array_list_get(_static_body_list, body_id); 
+}
+
+void physics_static_body_reset(void) {
+    _static_body_list->len = 0;
 }
 
 b8  aabb_intersect_aabb(AABB a, AABB b) {

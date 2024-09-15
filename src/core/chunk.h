@@ -4,19 +4,27 @@
 #include <cglm/types-struct.h>
 
 typedef struct {
-    u32 uv;
-    u32 static_body_id;
-    u32 teleport_id; // no is -1 
-} Tile;
+    ivec2s coord;
+    u32 chunkId;
+} ChunkTeleporter;
 
 typedef struct {
-    u32 chunkId;
-} Teleporter;
+    ivec2s coord;
+    u32 dialogId;
+} ChunkDialog;
 
 typedef struct {
     vec4s  position; // {startX, startY, endX, endY}
     ivec2s spawn; 
-    Tile  *tilemap;
+    
+    u32 *uv;
+    u32 *collision;
+
+    u32 dialog_count;
+    ChunkDialog *dialog;
+
+    u32 teleporter_count;
+    ChunkTeleporter *teleporter;
 } Chunk;
 
 // Explaination: Chunk contains tilemap information that uses to render the map
@@ -24,9 +32,8 @@ typedef struct {
 
 void chunk_init(void);
 void chunk_destroy(void);
+void chunk_prepare(void);
 void chunk_render(void);
-void chunk_update(void);
 u64 chunk_load_from_file(char *path);
-u64 chunk_create(vec2s start_position, Tile *tilemap, ivec2s spawn);
 Chunk* chunk_get(u64 chunk_id);
 #endif

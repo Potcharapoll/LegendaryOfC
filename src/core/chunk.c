@@ -24,7 +24,10 @@ void chunk_destroy(void) {
 
     for (u32 id = 0; id < _chunk_list->len; id++) {
         Chunk *chunk = chunk_get(id);
-        free(chunk->tilemap);
+        free(chunk->uv);
+        free(chunk->dialog);
+        free(chunk->collision);
+        free(chunk->teleporter);
     }
 
     array_list_destroy(_chunk_list);
@@ -39,65 +42,111 @@ u64 chunk_load_from_file(char *path) {
     Chunk chunk;
 
     stream = fopen(path, "rb");
-    fscanf(stream, "%f %f", &chunk.position.x, &chunk.position.y);
-    fscanf(stream, "%u %u", &chunk.spawn.x, &chunk.spawn.y);
-
-    chunk.tilemap    = malloc(CHUNK_SIZE_X * CHUNK_SIZE_Y * sizeof(*chunk.tilemap));
-    chunk.position.z = chunk.position.x + (TILE_SIZE * CHUNK_SIZE_X);
-    chunk.position.w = chunk.position.y + (TILE_SIZE * CHUNK_SIZE_Y);
-
-    size_t idx = 0;
-    for (int i = 0; i < CHUNK_SIZE_Y; ++i) {
-        idx = i * CHUNK_SIZE_X;
-        fscanf(stream, "%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u",
-            &chunk.tilemap[idx+0].uv,  &chunk.tilemap[idx+1].uv,  &chunk.tilemap[idx+2].uv,  &chunk.tilemap[idx+3].uv,
-            &chunk.tilemap[idx+4].uv,  &chunk.tilemap[idx+5].uv,  &chunk.tilemap[idx+6].uv,  &chunk.tilemap[idx+7].uv,
-            &chunk.tilemap[idx+8].uv,  &chunk.tilemap[idx+9].uv,  &chunk.tilemap[idx+10].uv, &chunk.tilemap[idx+11].uv,
-            &chunk.tilemap[idx+12].uv, &chunk.tilemap[idx+13].uv, &chunk.tilemap[idx+14].uv, &chunk.tilemap[idx+15].uv,
-            &chunk.tilemap[idx+16].uv, &chunk.tilemap[idx+17].uv, &chunk.tilemap[idx+18].uv, &chunk.tilemap[idx+19].uv,
-            &chunk.tilemap[idx+20].uv, &chunk.tilemap[idx+21].uv, &chunk.tilemap[idx+22].uv, &chunk.tilemap[idx+23].uv,
-            &chunk.tilemap[idx+24].uv, &chunk.tilemap[idx+25].uv, &chunk.tilemap[idx+26].uv, &chunk.tilemap[idx+27].uv,
-            &chunk.tilemap[idx+28].uv, &chunk.tilemap[idx+29].uv);
+    if (stream == NULL) {
+        fprintf(stderr, "Failed to open file \'path\'\n");
+        exit(1);
     }
 
-    // Make teleport callback function
-    u32 collision = 0;
-    for (int i = 0; i < (CHUNK_SIZE_X*CHUNK_SIZE_Y); ++i) {
-        fscanf(stream, "%u ", &collision);
+    chunk.collision = malloc(CHUNK_SIZE_X * CHUNK_SIZE_Y * sizeof(*chunk.collision));
+    chunk.uv        = malloc(CHUNK_SIZE_X * CHUNK_SIZE_Y * sizeof(*chunk.uv));
 
-        if (collision > 0) {
+    char c;
+    uint32_t size;
+     
+    char *keywords[] = {"position", "spawn", "uv", "collision", "teleporter", "dialog"};
+    char key[100];
+
+    while ((c = fgetc(stream)) != EOF) {
+        if (c == ' ' || c == '\n') continue;
+
+        if (c == '[') {
+            fscanf(stream, "%[a-z]]", key);
+        }
+
+        if (0 == strcmp(key, keywords[0])) {
+            fgets(key, sizeof(key), stream);
+            fscanf(stream, "%f %f", &chunk.position.x, &chunk.position.y);
+            chunk.position.z = chunk.position.x + (TILE_SIZE * CHUNK_SIZE_X);
+            chunk.position.w = chunk.position.y + (TILE_SIZE * CHUNK_SIZE_Y);
+            memset(key, 0, sizeof(key));
+
+        }
+        else if (0 == strcmp(key, keywords[1])) {
+            fgets(key, sizeof(key), stream);
+            fscanf(stream, "%u %u", &chunk.spawn.x, &chunk.spawn.y);
+            memset(key, 0, sizeof(key));
+        }
+        else if (0 == strcmp(key, keywords[2])) {
+            fgets(key, sizeof(key), stream);
+            for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
+                for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
+                    fscanf(stream, "%u ", &chunk.uv[y * CHUNK_SIZE_X + x]);
+                }
+            }
+            memset(key, 0, sizeof(key));
+        }
+        else if (0 == strcmp(key, keywords[3])) {
+            fgets(key, sizeof(key), stream);
+            for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
+                for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
+                    fscanf(stream, "%u ", &chunk.collision[y * CHUNK_SIZE_X + x]);
+                }
+            }
+            memset(key, 0, sizeof(key));
+        }
+        else if (0 == strcmp(key, keywords[4])) {
+            fgets(key, sizeof(key), stream);
+            fscanf(stream, "%u", &size);
+            chunk.teleporter = malloc(size * sizeof(*chunk.teleporter));
+
+            for (uint8_t i = 0; i < size; ++i) {
+                fscanf(stream, "%u %u %u", &chunk.teleporter[i].coord.x, &chunk.teleporter[i].coord.y, &chunk.teleporter[i].chunkId);
+            }
+            memset(key, 0, sizeof(key));
+        }
+        else if (0 == strcmp(key, keywords[5])) {
+            fgets(key, sizeof(key), stream);
+            fscanf(stream, "%u", &size);
+            chunk.dialog = malloc(size * sizeof(*chunk.dialog));
+
+            for (uint8_t i = 0; i < size; ++i) {
+                fscanf(stream, "%u %u %u", &chunk.dialog[i].coord.x, &chunk.dialog[i].coord.y, &chunk.dialog[i].dialogId);
+            }
+            memset(key, 0, sizeof(key));
+        }
+    }
+    fclose(stream);
+
+    array_list_append(_chunk_list, &chunk);
+    return _chunk_list->len - 1;
+}
+
+void chunk_prepare(void) {
+    Chunk *chunk = global.ChunkState.chunk;
+
+    for (int i = 0; i < (CHUNK_SIZE_X*CHUNK_SIZE_Y); ++i) {
+        if (chunk->collision[i] > 0) {
             u32 x = i % CHUNK_SIZE_X;
             u32 y = i / CHUNK_SIZE_X;
 
-            if (collision == 1) {
-                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_SOLID, NULL);
+            if (chunk->collision[i] == 1) {
+                physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_SOLID, NULL);
             }
-            else if (collision == 2) {
-                chunk.tilemap[i].static_body_id = physics_static_body_create((vec2s){TILE_SIZE * x, TILE_SIZE * y}, DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_TELEPORTER, NULL);
-            }
-        }
-        else {
-            chunk.tilemap[i].static_body_id = -1;
-            chunk.tilemap[i].teleport_id    = -1;
         }
     }
 
-    fclose(stream);
-    array_list_append(_chunk_list, &chunk);
-    return _chunk_list->len - 1;
+    // bug at teleporter_count and dialog_count
+    for (u32 i = 0; i < 3; ++i) {
+        physics_static_body_create(
+                (vec2s){TILE_SIZE * chunk->teleporter[i].coord.x, TILE_SIZE * chunk->teleporter[i].coord.y}, 
+                DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_TELEPORTER, NULL); 
+    } 
 
-}
-
-u64 chunk_create(vec2s start_position, Tile *tilemap, ivec2s spawn) {
-    Chunk chunk;
-    chunk.tilemap    = malloc(CHUNK_SIZE_X * CHUNK_SIZE_Y * sizeof(*chunk.tilemap));
-    chunk.spawn      = spawn;
-    chunk.position   = (vec4s){start_position.x, start_position.y, start_position.x + (TILE_SIZE * CHUNK_SIZE_X), start_position.y + (TILE_SIZE * CHUNK_SIZE_Y) };
-
-    memcpy(chunk.tilemap, tilemap, CHUNK_SIZE_X * CHUNK_SIZE_Y * sizeof(*chunk.tilemap));
-
-    array_list_append(_chunk_list, &chunk);
-    return _chunk_list->len - 1;
+    for (u32 i = 0; i < 1; ++i) {
+        physics_static_body_create(
+                (vec2s){TILE_SIZE * chunk->dialog[i].coord.x, TILE_SIZE * chunk->dialog[i].coord.y}, 
+                DEFAULT_SCALE, COLLISION_PLAYER, COLLISION_DIALOG, NULL); 
+    } 
 }
 
 void chunk_render(void) {
@@ -107,11 +156,11 @@ void chunk_render(void) {
     Chunk *chunk = global.ChunkState.chunk;
     for (s32 y = 0; y < CHUNK_SIZE_Y; y++) {
         for (s32 x = 0; x < CHUNK_SIZE_X; x++) {
-            Tile tile = chunk->tilemap[CHUNK_SIZE_X * y + x]; 
+            u32 uv = chunk->uv[CHUNK_SIZE_X * y + x]; 
 
              // convert to texture coordinate from uvs
-            u32 row    = tile.uv / spritesheet->rows;
-            u32 col    = tile.uv % spritesheet->cols;
+            u32 row    = uv / spritesheet->rows;
+            u32 col    = uv % spritesheet->cols;
             f32 celly  = spritesheet->stride / spritesheet->size.x; 
             f32 cellx  = spritesheet->stride / spritesheet->size.y;
 

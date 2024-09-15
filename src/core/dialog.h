@@ -1,5 +1,10 @@
 #ifndef DIALOG_H
 #define DIALOG_H
+#define DIALOG_FRAME_COLOR (vec4s){0,0,0,0.3}
+#define DIALOG_FRAME_SIZE  (vec2s){PROJECTION_WIDTH, 150.0f}
+#define DIALOG_TEXT_COLOR  (vec4s){1,1,1,1}
+#define DIALOG_TEXT_SIZE   (vec2s){12,12}
+
 #include "../util/types.h"
 
 enum DialogType {
@@ -11,7 +16,7 @@ struct DialogQuestion {
     char *question;
 
     char *answer[4];
-    u32 corrent_answer_idx;
+    u32 correct_answer_idx;
 
     char *correct_answer_text;
     char *wrong_answer_text;
@@ -28,12 +33,7 @@ struct DialogNode {
 
 struct Dialog {
     char *name;
-    b8 hidden_name;
-
-    struct {
-        struct DialogNode *dialog; 
-        u32 count;
-    } DialogList;
+    struct DialogNode *contents;
 };
 
 void dialog_init(void);
