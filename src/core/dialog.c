@@ -3,7 +3,7 @@
 
 #include "dialog.h"
 #include "asset_manager.h"
-#include "batch_render.h"
+#include "renderer.h"
 
 #include <string.h>
 
@@ -14,23 +14,23 @@ typedef enum {
     DIALOG_POSITION_ANSWER2,
     DIALOG_POSITION_ANSWER3,
     DIALOG_POSITION_ANSWER4,
+    DIALOG_POSITION_SELECT,
 
     DIALOG_POSITION_LAST,
 } DialogRenderPosition;
 
 static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
-    { 24,       120,     0.0f},
-    { 25,       90,      0.0f},
-    { 25 + 50,  90 - 28, 0.0f},
-    { 25 + 50,  90 - 58, 0.0f},
-    { 25 + 300, 90 - 28, 0.0f},
-    { 25 + 300, 90 - 58, 0.0f},
+    { 14,       55,      0.0f},
+    { 15,       40,      0.0f},
+    { 15 + 50,  40 - 18, 0.0f},
+    { 15 + 50,  40 - 38, 0.0f},
+    { 15 + 150, 40 - 18, 0.0f},
+    { 15 + 150, 40 - 38, 0.0f},
+    { 10,       -6,      0.0f},
 };
 
-static b8                  next_dialog   = true;
-static b8                  animation_end = false;
-static GLuint              _vbo          = GL_NONE;
-static struct BatchRender *_dialog_batch = NULL;
+static b8 next_dialog   = true;
+static b8 animation_end = false;
 
 static ivec2s get_char_coord(char c) {
     static u8 text_index[3][27] = {
@@ -69,7 +69,7 @@ static void dialog_render_text(char *text, vec2s size, vec3s pos, vec4s color) {
         tex_coord[2] = cell_size.y * char_coord.y;
         tex_coord[3] = cell_size.y * char_coord.y + cell_size.y;
 
-        batch_render_append_quad_texture(_dialog_batch, pos, size, color, sp->texture, tex_coord);
+        renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord);
         pos.x += (size.x * 0.5);
     }
 }
@@ -100,34 +100,15 @@ static void dialog_render_text_animation(char *text, vec2s size, vec3s pos, vec4
         tex_coord[2] = cell_size.y * char_coord.y;
         tex_coord[3] = cell_size.y * char_coord.y + cell_size.y;
 
-        batch_render_append_quad_texture(_dialog_batch, pos, size, color, sp->texture, tex_coord);
+        renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord);
         pos.x += (size.x * 0.5);
     }
 
-    if (current_rendered_idx < max_rendered_idx) {
+    if (current_rendered_idx >= max_rendered_idx) {
         current_rendered_idx++;
-    }
-    else {
+    } else {
         animation_end = true;
     }
-}
-
-void dialog_init(void) {
-    { // specific buffer for triangle
-        glGenBuffers(1, &_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(struct Vertex[4]), NULL, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    _dialog_batch = batch_render_init();
-
-    struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT);
-    batch_render_append_texture(_dialog_batch, sp->texture);
-}
-
-void dialog_destroy(void) {
-    batch_render_destroy(_dialog_batch);
 }
 
 struct Dialog* dialog_create(char *name) {
@@ -215,24 +196,21 @@ void dialog_input(void) {
     }
 }
 
-// render when global.DialogState.dialog != NULL
 void dialog_render(void) {
     vec3s camera_pos = { global.camera->position.x, global.camera->position.y, 0.0f};
     vec3s pos        = {0};
-
-    batch_render_append_quad(_dialog_batch, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR);
+    renderer_append_quad(LAYER_DIALOG, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR);
 
     pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TITLE]);
-    dialog_render_text(global.DialogState.name, (vec2s){20,21}, pos, BLUE);
-    dialog_render_text(global.DialogState.name, (vec2s){20,20}, pos, DIALOG_TEXT_COLOR);
+    dialog_render_text(global.DialogState.name, (vec2s){10,11}, pos, BLUE);
+    dialog_render_text(global.DialogState.name, (vec2s){10,10}, pos, DIALOG_TEXT_COLOR);
 
     pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TEXT]);
-
     if (global.DialogState.curr_dialog_node->type == DIALOG_QUESTION) {
         struct DialogQuestion *content = global.DialogState.curr_dialog_node->dialog;
-        dialog_render_text_animation(content->question, (vec2s){12,12}, pos, DIALOG_TEXT_COLOR);
+        dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
 
-        u8 selected_answer = DIALOG_POSITION_LAST - 4 + global.DialogState.selected_answer;
+        u8 selected_answer = DIALOG_POSITION_LAST - 5 + global.DialogState.selected_answer;
         if (animation_end) {
             pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER1]);
             dialog_render_text(content->answer[0], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
@@ -246,16 +224,13 @@ void dialog_render(void) {
             pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER4]);
             dialog_render_text(content->answer[3], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
 
-            pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], (vec3s){20, -6, 0}));
-            batch_render_append_quad(_dialog_batch, pos, (vec2s){6,6}, DIALOG_TEXT_COLOR);
+            pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], dialog_render_position[DIALOG_POSITION_SELECT]));
+            renderer_append_quad(LAYER_DIALOG, pos, DIALOG_SELECT_SIZE, DIALOG_TEXT_COLOR);
         }
     }
     else {
         struct DialogText *content = global.DialogState.curr_dialog_node->dialog;
-        dialog_render_text_animation(content->text, (vec2s){12,12}, pos, DIALOG_TEXT_COLOR);
+        dialog_render_text_animation(content->text, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
     }
-
-    batch_render_render(_dialog_batch);
-    _dialog_batch->quad_count = 0;
 }
 

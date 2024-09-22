@@ -28,13 +28,12 @@ add_executable(${PROJECT_NAME}
     src/gfx/texture.c
     src/gfx/spritesheet.c
     
-    src/core/animation.c
-    src/core/camera.c
-    src/core/renderer.c
     src/core/asset_manager.c
-    src/core/chunk.c
+    src/core/animation.c
     src/core/physics.c
-    src/core/batch_render.c
+    src/core/renderer.c
+    src/core/camera.c
+    src/core/chunk.c
     src/core/player.c
     src/core/prefab.c
     src/core/dialog.c

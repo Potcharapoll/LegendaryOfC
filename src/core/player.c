@@ -41,7 +41,7 @@ void player_init(void) {
 
     global.PlayerState.direction    = DOWN;
     global.PlayerState.animation_id = animation_idle[DOWN];
-    global.PlayerState.body_id      = physics_body_create((vec2s){0,0}, PLAYER_HITBOX, COLLISION_SOLID | COLLISION_TELEPORTER, COLLISION_PLAYER);
+    global.PlayerState.body_id      = physics_body_create((vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER, COLLISION_ALIGN_CENTER);
 }
 
 void player_input(void) {

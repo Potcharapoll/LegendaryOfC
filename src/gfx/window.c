@@ -13,9 +13,7 @@ static void error_callback(int err, const char *dest) {
 b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     glfwSetErrorCallback(error_callback);
 
-    if(!glfwInit()) {
-        abort();
-    }
+    if(!glfwInit()) return false;
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -41,22 +39,22 @@ b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
 
 void window_loop(struct Window *self) {
     self->init();
-    f32 last_frame = glfwGetTime();
 
-    glViewport(0, 0, WIDTH, HEIGHT);
+    f32 last_frame = glfwGetTime();
+    f32 current_frame;
+
     while (!glfwWindowShouldClose(self->handle)) {
         glfwGetCursorPos(self->handle, &self->mouse.xpos, &self->mouse.ypos);
         glfwGetWindowSize(self->handle, &self->width, &self->height);
-
         glViewport(0, 0, self->width, self->height);
 
         // normalize mouse position
         self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0f - 1.0f;
         self->mouse.normaly = ((self->height - self->mouse.ypos) / self->height) * 2.0f - 1.0f;
         
-        f32 current_frame = glfwGetTime();
-        global.dt = (current_frame - last_frame);
-        last_frame = current_frame;
+        current_frame = glfwGetTime();
+        global.dt     = (current_frame - last_frame);
+        last_frame    = current_frame;
 
         glfwPollEvents();
         self->update();

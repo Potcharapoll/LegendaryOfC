@@ -20,8 +20,8 @@ struct Global {
     GameState game_state;
 
     struct {
-        Chunk *chunk;
-        u64    chunk_id;
+        Chunk  *chunk;
+        Chunks chunk_id;
     } ChunkState;
 
     struct {
@@ -36,6 +36,11 @@ struct Global {
         u32            animation_id;
         u32            body_id;
     } PlayerState;
+
+
+    // debugging
+    b8 toggle_collision;
+    b8 toggle_show_collider;
 };
 
 extern struct Global global;

@@ -4,12 +4,24 @@
 #include <cglm/types-struct.h>
 
 typedef enum {
-    COLLISION_NONE        = 1 << 0,
-    COLLISION_PLAYER      = 1 << 1,
-    COLLISION_SOLID       = 1 << 2,
-    COLLISION_TELEPORTER  = 1 << 3,
-    COLLISION_DIALOG      = 1 << 4
+    COLLISION_LAYER_NONE        = 1 << 0,
+    COLLISION_LAYER_PLAYER      = 1 << 1,
+    COLLISION_LAYER_SOLID       = 1 << 2,
+    COLLISION_LAYER_TELEPORTER  = 1 << 3,
+    COLLISION_LAYER_DIALOG      = 1 << 4
 } CollisionLayer;
+
+typedef enum {
+    COLLISION_ALIGN_LEFT,
+    COLLISION_ALIGN_RIGHT,
+    COLLISION_ALIGN_CENTER,
+    COLLISION_ALIGN_TOP,
+    COLLISION_ALIGN_TOP_LEFT,
+    COLLISION_ALIGN_TOP_RIGHT,
+    COLLISION_ALIGN_BOTTOM,
+    COLLISION_ALIGN_BOTTOM_LEFT,
+    COLLISION_ALIGN_BOTTOM_RIGHT,
+} CollisionAlignment;
 
 typedef struct {
     vec2s center;
@@ -22,12 +34,14 @@ typedef struct {
     vec2s position;
     u8 collision_mask;
     u8 collision_flag;
+    u8 alignment;
 } Body;
 
 typedef struct Static_Body {
     AABB aabb;
     u8 collision_mask;
     u8 collision_flag;
+    u8 alignment;
 
     void (*on_hit_by_body)(struct Static_Body *body, Body *other);
 } Static_Body;
@@ -40,10 +54,17 @@ void physics_destroy(void);
 void physics_update(f32 dt);
 void physics_render_collider(void);
 
-u64  physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag);
+u64  physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, u8 alignment);
 Body* physics_body_get(u64 body_id);
 
-u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, void(*on_hit_by_body)(Static_Body *body, Body *other));
+u64  physics_static_body_create(
+        vec2s position, 
+        vec2s size, 
+        u8 collision_mask, 
+        u8 collision_flag, 
+        u8 alignment,
+        void(*on_hit_by_body)(Static_Body *body, Body *other));
+
 Static_Body* physics_static_body_get(u64 body_id);
 void physics_static_body_reset(void);
 

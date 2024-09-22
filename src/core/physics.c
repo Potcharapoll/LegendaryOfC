@@ -12,20 +12,18 @@ static u8 iterations       = 10;
 static b8 player_collision = false;
 
 static void collision_response(Body *body, Static_Body *static_body, AABB minkowski) {
+    if (global.toggle_collision) return;
+
     if ((static_body->collision_mask & body->collision_flag) != body->collision_flag) return;
 
-    if (static_body->on_hit_by_body) { static_body->on_hit_by_body(static_body, body); }
-
-    if (static_body->collision_flag & COLLISION_SOLID) {
-
+    if (static_body->collision_flag & COLLISION_LAYER_SOLID) {
         vec2s pv;
         aabb_penetration_vector(&pv, minkowski);
         body->position.x += pv.x;
         body->position.y += pv.y;
     }
-    else if (static_body->collision_flag & COLLISION_TELEPORTER) {
 
-    }
+    if (static_body->on_hit_by_body) { static_body->on_hit_by_body(static_body, body); }
 }
 
 static void collision_check(Body *body) {
@@ -34,7 +32,7 @@ static void collision_check(Body *body) {
     for (u32 i = 0; i < _static_body_list->len; i++) {
         static_body = physics_static_body_get(i);
 
-        if (static_body->collision_mask == COLLISION_NONE) continue;
+        if (static_body->collision_mask == COLLISION_LAYER_NONE) continue;
 
         if (aabb_intersect_aabb(static_body->aabb, body->aabb)) {
             collision_response(body, static_body, aabb_minkowski_diff(static_body->aabb, body->aabb));
@@ -87,21 +85,25 @@ void physics_render_collider(void) {
     for (u32 i = 0; i < _static_body_list->len; i++) {
         static_body = physics_static_body_get(i);
 
-        if (static_body->collision_flag & COLLISION_SOLID) {
+        if (static_body->collision_flag & COLLISION_LAYER_SOLID) {
             renderer_append_aabb(static_body->aabb, WHITE);
         }
-        else if (static_body->collision_flag & COLLISION_TELEPORTER) {
-            renderer_append_aabb(static_body->aabb, CYAN);
+        else if (static_body->collision_flag & COLLISION_LAYER_TELEPORTER) {
+            renderer_append_aabb(static_body->aabb, BLACK);
+        }
+        else if (static_body->collision_flag & COLLISION_LAYER_DIALOG) {
+            renderer_append_aabb(static_body->aabb, BLUE);
         }
     }
 }
 
-u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag) {
+u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, u8 alignment) {
     Body body = {
         .position       = position,
         .velocity       = {0,0},
         .collision_mask = collision_mask,
         .collision_flag = collision_flag,
+        .alignment      = alignment,
         .aabb = { 
             .center    = (vec2s){position.x + size.x * 0.5, position.y + size.y * 0.5},
             .half_size = {size.x * 0.5, size.y * 0.5}
@@ -116,12 +118,19 @@ Body* physics_body_get(u64 body_id) {
     return array_list_get(_body_list, body_id);
 }
 
-u64  physics_static_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, void(*on_hit_by_body)(Static_Body *body, Body *other)) {
+u64  physics_static_body_create(
+        vec2s position, 
+        vec2s size, 
+        u8 collision_mask, 
+        u8 collision_flag, 
+        u8 alignment,
+        void(*on_hit_by_body)(Static_Body *body, Body *other)) {
     Static_Body body = {
         .aabb = { 
             .center    = (vec2s){position.x + size.x * 0.5, position.y + size.y * 0.5},
             .half_size = {size.x * 0.5, size.y * 0.5}
         },
+        .alignment      = alignment,   
         .collision_mask = collision_mask,
         .collision_flag = collision_flag,
         .on_hit_by_body = (on_hit_by_body) ? on_hit_by_body : NULL,

@@ -47,6 +47,7 @@ struct Shader shader_load(char *vs_path, char *fs_path) {
         .vs = _compile(GL_VERTEX_SHADER, vs_path),
         .fs = _compile(GL_FRAGMENT_SHADER, fs_path),
     };
+
     GL_TRY(glAttachShader(shader.handle, shader.vs));
     GL_TRY(glAttachShader(shader.handle, shader.fs));
 
@@ -71,44 +72,44 @@ struct Shader shader_load(char *vs_path, char *fs_path) {
 }
 
 void shader_bind(struct Shader self) {
-    GL_TRY(glUseProgram(self.handle));
+    glUseProgram(self.handle);
 }
 
 void shader_unbind(void) {
-    GL_TRY(glUseProgram(0));
+    glUseProgram(0);
 }
 
 void shader_destroy(struct Shader self) {
     GL_TRY(glDeleteProgram(self.handle));
     GL_TRY(glDeleteShader(self.vs));
-    GL_TRY(glDeleteShader(self.fs);) 
+    GL_TRY(glDeleteShader(self.fs)); 
 }
 
 void shader_uniform_mat4(struct Shader self, char *name, mat4s m) {
-    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, name), 1, GL_FALSE, (const GLfloat*)m.raw));
+    glUniformMatrix4fv(glGetUniformLocation(self.handle, name), 1, GL_FALSE, (const GLfloat*)m.raw);
 }
 
 void shader_uniform_float(struct Shader self, char *name, float f) {
-    GL_TRY(glUniform1f(glGetUniformLocation(self.handle, name), f));
+    glUniform1f(glGetUniformLocation(self.handle, name), f);
 }
 
 void shader_uniform_int(struct Shader self, char *name, int i) {
-    GL_TRY(glUniform1i(glGetUniformLocation(self.handle, name), i));
+    glUniform1i(glGetUniformLocation(self.handle, name), i);
 }
 
 void shader_uniform_vec2(struct Shader self, char *name, vec2s v) {
-    GL_TRY(glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]));
+    glUniform2f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1]);
 }
 
 void shader_uniform_vec4(struct Shader self, char *name, vec4s v) {
-    GL_TRY(glUniform4f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1], v.raw[2], v.raw[3]));
+    glUniform4f(glGetUniformLocation(self.handle, name), v.raw[0], v.raw[1], v.raw[2], v.raw[3]);
 }
 
 void shader_uniform_viewproj(struct Shader self, struct ViewProj view_proj) {
-    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw));
-    GL_TRY(glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw));
+    glUniformMatrix4fv(glGetUniformLocation(self.handle, "proj"), 1, GL_FALSE, (const GLfloat*)view_proj.proj.raw);
+    glUniformMatrix4fv(glGetUniformLocation(self.handle, "view"), 1, GL_FALSE, (const GLfloat*)view_proj.view.raw);
 }
 
 void shader_uniform_int_array(struct Shader self, char *name, int count, int arr[]) {
-    GL_TRY(glUniform1iv(glGetUniformLocation(self.handle, name), count, arr));
+    glUniform1iv(glGetUniformLocation(self.handle, name), count, arr);
 }
