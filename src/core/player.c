@@ -41,7 +41,8 @@ void player_init(void) {
 
     global.PlayerState.direction    = DOWN;
     global.PlayerState.animation_id = animation_idle[DOWN];
-    global.PlayerState.body_id      = physics_body_create((vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER, COLLISION_ALIGN_CENTER);
+    global.PlayerState.body_id      = physics_body_create(
+            (vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER);
 }
 
 void player_input(void) {
@@ -53,14 +54,12 @@ void player_input(void) {
     s32 left  = window_get_key(global.window, GLFW_KEY_A);
 
     if (up) {
-        player_body->velocity.y         = SPEED;
-        global.PlayerState.animation_id = animation_walk[UP];
-        global.PlayerState.direction    = UP;
+        player_body->velocity.y = SPEED;
+        player_set_animation(WALK, UP);
     }
     else if (down) {
-        player_body->velocity.y         = -SPEED;
-        global.PlayerState.animation_id = animation_walk[DOWN];
-        global.PlayerState.direction    = DOWN;
+        player_body->velocity.y = -SPEED;
+        player_set_animation(WALK, DOWN);
     }
 
     if (!up && !down) {
@@ -68,14 +67,12 @@ void player_input(void) {
     }
 
     if (right) {
-        player_body->velocity.x         = SPEED;
-        global.PlayerState.animation_id = animation_walk[RIGHT];
-        global.PlayerState.direction    = RIGHT;
+        player_body->velocity.x = SPEED;
+        player_set_animation(WALK, RIGHT);
     }
     else if (left) {
-        player_body->velocity.x         = -SPEED;
-        global.PlayerState.animation_id = animation_walk[LEFT];
-        global.PlayerState.direction    = LEFT;
+        player_body->velocity.x = -SPEED;
+        player_set_animation(WALK, LEFT);
     }
 
     if (!right && !left) {
@@ -83,7 +80,7 @@ void player_input(void) {
     }
 
     if (!up && !down && !right && !left) {
-        global.PlayerState.animation_id = animation_idle[global.PlayerState.direction];
+        player_set_animation(IDLE, global.PlayerState.direction);
     }
 }
 
@@ -98,4 +95,17 @@ void player_get_tex_coord(f32 *tex_coord) {
 
     f32 *_tex_coord = (f32[]){cellX * col, cellX * col + cellX, cellY * row, cellY * row + cellY};
     memcpy(tex_coord, _tex_coord, sizeof(f32[4]));
+}
+
+void player_set_animation(enum PlayerAnimation animation, enum Direction direction) {
+    switch (animation) {
+        case IDLE:
+            global.PlayerState.animation_id = animation_idle[direction];
+            global.PlayerState.direction    = direction;
+            break;
+        case WALK:
+            global.PlayerState.animation_id = animation_walk[direction];
+            global.PlayerState.direction    = direction;
+            break;
+    }
 }

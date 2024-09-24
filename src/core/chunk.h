@@ -4,14 +4,17 @@
 #include <cglm/types-struct.h>
 
 typedef struct {
-    ivec2s teleport_coord;
-    ivec2s target_coord;
-    u8 chunkId;
+    vec2s  pos;
+    vec2s  target_coord;
+    ivec2s size;
+
+    u8  chunkId;
     u32 body_id;
 } ChunkTeleporter;
 
 typedef struct {
     ivec2s coord;
+    ivec2s size;
     u8 dialogId;
     u32 body_id;
 } ChunkDialog;
@@ -22,11 +25,16 @@ typedef struct {
 } ChunkPrefab;
 
 typedef struct {
+    vec2s  pos;
+    ivec2s size;
+} ChunkCollider;
+
+typedef struct {
     vec4s  position; // {startX, startY, endX, endY}
-    ivec2s spawn; 
-    
-    u16 *uv;
-    u8 *collision;
+    u8    *uv;
+
+    u8 collider_count;
+    ChunkCollider *collider;
 
     u8 prefab_count;
     ChunkPrefab *prefab;
@@ -49,7 +57,10 @@ typedef enum {
     CHUNK_VILLAGE_TOP_RIGHT = 7,
     CHUNK_VILLAGE_TUNNEL    = 8,
 
-    CHUNK_LAST              = 9
+    CHUNK_INSIDE_LIBRARY    = 9,
+    CHUNK_INSIDE_RESTAURANT = 10,
+
+    CHUNK_LAST = 10
 } Chunks;
 
 // Explaination: Chunk contains tilemap information that uses to render the map

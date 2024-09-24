@@ -4,9 +4,13 @@
 
 #include "renderer.h"
 #include "animation.h"
+#include "cglm/struct/vec2.h"
 #include "dialog.h"
+#include "physics.h"
+#include "player.h"
 #include "prefab.h"
 
+#include <pthread.h>
 #include <glad/glad.h>
 #include <string.h>
 
@@ -14,16 +18,53 @@ static int                 texture_slot[8] = {0,1,2,3,4,5,6,7};
 static struct LineBatchRender *_line_batch = NULL;
 static struct BatchRender       **_batches = NULL; 
 static Chunk                     **_chunks = NULL;
+static b8                          prepare = false;
+
+static pthread_mutex_t lock;
+
+// SUGGEST: fading maybe should be in scnce module
+void fade(void) {
+    f32 time = global.dt * 2;
+
+    switch (global.FadeState.state) {
+        case FADE_IN:
+            if (global.FadeState.alpha > 0.0) {
+                global.FadeState.alpha -= time;
+            } 
+
+            if (global.FadeState.alpha < 0.0) {
+                global.FadeState.alpha  = 0.0f;
+                global.FadeState.state = FADE_NONE;
+            }
+            break;
+        case FADE_OUT:
+            if (global.FadeState.alpha < 1.0) {
+                global.FadeState.alpha += time;
+            } 
+
+            if (global.FadeState.alpha > 1.0) {
+                global.FadeState.alpha = 1.0f;
+                prepare = true;
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 void collision_callback(Static_Body *body, Body *other) {
     Chunk *chunk = global.ChunkState.chunk;
 
-    if (body->collision_flag == COLLISION_LAYER_TELEPORTER) {
+    if ((body->collision_flag & COLLISION_LAYER_TELEPORTER) == COLLISION_LAYER_TELEPORTER) {
         for (u8 i = 0; i < chunk->teleporter_count; ++i) {
             Static_Body *teleporter_body = physics_static_body_get(chunk->teleporter[i].body_id);
 
             if (body == teleporter_body) {
-                renderer_set_chunk(chunk->teleporter[i].chunkId, chunk->teleporter[i].target_coord);
+                other->velocity = glms_vec2_zero();
+                player_set_animation(IDLE, global.PlayerState.direction);
+
+                if (global.FadeState.state == FADE_NONE) global.FadeState.state = FADE_OUT;
+                if (prepare) renderer_set_chunk(chunk->teleporter[i].chunkId, chunk->teleporter[i].target_coord);
             }
         }
         return;
@@ -33,45 +74,106 @@ void collision_callback(Static_Body *body, Body *other) {
     }
 }
 
-void renderer_set_chunk(Chunks chunkId, ivec2s target_pos) {
-    printf("Teleport from %u to %u\n", global.ChunkState.chunk_id, chunkId);
-    fflush(stdout);
+void renderer_reload_chunk(void) {
+    pthread_mutex_lock(&lock);
 
+    for (u32 i = 0; i < CHUNK_LAST; ++i) {
+        free(_chunks[i]->uv);
+        free(_chunks[i]->prefab);
+        free(_chunks[i]->dialog);
+        free(_chunks[i]->collider);
+        free(_chunks[i]->teleporter);
+        free(_chunks[i]);
+    }              
+
+    _chunks[CHUNK_SPAWN]             = chunk_load_from_file("res/data/chunk_spawn");
+    _chunks[CHUNK_VILLAGE_ENTRANCE]  = chunk_load_from_file("res/data/chunk_village_entrance");
+    _chunks[CHUNK_VILLAGE_LEFT]      = chunk_load_from_file("res/data/chunk_village_left");
+    _chunks[CHUNK_VILLAGE_RIGHT]     = chunk_load_from_file("res/data/chunk_village_right");
+    _chunks[CHUNK_VILLAGE_TOP]       = chunk_load_from_file("res/data/chunk_village_top");
+    _chunks[CHUNK_VILLAGE_TOP_END]   = chunk_load_from_file("res/data/chunk_village_top_end");
+    _chunks[CHUNK_VILLAGE_TOP_LEFT]  = chunk_load_from_file("res/data/chunk_village_top_left");
+    _chunks[CHUNK_VILLAGE_TOP_RIGHT] = chunk_load_from_file("res/data/chunk_village_top_right");
+    _chunks[CHUNK_VILLAGE_TUNNEL]    = chunk_load_from_file("res/data/chunk_village_tunnel");
+
+    _chunks[CHUNK_INSIDE_LIBRARY]    = chunk_load_from_file("res/data/chunk_inside_library");
+    global.ChunkState.chunk = _chunks[global.ChunkState.chunk_id];
+
+    pthread_mutex_unlock(&lock);
+
+    renderer_reset_chunk();
+}
+
+void renderer_set_chunk(Chunks chunkId, vec2s target_pos) {
     physics_static_body_reset();
 
     Body *player_body = physics_body_get(global.PlayerState.body_id);
     Chunk *chunk      = _chunks[chunkId];
 
-    player_body->position = (vec2s){chunk->position.x + target_pos.x * TILE_SIZE, chunk->position.y + target_pos.y * TILE_SIZE};
+    if (target_pos.x == -1) {
+        player_body->position = (vec2s){player_body->position.x, chunk->position.y + target_pos.y * TILE_SIZE};
+    }
+    else if (target_pos.y == -1) {
+        player_body->position = (vec2s){chunk->position.x + target_pos.x * TILE_SIZE, player_body->position.y};
+    }
+    else {
+        player_body->position = (vec2s){chunk->position.x + target_pos.x * TILE_SIZE, chunk->position.y + target_pos.y * TILE_SIZE};
+    }
 
     global.ChunkState.chunk    = chunk;
     global.ChunkState.chunk_id = chunkId;
 
-
     vec2s pos = (vec2s){chunk->position.x, chunk->position.y};
-    for (int i = 0; i < (CHUNK_SIZE_X*CHUNK_SIZE_Y); ++i) {
-        if (chunk->collision[i] > 0) {
-            u32 x = i % CHUNK_SIZE_X;
-            u32 y = i / CHUNK_SIZE_X;
-
-            if (chunk->collision[i] == 1) {
-                physics_static_body_create(
-                        (vec2s){pos.x + TILE_SIZE * x, pos.y + TILE_SIZE * y}, DEFAULT_SCALE, 
-                        COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, COLLISION_ALIGN_CENTER, collision_callback);
-            }
-        }
-    }
+    for (u32 i = 0; i < chunk->collider_count; ++i) {
+        physics_static_body_create(
+                (vec2s){chunk->collider[i].pos.x, chunk->collider[i].pos.y}, 
+                (vec2s){chunk->collider[i].size.x, chunk->collider[i].size.y}, 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, collision_callback); 
+    } 
 
     for (u32 i = 0; i < chunk->teleporter_count; ++i) {
         chunk->teleporter[i].body_id = physics_static_body_create(
-                (vec2s){pos.x + TILE_SIZE * chunk->teleporter[i].teleport_coord.x, pos.y + TILE_SIZE * chunk->teleporter[i].teleport_coord.y}, 
-                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, COLLISION_ALIGN_CENTER, collision_callback); 
+                (vec2s){chunk->teleporter[i].pos.x, chunk->teleporter[i].pos.y}, 
+                (vec2s){chunk->teleporter[i].size.x, chunk->teleporter[i].size.y}, 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, collision_callback); 
     } 
 
     for (u32 i = 0; i < chunk->dialog_count; ++i) {
         chunk->dialog[i].body_id = physics_static_body_create(
                 (vec2s){pos.x + TILE_SIZE * chunk->dialog[i].coord.x, pos.y + TILE_SIZE * chunk->dialog[i].coord.y}, 
-                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, COLLISION_ALIGN_CENTER, collision_callback); 
+                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, collision_callback); 
+    } 
+
+    prepare = false;
+    if (global.FadeState.state == FADE_OUT) global.FadeState.state = FADE_IN;
+}
+
+void renderer_reset_chunk(void) {
+    fprintf(stdout, "Chunk Reset\n");
+
+    physics_static_body_reset();
+
+    Chunk *chunk = global.ChunkState.chunk;
+
+    vec2s pos = (vec2s){chunk->position.x, chunk->position.y};
+    for (u32 i = 0; i < chunk->collider_count; ++i) {
+        physics_static_body_create(
+                (vec2s){chunk->collider[i].pos.x, chunk->collider[i].pos.y}, 
+                (vec2s){chunk->collider[i].size.x, chunk->collider[i].size.y}, 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, collision_callback); 
+    } 
+
+    for (u32 i = 0; i < chunk->teleporter_count; ++i) {
+        chunk->teleporter[i].body_id = physics_static_body_create(
+                (vec2s){chunk->teleporter[i].pos.x, chunk->teleporter[i].pos.y}, 
+                (vec2s){chunk->teleporter[i].size.x, chunk->teleporter[i].size.y}, 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, collision_callback); 
+    } 
+
+    for (u32 i = 0; i < chunk->dialog_count; ++i) {
+        chunk->dialog[i].body_id = physics_static_body_create(
+                (vec2s){pos.x + TILE_SIZE * chunk->dialog[i].coord.x, pos.y + TILE_SIZE * chunk->dialog[i].coord.y}, 
+                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, collision_callback); 
     } 
 }
 
@@ -103,12 +205,17 @@ void renderer_append_quad_line(vec2s position, vec2s size, vec4s color) {
 }
 
 void renderer_init(void) {
+    global.collision_callback = collision_callback;
+    
+    pthread_mutex_init(&lock, NULL);
+
     asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
     asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
 
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81,  3, 27, 32);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32,  4,  8, 16);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TILE,         56,  7,  8, 16);
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     2035, 37, 55, 16);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_STRUCTURES,  368, 23, 18, 16);
     
     camera_init(&global.camera, (vec2s){0,0});
@@ -118,11 +225,13 @@ void renderer_init(void) {
     player_init();
 
     // for debugging
+    editor_init();
+
     _line_batch = malloc(sizeof(*_line_batch));
     assert(_line_batch);
 
-    _line_batch->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(*_line_batch->vertices));
     _line_batch->shader        = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "line_shader"); 
+    _line_batch->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(*_line_batch->vertices));
     _line_batch->line_count    = 0;
 
     GL_TRY(glGenVertexArrays(1, &_line_batch->vao));
@@ -214,6 +323,9 @@ void renderer_init(void) {
         prefab_create("sign_down",   structures_spritesheet, WHITE, (vec2s){48,32},  (vec4s){12,10,15,12});
         prefab_create("sign_left",   structures_spritesheet, WHITE, (vec2s){16,48},  (vec4s){17,12,18,15});
         prefab_create("plant_pot",   structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){12, 8,14,10});
+
+        struct Spritesheet *inside_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_INSIDE);
+        prefab_create("inside_library",   inside_spritesheet, WHITE, (vec2s){400,256},  (vec4s){0,0,26,17});
     }
 
     { // load chunks
@@ -227,6 +339,8 @@ void renderer_init(void) {
         _chunks[CHUNK_VILLAGE_TOP_LEFT]  = chunk_load_from_file("res/data/chunk_village_top_left");
         _chunks[CHUNK_VILLAGE_TOP_RIGHT] = chunk_load_from_file("res/data/chunk_village_top_right");
         _chunks[CHUNK_VILLAGE_TUNNEL]    = chunk_load_from_file("res/data/chunk_village_tunnel");
+
+        _chunks[CHUNK_INSIDE_LIBRARY]    = chunk_load_from_file("res/data/chunk_inside_library");
     }
 
     renderer_set_chunk(CHUNK_SPAWN, SPAWN_COORD);
@@ -238,10 +352,15 @@ void renderer_init(void) {
 }
 
 void renderer_destroy(void) {
+    pthread_mutex_destroy(&lock);
+
     camera_destroy(global.camera);
     physics_destroy();
     animation_destroy();
     prefab_destroy();
+
+    // debugging
+    editor_destroy();
 
     glDeleteVertexArrays(1, &_line_batch->vao);
     glDeleteBuffers(1, &_line_batch->vbo);
@@ -259,13 +378,12 @@ void renderer_destroy(void) {
     free(_batches);
 
     for (u32 i = 0; i < CHUNK_LAST; ++i) {
-        Chunk *chunk = _chunks[i];
-        free(chunk->uv);
-        free(chunk->prefab);
-        free(chunk->dialog);
-        free(chunk->collision);
-        free(chunk->teleporter);
-        /* free(chunk); */
+        free(_chunks[i]->uv);
+        free(_chunks[i]->prefab);
+        free(_chunks[i]->dialog);
+        free(_chunks[i]->collider);
+        free(_chunks[i]->teleporter);
+        free(_chunks[i]);
     }
     free(_chunks);
 }
@@ -274,6 +392,8 @@ void renderer_prepare(void) {
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0,0.0,0.0,1.0);
 
+    fade();
+
     _line_batch->line_count   = 0;
     for (int i = 0; i < LAYER_LAST; ++i) {
         _batches[i]->quad_count = 0;
@@ -281,6 +401,7 @@ void renderer_prepare(void) {
 }
 
 void renderer_render(void) {
+
     { 
         Body *player_body = physics_body_get(global.PlayerState.body_id);
         struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
@@ -291,6 +412,19 @@ void renderer_render(void) {
                 (vec3s){player_body->position.x,player_body->position.y, 0.0f}, 
                 PLAYER_SIZE, WHITE, player_spritesheet->texture, tex_coord);
     }
+
+    if (global.start_point[0] != 0 && global.start_point[1] != 0) {
+        renderer_append_quad(LAYER_PLAYER, (vec3s){global.start_point[0], global.start_point[1], 0.0f}, (vec2s){1,1}, GREEN);
+    }
+    if (global.end_point[0] != 0 && global.end_point[1] != 0) {
+        renderer_append_quad(LAYER_PLAYER, (vec3s){global.end_point[0], global.end_point[1], 0.0f}, (vec2s){1,1}, BLUE);
+    }
+
+    // render cursor
+    renderer_append_quad(LAYER_PLAYER, (vec3s){global.window->mouse.orthox, global.window->mouse.orthoy, 0.0f}, (vec2s){1,1}, WHITE);
+
+    // fade rect
+    renderer_append_quad(LAYER_PLAYER, (vec3s){global.camera->position.x,global.camera->position.y,0.0f}, (vec2s){WIDTH, HEIGHT}, (vec4s){0,0,0,global.FadeState.alpha});
 
     if (global.ChunkState.chunk)             chunk_render();
     if (global.DialogState.curr_dialog_node) dialog_render();
@@ -331,6 +465,9 @@ void renderer_render(void) {
 
     }
     GL_TRY();
+
+    if (global.toggle_editor){ editor_render(); }
+
 }
 
 void renderer_append_aabb(AABB aabb, vec4s color) {

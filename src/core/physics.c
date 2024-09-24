@@ -97,13 +97,12 @@ void physics_render_collider(void) {
     }
 }
 
-u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, u8 alignment) {
+u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag) {
     Body body = {
         .position       = position,
         .velocity       = {0,0},
         .collision_mask = collision_mask,
         .collision_flag = collision_flag,
-        .alignment      = alignment,
         .aabb = { 
             .center    = (vec2s){position.x + size.x * 0.5, position.y + size.y * 0.5},
             .half_size = {size.x * 0.5, size.y * 0.5}
@@ -123,14 +122,12 @@ u64  physics_static_body_create(
         vec2s size, 
         u8 collision_mask, 
         u8 collision_flag, 
-        u8 alignment,
         void(*on_hit_by_body)(Static_Body *body, Body *other)) {
     Static_Body body = {
         .aabb = { 
             .center    = (vec2s){position.x + size.x * 0.5, position.y + size.y * 0.5},
             .half_size = {size.x * 0.5, size.y * 0.5}
         },
-        .alignment      = alignment,   
         .collision_mask = collision_mask,
         .collision_flag = collision_flag,
         .on_hit_by_body = (on_hit_by_body) ? on_hit_by_body : NULL,
@@ -146,6 +143,10 @@ Static_Body* physics_static_body_get(u64 body_id) {
 
 void physics_static_body_reset(void) {
     _static_body_list->len = 0;
+}
+
+array_list* physics_get_static_body_list(void) {
+    return _static_body_list;
 }
 
 b8  aabb_intersect_aabb(AABB a, AABB b) {

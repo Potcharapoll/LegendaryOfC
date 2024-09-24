@@ -24,11 +24,12 @@
 #define ORANGE (vec4s){1,0.6,0.3,1}
 #define CYAN   (vec4s){0,1,1,1}
 
-#define SPAWN_COORD (ivec2s){5,3}
+#define SPAWN_COORD (vec2s){5,3}
 
 #define TEXTURE_PLAYER     "res/characters/fix1.png"
 #define TEXTURE_NPC        "res/characters/fix2.png"
 #define TEXTURE_TEXT       "res/images/font.png"
 #define TEXTURE_TILE       "res/tilesets/tileset.png"
+#define TEXTURE_INSIDE     "res/tilesets/inside.png"
 #define TEXTURE_STRUCTURES "res/tilesets/structures.png"
 #endif

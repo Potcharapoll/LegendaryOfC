@@ -2,6 +2,7 @@
 #include "../util/log.h"
 #include "../global.h"
 #include "../defs.h"
+#include "GLFW/glfw3.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,7 @@ b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     
     glfwMakeContextCurrent(self->handle);
     glfwSwapInterval(1);
+    glfwSetInputMode(self->handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
 
     printf("GLFW Version: %s\n", glfwGetVersionString());
@@ -49,8 +51,9 @@ void window_loop(struct Window *self) {
         glViewport(0, 0, self->width, self->height);
 
         // normalize mouse position
-        self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0f - 1.0f;
-        self->mouse.normaly = ((self->height - self->mouse.ypos) / self->height) * 2.0f - 1.0f;
+        self->mouse.ypos    = self->height - self->mouse.ypos;
+        self->mouse.normalx = (self->mouse.xpos / self->width) * 2.0 - 1.0;
+        self->mouse.normaly = (self->mouse.ypos / self->height) * 2.0 - 1.0;
         
         current_frame = glfwGetTime();
         global.dt     = (current_frame - last_frame);

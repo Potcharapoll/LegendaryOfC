@@ -54,7 +54,6 @@ struct LineBatchRender {
     struct LineVertex *vertices;
 };
 
-
 void renderer_init(void);
 void renderer_destroy(void);
 void renderer_prepare(void);
@@ -64,7 +63,10 @@ void renderer_clean(void);
 void renderer_append_prefab(RenderLayer layer, ivec2s coord, char *prefab_name);
 void renderer_append_quad(RenderLayer layer, vec3s position, vec2s size, vec4s color);
 void renderer_append_quad_texture(RenderLayer layer, vec3s position, vec2s size, vec4s color, struct Texture texture, f32 *tex_coord);
-void renderer_set_chunk(Chunks chunkId, ivec2s target_pos);
+
+void renderer_set_chunk(Chunks chunkId, vec2s target_pos);
+void renderer_reset_chunk(void);
+void renderer_reload_chunk(void);
 
 void renderer_append_line_segment(vec2s a, vec2s b, vec4s color);
 void renderer_append_quad_line(vec2s position, vec2s size, vec4s color);
