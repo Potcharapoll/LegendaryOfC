@@ -76,8 +76,9 @@ pos:[707,898] size:[36,94]
 pos:[759,898] size:[36,94]
 
 [teleporter]
-count:1
+count:2
 pos:[736,768] size:[32,4] target_coord:[-1.0,22.5] chunkid:3
+pos:[743,898] size:[16,4] target_coord:[6.5,1.0] chunkid:15
 
 [dialog]
 count:0

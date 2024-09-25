@@ -5,6 +5,7 @@
 #include "renderer.h"
 #include "animation.h"
 #include "cglm/struct/vec2.h"
+#include "chunk.h"
 #include "dialog.h"
 #include "physics.h"
 #include "player.h"
@@ -95,12 +96,16 @@ void renderer_reload_chunk(void) {
     _chunks[CHUNK_VILLAGE_TOP_LEFT]  = chunk_load_from_file("res/data/chunk_village_top_left");
     _chunks[CHUNK_VILLAGE_TOP_RIGHT] = chunk_load_from_file("res/data/chunk_village_top_right");
     _chunks[CHUNK_VILLAGE_TUNNEL]    = chunk_load_from_file("res/data/chunk_village_tunnel");
-
     _chunks[CHUNK_INSIDE_LIBRARY]    = chunk_load_from_file("res/data/chunk_inside_library");
+    _chunks[CHUNK_INSIDE_RESTAURANT] = chunk_load_from_file("res/data/chunk_inside_restaurant");
+    _chunks[CHUNK_INSIDE_CHURCH]     = chunk_load_from_file("res/data/chunk_inside_church");
+    _chunks[CHUNK_INSIDE_FISH]       = chunk_load_from_file("res/data/chunk_inside_fish");
+    _chunks[CHUNK_INSIDE_LJ_HOME]    = chunk_load_from_file("res/data/chunk_inside_lj_home");
+    _chunks[CHUNK_INSIDE_OG_HOME]    = chunk_load_from_file("res/data/chunk_inside_og_home");
+    _chunks[CHUNK_INSIDE_VC_HOME]    = chunk_load_from_file("res/data/chunk_inside_vc_home");
     global.ChunkState.chunk = _chunks[global.ChunkState.chunk_id];
 
     pthread_mutex_unlock(&lock);
-
     renderer_reset_chunk();
 }
 
@@ -167,7 +172,7 @@ void renderer_reset_chunk(void) {
         chunk->teleporter[i].body_id = physics_static_body_create(
                 (vec2s){chunk->teleporter[i].pos.x, chunk->teleporter[i].pos.y}, 
                 (vec2s){chunk->teleporter[i].size.x, chunk->teleporter[i].size.y}, 
-                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, collision_callback); 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, collision_callback); 
     } 
 
     for (u32 i = 0; i < chunk->dialog_count; ++i) {
@@ -215,7 +220,7 @@ void renderer_init(void) {
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81,  3, 27, 32);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32,  4,  8, 16);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TILE,         56,  7,  8, 16);
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     2035, 37, 55, 16);
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     1692, 36, 47, 16);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_STRUCTURES,  368, 23, 18, 16);
     
     camera_init(&global.camera, (vec2s){0,0});
@@ -325,7 +330,13 @@ void renderer_init(void) {
         prefab_create("plant_pot",   structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){12, 8,14,10});
 
         struct Spritesheet *inside_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_INSIDE);
-        prefab_create("inside_library",   inside_spritesheet, WHITE, (vec2s){400,256},  (vec4s){0,0,26,17});
+        prefab_create("inside_library",    inside_spritesheet, WHITE, (vec2s){352,192}, (vec4s){0,0,23,13});
+        prefab_create("inside_restaurant", inside_spritesheet, WHITE, (vec2s){352,176}, (vec4s){0,13,23,24});
+        prefab_create("inside_church",     inside_spritesheet, WHITE, (vec2s){192,336}, (vec4s){23,0,36,22});
+        prefab_create("inside_fish",       inside_spritesheet, WHITE, (vec2s){160,144}, (vec4s){36,0,47,10});
+        prefab_create("inside_lj_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){0,24,14,36});
+        prefab_create("inside_vc_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){14,24,28,36});
+        prefab_create("inside_og_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){28,24,42,36});
     }
 
     { // load chunks
@@ -341,6 +352,12 @@ void renderer_init(void) {
         _chunks[CHUNK_VILLAGE_TUNNEL]    = chunk_load_from_file("res/data/chunk_village_tunnel");
 
         _chunks[CHUNK_INSIDE_LIBRARY]    = chunk_load_from_file("res/data/chunk_inside_library");
+        _chunks[CHUNK_INSIDE_RESTAURANT] = chunk_load_from_file("res/data/chunk_inside_restaurant");
+        _chunks[CHUNK_INSIDE_CHURCH]     = chunk_load_from_file("res/data/chunk_inside_church");
+        _chunks[CHUNK_INSIDE_FISH]       = chunk_load_from_file("res/data/chunk_inside_fish");
+        _chunks[CHUNK_INSIDE_LJ_HOME]    = chunk_load_from_file("res/data/chunk_inside_lj_home");
+        _chunks[CHUNK_INSIDE_OG_HOME]    = chunk_load_from_file("res/data/chunk_inside_og_home");
+        _chunks[CHUNK_INSIDE_VC_HOME]    = chunk_load_from_file("res/data/chunk_inside_vc_home");
     }
 
     renderer_set_chunk(CHUNK_SPAWN, SPAWN_COORD);
@@ -474,7 +491,7 @@ void renderer_append_aabb(AABB aabb, vec4s color) {
         renderer_append_quad_line(aabb.center, aabb.half_size, color);
 }
 
-void renderer_append_prefab(RenderLayer layer, ivec2s coord, char *prefab_name) {
+void renderer_append_prefab(RenderLayer layer, vec2s coord, char *prefab_name) {
     Prefab *prefab = prefab_get(prefab_name);
 
     vec3s position = { 

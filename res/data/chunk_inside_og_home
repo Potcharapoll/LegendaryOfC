@@ -55,25 +55,14 @@ pos:[0,0]
 
 [prefab]
 count:1
-coord:[0,0] inside_library
+coord:[0,0] inside_og_home
 
 [collider]
-count:11
-pos:[274,0] size:[206,6]
-pos:[81,0] size:[141,6]
-pos:[81,6] size:[6,235] 
-pos:[474,6] size:[6,235]
-pos:[307,121] size:[167,35]
-pos:[289,121] size:[18,32]
-pos:[307,186] size:[167,35]
-pos:[290,186] size:[17,29]
-pos:[267,183] size:[14,32]
-pos:[87,203] size:[100,5]
-pos:[134,183] size:[15,20]
+count:0
 
 [teleporter]
 count:1
-pos:[187,203] size:[27,5] target_coord:[15.5,14.0] chunkid:1
+pos:[95,0] size:[32,5] target_coord:[6.5,11] chunkid:3
 
 [dialog]
 count:0

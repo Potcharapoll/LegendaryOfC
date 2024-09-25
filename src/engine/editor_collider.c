@@ -52,7 +52,7 @@ void collider_menu(void) {
         vec2 temp;
         glm_vec2_copy(global.start_point, temp);
         glm_vec2_copy(global.end_point, global.start_point); 
-        glm_vec2_copy(global.end_point, temp);
+        glm_vec2_copy(temp, global.end_point);
     }
 
 
@@ -110,7 +110,7 @@ void collider_menu(void) {
 
     if (selected_idx == 1) {
         static u8    selected_chunk_idx = 0;
-        static char *chunk_name[] = {
+        static char *chunk_name[CHUNK_LAST] = {
             "CHUNK_SPAWN"            ,
             "CHUNK_VILLAGE_ENTRANCE" ,
             "CHUNK_VILLAGE_LEFT"     ,
@@ -121,6 +121,7 @@ void collider_menu(void) {
             "CHUNK_VILLAGE_TOP_RIGHT",
             "CHUNK_VILLAGE_TUNNEL"   ,
             "CHUNK_INSIDE_LIBRARY"   ,
+            "CHUNK_INSIDE_RESTAURANT"
         };
 
         igSetNextItemWidth(260.0f);
@@ -163,6 +164,8 @@ void collider_menu(void) {
                 physics_static_body_create((vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, global.collision_callback);
                 break;
         }
+
+        fprintf(stdout, "pos:[%d,%d] size:[%d,%d]\n", (s32)global.start_point[0], (s32)global.start_point[1], (s32)size.x, (s32)size.y);
     }
     igSeparator();
 

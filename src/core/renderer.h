@@ -60,7 +60,7 @@ void renderer_prepare(void);
 void renderer_render(void);
 void renderer_clean(void);
 
-void renderer_append_prefab(RenderLayer layer, ivec2s coord, char *prefab_name);
+void renderer_append_prefab(RenderLayer layer, vec2s coord, char *prefab_name);
 void renderer_append_quad(RenderLayer layer, vec3s position, vec2s size, vec4s color);
 void renderer_append_quad_texture(RenderLayer layer, vec3s position, vec2s size, vec4s color, struct Texture texture, f32 *tex_coord);
 

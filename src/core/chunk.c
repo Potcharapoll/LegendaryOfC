@@ -12,7 +12,7 @@
 #define FORMAT_IN_POSITION   "pos:[%f,%f]\n"
 #define FORMAT_IN_BASE       "%hhu "
 #define FORMAT_IN_UPPER      "%hhu "
-#define FORMAT_IN_PREFAB     "coord:[%u,%u] %s\n"
+#define FORMAT_IN_PREFAB     "coord:[%f,%f] %s\n"
 #define FORMAT_IN_COLLIDER   "pos:[%f,%f] size:[%u,%u]\n"
 #define FORMAT_IN_TELEPORTER "pos:[%f,%f] size:[%u,%u] target_coord:[%f,%f] chunkid:%hhu\n"
 #define FORMAT_IN_DIALOG     "coord:[%u,%u] size:[%u,%u] dialogid:%hhu\n"

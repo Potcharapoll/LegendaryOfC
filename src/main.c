@@ -9,12 +9,12 @@
 #include "global.h"
 #include "defs.h"
 
-//   ~80%
-//   Custom Collision         -- ON GOING --
-//   Inside Map               -- NEXT --
-//   Progression system       -- PLANNED --
-//   Scnces system            -- PLANNED --
-//   Sounds system            -- PLANNED --
+//   ~82%
+//   Inside Map               -- ON GOING 75% --
+//   Progression system       -- PLANNED      --
+//   Scnces system            -- PLANNED      --
+//   Sounds system            -- PLANNED      --
+//   Finish Editor            -- PLANNED      --
 
 static void border_collision(vec2s *a, vec2s size, vec4s position) {
     if (a->y < position.y) a->y = position.y;

@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
     char name[50];
-    ivec2s coord;
+    vec2s coord;
 } ChunkPrefab;
 
 typedef struct {
@@ -56,11 +56,15 @@ typedef enum {
     CHUNK_VILLAGE_TOP_LEFT  = 6,
     CHUNK_VILLAGE_TOP_RIGHT = 7,
     CHUNK_VILLAGE_TUNNEL    = 8,
-
     CHUNK_INSIDE_LIBRARY    = 9,
     CHUNK_INSIDE_RESTAURANT = 10,
+    CHUNK_INSIDE_CHURCH     = 11,
+    CHUNK_INSIDE_FISH       = 12,
+    CHUNK_INSIDE_OG_HOME    = 13,
+    CHUNK_INSIDE_LJ_HOME    = 14,
+    CHUNK_INSIDE_VC_HOME    = 15, 
 
-    CHUNK_LAST = 10
+    CHUNK_LAST = 16
 } Chunks;
 
 // Explaination: Chunk contains tilemap information that uses to render the map
