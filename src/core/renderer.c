@@ -140,7 +140,7 @@ void renderer_set_chunk(Chunks chunkId, vec2s target_pos) {
         chunk->teleporter[i].body_id = physics_static_body_create(
                 (vec2s){chunk->teleporter[i].pos.x, chunk->teleporter[i].pos.y}, 
                 (vec2s){chunk->teleporter[i].size.x, chunk->teleporter[i].size.y}, 
-                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, collision_callback); 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, collision_callback); 
     } 
 
     for (u32 i = 0; i < chunk->dialog_count; ++i) {
@@ -172,7 +172,7 @@ void renderer_reset_chunk(void) {
         chunk->teleporter[i].body_id = physics_static_body_create(
                 (vec2s){chunk->teleporter[i].pos.x, chunk->teleporter[i].pos.y}, 
                 (vec2s){chunk->teleporter[i].size.x, chunk->teleporter[i].size.y}, 
-                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, collision_callback); 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, collision_callback); 
     } 
 
     for (u32 i = 0; i < chunk->dialog_count; ++i) {

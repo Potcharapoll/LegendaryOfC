@@ -15,6 +15,8 @@
 //   Scnces system            -- PLANNED      --
 //   Sounds system            -- PLANNED      --
 //   Finish Editor            -- PLANNED      --
+//
+//   PLAN -- Fix prefab position of inside chunks. -> Finish inside art -> place collider -> progression
 
 static void border_collision(vec2s *a, vec2s size, vec4s position) {
     if (a->y < position.y) a->y = position.y;
@@ -25,7 +27,8 @@ static void border_collision(vec2s *a, vec2s size, vec4s position) {
 }
 
 static void input_handling(void) {
-    player_input();
+
+    if (global.FadeState.state == FADE_NONE) player_input();
 
 #ifdef DEBUG_INPUT
     static f32 delay = 0.0f;
