@@ -55,14 +55,14 @@ pos:[0,0]
 
 [prefab]
 count:1
-coord:[0,0] inside_lj_home
+coord:[2,0] inside_lj_home
 
 [collider]
 count:0
 
 [teleporter]
 count:1
-pos:[95,0] size:[32,5] target_coord:[15.5,7] chunkid:6
+pos:[127,0] size:[32,5] target_coord:[15.5,7] chunkid:6
 
 [dialog]
 count:0

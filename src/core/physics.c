@@ -2,6 +2,7 @@
 #include "renderer.h"
 
 #include "../util/array_list.h"
+#include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
 
@@ -44,11 +45,15 @@ static void collision_check(Body *body) {
 void physics_init(void) {
     _body_list = array_list_init(sizeof(Body), 0);
     _static_body_list = array_list_init(sizeof(Static_Body), 0);
+
+    LOG_TRACE("Physics: Successfully initialized physics");
 }
 
 void physics_destroy(void) {
     array_list_destroy(_body_list);
     array_list_destroy(_static_body_list);
+
+    LOG_TRACE("Physics: Successfully destroyed physics");
 }
 
 // we suppose to have only 1 movable body so we don't need to loop through the movable and check collision for it

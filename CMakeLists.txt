@@ -62,6 +62,7 @@ add_executable(${PROJECT_NAME}
     src/core/prefab.c
     src/core/dialog.c
 
+    src/engine/logger.c
     src/engine/editor.c
     src/engine/editor_collider.c
     src/engine/editor_debug.c

@@ -1,20 +1,19 @@
 #include "window.h"
-#include "../util/log.h"
+
+#include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
-#include "GLFW/glfw3.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 static void error_callback(int err, const char *dest) {
     printf("GLFW Error Callback %d: %s\n", err, dest);
 }
 
-b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
+void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     glfwSetErrorCallback(error_callback);
 
-    if(!glfwInit()) return false;
+    ASSERT(glfwInit() != GLFW_FALSE, "Failed to initialize GLFW", __FILE__, __LINE__);
+
+    LOG_TRACE("Successfully initialized GLFW");
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -27,16 +26,18 @@ b8 window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     self->width   = WIDTH;
     self->height  = HEIGHT;
     self->handle  = glfwCreateWindow(WIDTH, HEIGHT, TITLE, NULL, NULL);
-    if(!self->handle) return false;
+    ASSERT(self->handle != NULL, "Failed to create GLFWwindow", __FILE__, __LINE__);
+    LOG_TRACE("Successfully initialized GLFWwindow");
     
     glfwMakeContextCurrent(self->handle);
     glfwSwapInterval(1);
     glfwSetInputMode(self->handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
+    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize OpenGL", __FILE__, __LINE__); 
+    LOG_TRACE("Successfully initialized OpenGL");
 
-    printf("GLFW Version: %s\n", glfwGetVersionString());
-    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
-    return true;
+
+    LOG_INFO("GLFW Version: %s", glfwGetVersionString());
+    LOG_INFO("OpenGL Version: %s", glGetString(GL_VERSION));
 }
 
 void window_loop(struct Window *self) {
@@ -69,7 +70,7 @@ void window_destroy(struct Window *self) {
     self->cleanup();
     glfwDestroyWindow(self->handle);
     glfwTerminate();
-    LOG_DEBUG("Window destroyed");
+    LOG_TRACE("Window destroyed");
 }
 
 

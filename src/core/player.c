@@ -1,10 +1,11 @@
-#include "../util/types.h"
-#include "../global.h"
-#include "../defs.h"
-
 #include "player.h"
 #include "animation.h"
 #include "physics.h"
+
+#include "../util/types.h"
+#include "../engine/logger.h"
+#include "../global.h"
+#include "../defs.h"
 
 #include <string.h>
 
@@ -43,6 +44,8 @@ void player_init(void) {
     global.PlayerState.animation_id = animation_idle[DOWN];
     global.PlayerState.body_id      = physics_body_create(
             (vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER);
+
+    LOG_TRACE("Successfully initialized player");
 }
 
 void player_input(void) {

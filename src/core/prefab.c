@@ -1,14 +1,19 @@
 #include "prefab.h"
 #include "../util/hashtable.h"
+#include "../engine/logger.h"
 
 hash_table_t *prefabs = NULL;
 
 void prefab_init(void) {
     prefabs = hashtable_init(sizeof(Prefab));
+
+    LOG_TRACE("Prefab: Successfully initialized prefab");
 }
 
 void prefab_destroy(void){ 
     hashtable_destroy(prefabs);
+
+    LOG_TRACE("Prefab: Successfully destroyed prefab");
 }
 
 void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec2s size, vec4s grid_coord) {
@@ -27,6 +32,8 @@ void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec
     prefab.tex_coord[3] = cell_size.y * grid_coord.w;
 
     hashtable_insert(prefabs, name, &prefab);
+
+    LOG_DEBUG("Prefab: Create prefab named \'%s\'", name);
 }
 
 Prefab* prefab_get(char *name) {

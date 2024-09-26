@@ -1,13 +1,14 @@
 #include "editor.h"
 #include "editor_internal.h"
 #include "../global.h"
+#include "logger.h"
 
 // NOTE: Use Multi-Viewport cuase an error from GLFW 
 // GLFW Error Callback 65548: Wayland: The platform does not provide the window position
 
 void editor_init(void) {
     struct ImGui *editor = malloc(sizeof(*editor));
-    assert(editor != NULL);
+    ASSERT(editor != NULL, "Failed to allocate memory for editor", __FILE__, __LINE__);
 
     editor->context = igCreateContext(NULL);
     editor->io      = igGetIO();
@@ -19,6 +20,8 @@ void editor_init(void) {
     igStyleColorsDark(NULL);
 
     global.editor = editor;
+
+    LOG_TRACE("Editor: Successfully initialized editor");
 }
 
 void editor_destroy(void) {
@@ -27,6 +30,8 @@ void editor_destroy(void) {
     igDestroyContext(global.editor->context);
 
     free(global.editor);
+
+    LOG_TRACE("Editor: Successfully destroyed editor");
 }
 
 void editor_render(void) {
@@ -39,7 +44,6 @@ void editor_render(void) {
 
     igRender();
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
-
 
     /* if (global.editor->io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) { */
     /*   GLFWwindow *backup_current_window = glfwGetCurrentContext(); */

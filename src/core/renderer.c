@@ -1,4 +1,4 @@
-#include "../util/debug.h"
+#include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
 
@@ -15,16 +15,14 @@
 #include <glad/glad.h>
 #include <string.h>
 
-static int                 texture_slot[8] = {0,1,2,3,4,5,6,7};
+static int texture_slot[8] = {0,1,2,3,4,5,6,7};
 static struct LineBatchRender *_line_batch = NULL;
-static struct BatchRender       **_batches = NULL; 
-static Chunk                     **_chunks = NULL;
-static b8                          prepare = false;
+static struct BatchRender **_batches = NULL; 
+static Chunk **_chunks = NULL;
+static b8 prepare = false;
 
-static pthread_mutex_t lock;
-
-// SUGGEST: fading maybe should be in scnce module
-void fade(void) {
+// Fading according to global.FadeState.state
+void fade_update(void) {
     f32 time = global.dt * 2;
 
     switch (global.FadeState.state) {
@@ -71,12 +69,13 @@ void collision_callback(Static_Body *body, Body *other) {
         return;
     }
     if (body->collision_flag == COLLISION_LAYER_DIALOG) {
-        puts("You hit dialog");
+        LOG_DEBUG("Physics: Hit the dialog layer");
     }
 }
 
 void renderer_reload_chunk(void) {
-    pthread_mutex_lock(&lock);
+    LOG_DEBUG("Renderer: Reload Chunk");
+    pthread_mutex_lock(&global.threads.lock);
 
     for (u32 i = 0; i < CHUNK_LAST; ++i) {
         free(_chunks[i]->uv);
@@ -105,11 +104,12 @@ void renderer_reload_chunk(void) {
     _chunks[CHUNK_INSIDE_VC_HOME]    = chunk_load_from_file("res/data/chunk_inside_vc_home");
     global.ChunkState.chunk = _chunks[global.ChunkState.chunk_id];
 
-    pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&global.threads.lock);
     renderer_reset_chunk();
 }
 
 void renderer_set_chunk(Chunks chunkId, vec2s target_pos) {
+    LOG_DEBUG("Renderer: Set new chunk (%d->%d) ", global.ChunkState.chunk_id, chunkId);
     physics_static_body_reset();
 
     Body *player_body = physics_body_get(global.PlayerState.body_id);
@@ -154,7 +154,7 @@ void renderer_set_chunk(Chunks chunkId, vec2s target_pos) {
 }
 
 void renderer_reset_chunk(void) {
-    fprintf(stdout, "Chunk Reset\n");
+    LOG_DEBUG("Renderer: Reset Chunk");
 
     physics_static_body_reset();
 
@@ -212,8 +212,6 @@ void renderer_append_quad_line(vec2s position, vec2s size, vec4s color) {
 void renderer_init(void) {
     global.collision_callback = collision_callback;
     
-    pthread_mutex_init(&lock, NULL);
-
     asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
     asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
 
@@ -366,11 +364,11 @@ void renderer_init(void) {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_CULL_FACE);
+
+    LOG_TRACE("Renderer: Successfully initialized renderer");
 }
 
 void renderer_destroy(void) {
-    pthread_mutex_destroy(&lock);
-
     camera_destroy(global.camera);
     physics_destroy();
     animation_destroy();
@@ -384,10 +382,14 @@ void renderer_destroy(void) {
     free(_line_batch->vertices);
     free(_line_batch);
 
-    for (int i = 0; i < LAYER_LAST; ++i) {
+    for (u8 i = 0; i < LAYER_LAST; ++i) {
         glDeleteVertexArrays(1, &_batches[i]->vao);
         glDeleteBuffers(1, &_batches[i]->vbo);
         glDeleteBuffers(1, &_batches[i]->ebo);
+
+        for (u8 j = 0; j < _batches[i]->texture_count; ++j) {
+            glDeleteTextures(1, &_batches[i]->textures[j].handle);
+        }
 
         free(_batches[i]->vertices);
         free(_batches[i]);
@@ -403,13 +405,15 @@ void renderer_destroy(void) {
         free(_chunks[i]);
     }
     free(_chunks);
+
+    LOG_TRACE("Renderer: Successfully destroyed renderer");
 }
 
 void renderer_prepare(void) {
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0,0.0,0.0,1.0);
 
-    fade();
+    fade_update();
 
     _line_batch->line_count   = 0;
     for (int i = 0; i < LAYER_LAST; ++i) {
@@ -418,7 +422,6 @@ void renderer_prepare(void) {
 }
 
 void renderer_render(void) {
-
     { 
         Body *player_body = physics_body_get(global.PlayerState.body_id);
         struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
@@ -439,6 +442,9 @@ void renderer_render(void) {
 
     // render cursor
     renderer_append_quad(LAYER_PLAYER, (vec3s){global.window->mouse.orthox, global.window->mouse.orthoy, 0.0f}, (vec2s){1,1}, WHITE);
+
+    // gradient rect
+    renderer_append_quad(LAYER_PLAYER, (vec3s){global.camera->position.x,global.camera->position.y,0.0f}, (vec2s){WIDTH, HEIGHT}, global.gradient);
 
     // fade rect
     renderer_append_quad(LAYER_PLAYER, (vec3s){global.camera->position.x,global.camera->position.y,0.0f}, (vec2s){WIDTH, HEIGHT}, (vec4s){0,0,0,global.FadeState.alpha});

@@ -1,9 +1,6 @@
 #include "shader.h"
-#include "../util/debug.h"
+#include "../engine/logger.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 #include <glad/glad.h>
 
 static GLuint _compile(GLenum type, char *path) {
@@ -12,10 +9,7 @@ static GLuint _compile(GLenum type, char *path) {
     char *txt;
 
     fp = fopen(path, "rb");
-    if (fp == NULL) {
-        printf("cannot open file at %s\n", path);
-        exit(EXIT_FAILURE);
-    }
+    if (fp == NULL) { LOG_FETAL("Failed to open file at %s", path); }
 
     fseek(fp, 0, SEEK_END);
     len = ftell(fp);
@@ -57,7 +51,7 @@ struct Shader shader_load(char *vs_path, char *fs_path) {
     if(check == GL_FALSE) {
         char log[512];
         GL_TRY(glGetProgramInfoLog(shader.handle, 512, NULL, log));
-        puts(log);
+        LOG_ERROR("Shader: %s", log);
     }
 
     GL_TRY(glValidateProgram(shader.handle));
@@ -65,7 +59,7 @@ struct Shader shader_load(char *vs_path, char *fs_path) {
     if(check == GL_FALSE) {
         char log[512];
         GL_TRY(glGetProgramInfoLog(shader.handle, 512, NULL, log));
-        puts(log);
+        LOG_ERROR("Shader: %s", log);
     }
 
     return shader;

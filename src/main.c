@@ -16,7 +16,12 @@
 //   Sounds system            -- PLANNED      --
 //   Finish Editor            -- PLANNED      --
 //
-//   PLAN -- Fix prefab position of inside chunks. -> Finish inside art -> place collider -> progression
+//   PLAN -- Fix prefab position of inside chunks.(DONE) 
+//           Gradient color (Day/Night)           (DONE)
+//           Logger                               (DONE)
+//           Finish inside art -> place collider -> camera -> progression
+//
+//           Night gradient -> (64,25,71,140) or (0,0,0,174)
 
 static void border_collision(vec2s *a, vec2s size, vec4s position) {
     if (a->y < position.y) a->y = position.y;
@@ -80,6 +85,10 @@ static void input_handling(void) {
 void setup(void) {
     global.FadeState.alpha = 0.0f;
     global.FadeState.state = FADE_NONE;
+
+    global.gradient = glms_vec4_zero();
+
+    pthread_mutex_init(&global.threads.lock, NULL);
 
     asset_manager_init(&global.asset_manager);
     renderer_init();
@@ -164,6 +173,7 @@ void update(void) {
 }
 
 void cleanup(void) {
+    pthread_mutex_destroy(&global.threads.lock);
     asset_manager_destroy(global.asset_manager);
 #ifdef TEST_DIALOG
     dialog_delete(dialog);
@@ -173,10 +183,11 @@ void cleanup(void) {
 
 int main(void) {
     struct Window window;
-    if (window_init(&window, setup, update, cleanup)) {
-        global.window = &window;
-        window_loop(&window);
-    }
+    window_init(&window, setup, update, cleanup);
+
+    global.window = &window;
+    window_loop(&window);
+
     window_destroy(&window);
     return 0;
 }

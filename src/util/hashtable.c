@@ -1,9 +1,9 @@
+#include "hashtable.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
-#include "hashtable.h"
-#include "log.h"
 
 u64 hash(char *key) {
     u64 idx = 0;
@@ -85,10 +85,7 @@ bool hashtable_delete(hash_table_t *self, char *key) {
         item = item->next;
     }
 
-    if (!found) {
-        LOG_DEBUG("Not found key named \'%s\'", key);
-        return found;
-    }
+    if (!found) { return found; }
 
     if (!prev && item->next) {
             self->entries[idx] = item->next;

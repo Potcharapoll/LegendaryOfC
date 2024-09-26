@@ -1,17 +1,16 @@
 #include "camera.h"
 #include "../defs.h"
-#include "../util/log.h"
+#include "../engine/logger.h"
 
 void camera_init(struct Camera **camera, vec2s position) {
     *camera = malloc(sizeof(**camera));
-    if (*camera == NULL) {
-        LOG_FETAL("Failed to initialize camera");
-        abort();
-    }
+    ASSERT(*camera != NULL, "Failed to allocate memory for camera", __FILE__, __LINE__);
 
     (*camera)->position = position;
     (*camera)->front    = (vec3s){0.0f, 0.0f, -1.0f};
     (*camera)->up       = (vec3s){0.0f, 1.0f, 0.0f};
+
+    LOG_TRACE("Camera: Successfully initialized camera");
 }
 
 void camera_update(struct Camera *camera) {
@@ -35,6 +34,8 @@ void camera_center_to_obj(struct Camera *camera, vec2s obj, vec2s size) {
 
 void camera_destroy(struct Camera *camera) {
     free(camera);
+
+    LOG_TRACE("Camera: Successfully destroyed camera");
 }
 
 struct ViewProj get_view_proj(struct Camera *camera) {

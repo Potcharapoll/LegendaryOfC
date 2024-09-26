@@ -29,5 +29,13 @@ void debug_menu(void) {
         global.FadeState.alpha = 0.0f;
     }
     igSeparator();
+
+    static vec4 color;
+    if (igColorEdit4("Gradient", color, 0)) {
+        global.gradient.x = color[0];
+        global.gradient.y = color[1];
+        global.gradient.z = color[2];
+        global.gradient.w = color[3];
+    }
     igEnd();
 }

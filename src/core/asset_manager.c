@@ -1,33 +1,44 @@
-#include "../util/log.h"
 #include "asset_manager.h"
+
+#include "../engine/logger.h"
 
 void asset_manager_init(struct AssetManager **self) {
     *self = malloc(sizeof(**self));
-    ASSERT_MSG(self != NULL, "Failed to allocate memory for asset manager");
+    ASSERT(self != NULL, "Failed to allocate memory for AssetManager", __FILE__, __LINE__);
 
     (*self)->shaders      = hashtable_init(sizeof(struct Shader));
     (*self)->spritesheets = hashtable_init(sizeof(struct Spritesheet));
+
+    LOG_TRACE("AssetManager: Successfully initialized AssetManager");
 }
 
 void asset_manager_destroy(struct AssetManager *self) {
     hashtable_destroy(self->shaders);
     hashtable_destroy(self->spritesheets);
     free(self);
+
+    LOG_TRACE("AssetManager: Successfully destroyed AssetManager");
 }
 
 void asset_manager_push_texture(struct AssetManager *self, char *name, char *path) {
     struct Texture texture = texture_load(path);
     hashtable_insert(self->textures, name, &texture);
+
+    LOG_DEBUG("AssetManager: Successfully pushed texture name \'%s\' from path \'%s\'", name, path);
 }
 
 void asset_manager_push_spritesheet(struct AssetManager *self, char *name, u32 count, u32 rows, u32 cols, u32 stride) {
     struct Spritesheet spritesheet = spritesheet_load(name, count, rows, cols, stride);
     hashtable_insert(self->spritesheets, name, &spritesheet);
+
+    LOG_DEBUG("AssetManager: Successfully pushed spritesheet name \'%s\' from path \'%s\'", name, name);
 }
 
 void asset_manager_push_shader(struct AssetManager *self, char *name, char *vs_path, char *fs_path) {
     struct Shader shader = shader_load(vs_path, fs_path);
     hashtable_insert(self->shaders, name, &shader);
+
+    LOG_DEBUG("AssetManager: Successfully pushed shader name \'%s\' from path \'{%s,%s}\'", name, vs_path, fs_path);
 }
 
 struct Spritesheet* asset_manager_get_spritesheet(struct AssetManager *self, char *name) {

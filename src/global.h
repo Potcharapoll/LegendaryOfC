@@ -11,6 +11,8 @@
 #include "core/player.h"
 #include "core/chunk.h"
 
+#include <pthread.h>
+
 enum CursorMode {
     START_POINT,
     END_POINT,
@@ -23,10 +25,19 @@ enum FadeState {
     FADE_OUT
 };
 
+// Introduction (ACT0)
+enum GameAct {
+    ACT0,
+    ACT1,
+    ACT2,
+    ACT3,
+    ACT4
+};
+
 struct Global {
-    struct Window        *window;
-    struct Camera        *camera;
-    struct AssetManager  *asset_manager;
+    struct Window       *window;
+    struct Camera       *camera;
+    struct AssetManager *asset_manager;
 
     f32 dt;
 
@@ -54,6 +65,9 @@ struct Global {
     } FadeState;
 
     // editor/debugging
+    
+    vec4s gradient;
+
     struct {
         struct ImGui *editor;
         vec2 start_point, end_point;
@@ -65,6 +79,10 @@ struct Global {
         b8 toggle_collision;
         b8 toggle_show_collider;
     };
+
+    struct {
+        pthread_mutex_t lock;
+    } threads;
 };
 
 extern struct Global global;

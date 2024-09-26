@@ -1,13 +1,11 @@
 #include "../global.h"
 #include "../defs.h"
+#include "../engine/logger.h"
 
 #include "chunk.h"
 #include "renderer.h"
 
-#include <assert.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 #define FORMAT_IN_POSITION   "pos:[%f,%f]\n"
 #define FORMAT_IN_BASE       "%hhu "
@@ -23,18 +21,16 @@ Chunk* chunk_load_from_file(char *path) {
     Chunk* chunk = malloc(sizeof(*chunk));
 
     stream = fopen(path, "rb");
-    if (stream == NULL) {
-        fprintf(stderr, "Failed to open file \'%s\'\n", path);
-        exit(1);
-    }
+    if (stream == NULL) { LOG_FETAL("Failed to load chunk from file at path \'%s\'", path); }
 
     chunk->uv = malloc((CHUNK_SIZE_X * CHUNK_SIZE_Y * 2) * sizeof(*chunk->uv));
+    ASSERT(chunk->uv != NULL, "Failed to allocate memory for chunk->uv", __FILE__, __LINE__);
 
     char c;
     uint32_t size;
      
     char *keywords[] = {"position", "base", "upper", "prefab", "collider", "teleporter", "dialog"};
-    char key[100];
+    char key[50];
 
     while ((c = fgetc(stream)) != EOF) {
         if (c == ' ' || c == '\n') continue;
@@ -73,6 +69,7 @@ Chunk* chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, FORMAT_IN_COUNT, &size);
             chunk->prefab = malloc(size * sizeof(*chunk->prefab));
+            ASSERT(chunk->prefab != NULL, "Failed to allocate memory for chunk->prefab", __FILE__, __LINE__);
             chunk->prefab_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
@@ -84,6 +81,7 @@ Chunk* chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, FORMAT_IN_COUNT, &size);
             chunk->collider = malloc(size * sizeof(*chunk->collider));
+            ASSERT(chunk->collider != NULL, "Failed to allocate memory for chunk->collider", __FILE__, __LINE__);
             chunk->collider_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
@@ -98,6 +96,7 @@ Chunk* chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, FORMAT_IN_COUNT, &size);
             chunk->teleporter = malloc(size * sizeof(*chunk->teleporter));
+            ASSERT(chunk->teleporter != NULL, "Failed to allocate memory for chunk->teleporter", __FILE__, __LINE__);
             chunk->teleporter_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
@@ -113,6 +112,7 @@ Chunk* chunk_load_from_file(char *path) {
             fgets(key, sizeof(key), stream);
             fscanf(stream, FORMAT_IN_COUNT, &size);
             chunk->dialog = malloc(size * sizeof(*chunk->dialog));
+            ASSERT(chunk->dialog != NULL, "Failed to allocate memory for chunk->dialog", __FILE__, __LINE__);
             chunk->dialog_count = size;
 
             for (uint8_t i = 0; i < size; ++i) {
@@ -126,6 +126,7 @@ Chunk* chunk_load_from_file(char *path) {
     }
     fclose(stream);
 
+    LOG_DEBUG("Chunk: Successfully to load chunk from file at path \'%s\'", path);
     return chunk;
 }
 
