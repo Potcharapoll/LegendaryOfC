@@ -19,7 +19,10 @@
 //   PLAN -- Fix prefab position of inside chunks.(DONE) 
 //           Gradient color (Day/Night)           (DONE)
 //           Logger                               (DONE)
-//           Finish inside art -> place collider -> camera -> progression
+//           Finish inside art                    (DONE)
+//           place collider                       (DONE)
+//           camera                               (CAN SKIP)
+//           progression
 //
 //           Night gradient -> (64,25,71,140) or (0,0,0,174)
 

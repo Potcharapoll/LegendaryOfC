@@ -58,12 +58,25 @@ count:1
 coord:[7,0] inside_church
 
 [collider]
-count:5
+count:18
 pos:[112,0] size:[80,4]
 pos:[222,0] size:[82,4]
 pos:[298,4] size:[6,310]
 pos:[112,0] size:[5,314]
 pos:[117,265] size:[181,5]
+pos:[117,248] size:[16,17]
+pos:[283,248] size:[15,17]
+pos:[193,218] size:[29,15]
+pos:[133,172] size:[59,15]
+pos:[133,126] size:[59,15]
+pos:[133,80] size:[59,15]
+pos:[133,34] size:[59,15]
+pos:[223,172] size:[59,15]
+pos:[223,126] size:[59,15]
+pos:[223,80] size:[59,15]
+pos:[223,34] size:[59,15]
+pos:[117,4] size:[15,22]
+pos:[283,4] size:[15,22]
 
 [teleporter]
 count:1

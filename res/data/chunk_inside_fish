@@ -58,7 +58,15 @@ count:1
 coord:[4,0] inside_fish
 
 [collider]
-count:0
+count:
+pos:[67,0] size:[64,4]
+pos:[151,0] size:[70,4]
+pos:[217,4] size:[4,135]
+pos:[67,4] size:[4,135]
+pos:[71,38] size:[44,2]
+pos:[113,40] size:[2,31]
+pos:[115,67] size:[102,2]
+pos:[204,4] size:[13,27]
 
 [teleporter]
 count:1

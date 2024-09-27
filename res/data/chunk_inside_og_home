@@ -58,7 +58,15 @@ count:1
 coord:[2,0] inside_og_home
 
 [collider]
-count:0
+count:8
+pos:[35,0] size:[92,5]
+pos:[159,0] size:[94,5]
+pos:[248,5] size:[5,181]
+pos:[35,5] size:[5,181]
+pos:[40,149] size:[208,4]
+pos:[40,117] size:[28,32]
+pos:[73,139] size:[30,10]
+pos:[217,5] size:[31,32]
 
 [teleporter]
 count:1

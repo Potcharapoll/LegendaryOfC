@@ -58,7 +58,18 @@ count:1
 coord:[2,0] inside_vc_home
 
 [collider]
-count:0
+count:11
+pos:[35,0] size:[92,5]
+pos:[159,0] size:[94,5]
+pos:[248,5] size:[5,181]
+pos:[35,5] size:[5,181]
+pos:[40,149] size:[208,4]
+pos:[217,5] size:[31,32]
+pos:[40,133] size:[109,16]
+pos:[187,133] size:[61,16]
+pos:[234,101] size:[14,32]
+pos:[201,85] size:[31,17]
+pos:[184,65] size:[14,12]
 
 [teleporter]
 count:1

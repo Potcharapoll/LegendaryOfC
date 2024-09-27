@@ -58,7 +58,22 @@ count:1
 coord:[0,0] inside_library
 
 [collider]
-count:0
+count:15
+pos:[0,0] size:[5,187]
+pos:[5,0] size:[347,5]
+pos:[347,5] size:[5,182]
+pos:[188,152] size:[159,5]
+pos:[5,152] size:[160,5]
+pos:[335,145] size:[12,7]
+pos:[140,143] size:[12,9]
+pos:[201,143] size:[12,9]
+pos:[201,74] size:[146,26]
+pos:[201,24] size:[146,26]
+pos:[5,24] size:[49,26]
+pos:[5,74] size:[49,26]
+pos:[54,74] size:[16,24]
+pos:[5,122] size:[86,2]
+pos:[89,124] size:[2,28]
 
 [teleporter]
 count:1
