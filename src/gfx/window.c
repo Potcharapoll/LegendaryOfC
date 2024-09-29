@@ -35,7 +35,6 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize OpenGL", __FILE__, __LINE__); 
     LOG_TRACE("Successfully initialized OpenGL");
 
-
     LOG_INFO("GLFW Version: %s", glfwGetVersionString());
     LOG_INFO("OpenGL Version: %s", glGetString(GL_VERSION));
 }

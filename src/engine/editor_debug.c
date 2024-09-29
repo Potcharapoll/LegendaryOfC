@@ -1,3 +1,4 @@
+#ifdef DEBUG
 #include "editor_internal.h"
 #include "../global.h"
 #include <pthread.h>
@@ -39,3 +40,4 @@ void debug_menu(void) {
     }
     igEnd();
 }
+#endif

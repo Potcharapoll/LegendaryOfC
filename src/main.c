@@ -1,3 +1,5 @@
+/* #define DEBUG */
+
 #include "core/timer.h"
 #include "engine/logger.h"
 
@@ -10,7 +12,6 @@
 
 #include "gfx/window.h"
 
-#define DEBUG_INPUT
 
 #include "global.h"
 #include "defs.h"
@@ -33,10 +34,7 @@
 // We will make a function to handle setup for all acts of the game
 
 // SUGGEST: Maybe attach the renderer to scnce to make it can render text and fade when we want, and also the fade layer
-// SUGGEST: Maybe remove the act_trigger
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
-
-b8 act_trigger = false;
 
 typedef enum {
     LAYER_BASE,
@@ -47,9 +45,8 @@ typedef enum {
     LAYER_LAST
 } RenderLayer;
 
+#ifdef DEBUG
 LineRenderer *line_renderer;
-TextRenderer *text_renderer;
-QuadRenderer **quad_renderer;
 
 static void _append_collider(void) {
     Body *body; 
@@ -73,30 +70,10 @@ static void _append_collider(void) {
         }
     }
 }
+#endif
 
-static void _setup_act(void) {
-    if (act_trigger) {
-        switch (global.act) {
-            case ACT0:
-                LOG_DEBUG("Act 0 Introduction");
-                break;
-            case ACT1:
-                LOG_DEBUG("Act 1 In the Village");
-                break;
-            case ACT2:
-                LOG_DEBUG("Act 2");
-                break;
-            case ACT3:
-                LOG_DEBUG("Act 3");
-                break;
-            case ACT4:
-                LOG_DEBUG("Act 4");
-                break;
-        } 
-
-        act_trigger = false;
-    }
-}
+TextRenderer *text_renderer;
+QuadRenderer **quad_renderer;
 
 static ivec2s get_char_coord(char c) {
     static u8 text_index[3][27] = {
@@ -146,7 +123,7 @@ static void _collision_callback(Static_Body *body, Body *other) {
 static void input_handling(void) {
     if (global.scnce->fade_state == FADE_NONE) player_input();
 
-#ifdef DEBUG_INPUT
+#ifdef DEBUG
     static f32 delay = 0.0f;
 
     delay += global.dt;
@@ -194,7 +171,8 @@ static void input_handling(void) {
 }
 
 void setup(void) {
-    global.act = ACT0;
+    global.act = ACT0; // unused
+
     global.gradient = glms_vec4_zero();
     global.collision_callback = _collision_callback;
 
@@ -205,7 +183,6 @@ void setup(void) {
     // otherwise "texture_shader" is used only with 1 slot textures alpha.
     asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
     asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
-    asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
 
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81,  3, 27, 32);
     asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32,  4,  8, 16);
@@ -223,7 +200,12 @@ void setup(void) {
     global.scnce = scnce_init();
     scnce_change_scnce(global.scnce, MENU);
 
+#ifdef DEBUG 
+    asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
     line_renderer = line_renderer_init();
+    editor_init();
+#endif
+
     text_renderer = text_renderer_init(get_char_coord);
     quad_renderer = malloc(LAYER_LAST * sizeof(quad_renderer));
     for (u8 i = 0; i < LAYER_LAST; ++i) {
@@ -264,13 +246,9 @@ void setup(void) {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_CULL_FACE);
-
-    // for debugging
-    editor_init();
 }
 
 void update(void) {
-
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0,0.0,0.0,1.0);
 
@@ -280,8 +258,6 @@ void update(void) {
 
     scnce_update(global.scnce, player_body);
     timer_update(global.timer);
-
-    _setup_act();
 
     if (global.scnce->scnce_state == INGAME) { 
 
@@ -353,18 +329,18 @@ void update(void) {
                     PLAYER_SIZE, WHITE, player_spritesheet->texture, tex_coord);
         }
 
+#ifdef DEBUG
         { // append start_point, end_point, and cursor to LAYER_TOP
             quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.start_point[0], global.start_point[1], 0.0f}, (vec2s){1,1}, GREEN);
             quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.end_point[0], global.end_point[1], 0.0f}, (vec2s){1,1}, BLUE);
             quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.window->mouse.orthox, global.window->mouse.orthoy, 0.0f}, (vec2s){1,1}, WHITE);
         }
-        if (global.toggle_show_collider) _append_collider();
+#endif
 
         // render all layer by order
         for (u8 i = 0; i < LAYER_LAST; ++i) {
             quad_renderer_render(quad_renderer[i]);
         }
-        line_renderer_render(line_renderer);
     }
     else {
         text_renderer->quad_count = 0;
@@ -415,7 +391,11 @@ void update(void) {
     text_renderer_render(text_renderer);
     quad_renderer_render(quad_renderer[LAYER_TOP]);
 
-    if (global.toggle_editor) editor_render();
+#ifdef DEBUG
+        if (global.toggle_show_collider) _append_collider();
+        line_renderer_render(line_renderer);
+        if (global.toggle_editor) editor_render();
+#endif
 }
 
 
@@ -424,7 +404,10 @@ void cleanup(void) {
     asset_manager_destroy(global.asset_manager);
     scnce_destroy(global.scnce);
 
+#ifdef DEBUG
     line_renderer_destroy(line_renderer);
+    editor_destroy();
+#endif
     text_renderer_destroy(text_renderer);
 
     for (u8 i = 0; i < LAYER_LAST; ++i) {
@@ -437,13 +420,17 @@ void cleanup(void) {
     animation_destroy(global.animations);
     prefab_destroy();
 
-    // debugging
-    editor_destroy();
-
     LOG_TRACE("Window: Cleaning up");
 }
 
 int main(void) {
+#ifdef DEBUG
+    LOG_INFO("LegendaryOfC Version 1.1 DEBUG Mode");
+#else
+    // not release for now
+    LOG_INFO("LegendaryOfC Version 0.1 Non-Debug Mode");
+#endif
+
     struct Window window;
     window_init(&window, setup, update, cleanup);
 

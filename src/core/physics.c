@@ -5,7 +5,9 @@
 #include "../global.h"
 
 static void collision_response(Body *body, Static_Body *static_body, AABB minkowski) {
+#ifdef DEBUG
     if (global.toggle_collision) return;
+#endif
 
     if ((static_body->collision_mask & body->collision_flag) != body->collision_flag) return;
 

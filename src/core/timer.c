@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 
-
 Timer *timer_create(void) {
     Timer *timer = malloc(sizeof(*timer));
     if (timer == NULL) {

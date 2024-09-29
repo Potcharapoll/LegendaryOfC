@@ -1,6 +1,9 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
+
+#ifdef DEBUG
 #include "engine/editor.h"
+#endif
 
 #include "gfx/window.h"
 
@@ -60,13 +63,14 @@ struct Global {
         b8 on_collision;
     } PlayerState;
 
-    // editor/debugging
+    void(*collision_callback)(Static_Body* body, Body *other);
+
+#ifdef DEBUG
     struct {
         struct ImGui *editor;
         vec2 start_point, end_point;
         enum CursorMode cursor_mode;
 
-        void(*collision_callback)(Static_Body* body, Body *other);
 
         b8 toggle_editor;
         b8 toggle_collision;
@@ -75,6 +79,7 @@ struct Global {
         b8 reload_chunk;
         b8 reset_chunk;
     };
+#endif
 };
 
 extern struct Global global;

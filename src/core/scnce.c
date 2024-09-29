@@ -136,9 +136,11 @@ void scnce_destroy(Scnce *self) {
 
 // Use this when state is ingame
 void scnce_update(Scnce *self, Body *player_body) {
-    /* if (self->chunk == NULL) { */
-    /*     LOG_WARN("Scnce: Chunk is NULL, cannot reload or reset the chunk"); */
-    /* } */
+
+#ifdef DEBUG 
+    if (self->chunk == NULL) {
+        LOG_WARN("Scnce: Chunk is NULL, cannot reload or reset the chunk");
+    }
 
     { // debugging
         // relaod chunk from file
@@ -171,7 +173,7 @@ void scnce_update(Scnce *self, Body *player_body) {
             global.reset_chunk = false;
         }
     }
-
+#endif
     _fade_update(self);
 
     if (self->scnce_state == INGAME) {
@@ -205,6 +207,7 @@ void scnce_change_chunk(Scnce *self, Body *player_body, Chunks chunk_id, vec2s t
 
     _scnce_setup_collider(self);
     if (self->fade_state == FADE_OUT) self->fade_state = FADE_IN;
+
     LOG_DEBUG("Scnce: Change chunk from %d->%d ", self->chunk_id, chunk_id);
 }
 

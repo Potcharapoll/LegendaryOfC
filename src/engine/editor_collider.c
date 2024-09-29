@@ -1,3 +1,4 @@
+#ifdef DEBUG
 #include "editor_internal.h"
 #include "../global.h"
 
@@ -188,3 +189,4 @@ void collider_menu(void) {
 
     igEnd();
 }
+#endif

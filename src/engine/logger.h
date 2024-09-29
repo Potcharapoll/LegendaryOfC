@@ -1,8 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-// Disable debug and trace when building release version
-
 typedef enum log_level {
     LOG_LEVEL_FETAL = 0,
     LOG_LEVEL_ERROR = 1,
@@ -19,8 +17,15 @@ void log_msg(log_level level, char *fmt, ...);
 #define LOG_ERROR(fmt, ...) log_msg(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__);
 #define LOG_WARN(fmt, ...) log_msg(LOG_LEVEL_WARN, fmt, ##__VA_ARGS__);
 #define LOG_INFO(fmt, ...) log_msg(LOG_LEVEL_INFO, fmt, ##__VA_ARGS__);
+
+#ifdef DEBUG 
 #define LOG_DEBUG(fmt, ...) log_msg(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__);
 #define LOG_TRACE(fmt, ...) log_msg(LOG_LEVEL_TRACE, fmt, ##__VA_ARGS__);
+#else
+#define LOG_DEBUG(fmt, ...)
+#define LOG_TRACE(fmt, ...)
+#endif
+
 #define ASSERT(expression, msg, file, line) if(!(expression)) assetion_failure(#expression, msg, file, line);
 
 #define gl_check_err(file, line) \
