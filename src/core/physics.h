@@ -35,27 +35,27 @@ typedef struct Static_Body {
     void (*on_hit_by_body)(struct Static_Body *body, Body *other);
 } Static_Body;
 
+typedef struct Physics {
+    array_list *body_list;
+    array_list *static_body_list;
+    u8 iterations;
+} Physics;
 // Explaination: collision_mask is the object that can collide with a specify object
 //               collision_flag is the type of object
 
-void physics_init(void);
-void physics_destroy(void);
-void physics_update(f32 dt);
-void physics_render_collider(void);
+Physics* physics_init(u8 iterations);
+void physics_destroy(Physics *self);
+void physics_update(Physics *self, f32 dt);
 
-u64  physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag);
-Body* physics_body_get(u64 body_id);
+u64  physics_body_create(Physics *self, vec2s position, vec2s size, u8 collision_mask, u8 collision_flag);
+Body* physics_body_get(Physics *self, u64 body_id);
+void physics_body_reset(Physics *self);
 
-u64  physics_static_body_create(
-        vec2s position, 
-        vec2s size, 
-        u8 collision_mask, 
-        u8 collision_flag, 
+u64  physics_static_body_create(Physics *self, vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, 
         void(*on_hit_by_body)(Static_Body *body, Body *other));
 
-Static_Body* physics_static_body_get(u64 body_id);
-void physics_static_body_reset(void);
-array_list* physics_get_static_body_list(void);
+Static_Body* physics_static_body_get(Physics *self, u64 body_id);
+void physics_static_body_reset(Physics *self);
 
 void aabb_min_max(AABB aabb, vec2s *min, vec2s *max);
 AABB aabb_minkowski_diff(AABB a, AABB b);

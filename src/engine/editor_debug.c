@@ -1,32 +1,32 @@
 #include "editor_internal.h"
-#include "../core/renderer.h"
 #include "../global.h"
+#include <pthread.h>
 
 void debug_menu(void) {
     igBegin("Debug", NULL, 0);
 
     igText("Chunk");
     if (igButton("Reset Chunk", (ImVec2){0,0})) {
-        renderer_reset_chunk();
+        global.reset_chunk = true;
     }
     igSameLine(0.0f, 10.0f);
     if (igButton("Reload Chunk", (ImVec2){0,0})) {
-        renderer_reload_chunk();
+        global.reload_chunk = true;
     }
     igSeparator();
 
     igText("Fadeing");
-    igText("State: %s", (global.FadeState.state == FADE_NONE) ? "FADE_NONE" : (global.FadeState.state == FADE_IN) ? "FADE_IN" : "FADE_OUT");
-    igSliderFloat("Alpha", &global.FadeState.alpha, 0.0f, 1.0f, "%.1f", 0);
+    igText("State: %s", (global.scnce->fade_state == FADE_NONE) ? "FADE_NONE" : (global.scnce->fade_state == FADE_IN) ? "FADE_IN" : "FADE_OUT");
+    igSliderFloat("Alpha", &global.scnce->fade_alpha, 0.0f, 1.0f, "%.1f", 0);
 
     if (igButton("Fade In", (ImVec2){})) {
-        global.FadeState.state = FADE_IN;
-        global.FadeState.alpha = 1.0f;
+        global.scnce->fade_state = FADE_IN;
+        global.scnce->fade_alpha = 1.0f;
     }
     igSameLine(0.0f, 10.0f);
     if (igButton("Fade Out", (ImVec2){})) {
-        global.FadeState.state = FADE_OUT;
-        global.FadeState.alpha = 0.0f;
+        global.scnce->fade_state = FADE_OUT;
+        global.scnce->fade_alpha = 0.0f;
     }
     igSeparator();
 

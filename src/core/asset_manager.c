@@ -2,14 +2,15 @@
 
 #include "../engine/logger.h"
 
-void asset_manager_init(struct AssetManager **self) {
-    *self = malloc(sizeof(**self));
-    ASSERT(self != NULL, "Failed to allocate memory for AssetManager", __FILE__, __LINE__);
+struct AssetManager* asset_manager_init(void) {
+    struct AssetManager *am = malloc(sizeof(*am));
+    ASSERT(am != NULL, "Failed to allocate memory for AssetManager", __FILE__, __LINE__);
 
-    (*self)->shaders      = hashtable_init(sizeof(struct Shader));
-    (*self)->spritesheets = hashtable_init(sizeof(struct Spritesheet));
+    am->shaders      = hashtable_init(sizeof(struct Shader));
+    am->spritesheets = hashtable_init(sizeof(struct Spritesheet));
 
     LOG_TRACE("AssetManager: Successfully initialized AssetManager");
+    return am;
 }
 
 void asset_manager_destroy(struct AssetManager *self) {

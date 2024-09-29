@@ -61,6 +61,8 @@ add_executable(${PROJECT_NAME}
     src/core/player.c
     src/core/prefab.c
     src/core/dialog.c
+    src/core/scnce.c
+    src/core/timer.c
 
     src/engine/logger.c
     src/engine/editor.c

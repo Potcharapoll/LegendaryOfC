@@ -7,9 +7,11 @@
 #include "util/types.h"
 
 #include "core/asset_manager.h"
+#include "core/animation.h"
 #include "core/physics.h"
 #include "core/player.h"
-#include "core/chunk.h"
+#include "core/scnce.h"
+#include "core/timer.h"
 
 #include <pthread.h>
 
@@ -17,12 +19,6 @@ enum CursorMode {
     START_POINT,
     END_POINT,
     NORMAL
-};
-
-enum FadeState {
-    FADE_NONE,
-    FADE_IN,
-    FADE_OUT
 };
 
 // Introduction (ACT0)
@@ -35,16 +31,19 @@ enum GameAct {
 };
 
 struct Global {
-    struct Window       *window;
-    struct Camera       *camera;
+    struct Window *window;
     struct AssetManager *asset_manager;
+    Scnce *scnce;
+    Physics *physics;
+    Animation *animations;
+    Timer *timer;
 
     f32 dt;
+    f32 input_delay;
 
-    struct {
-        Chunk *chunk;
-        Chunks chunk_id;
-    } ChunkState;
+    vec4s gradient;
+    enum GameAct act;
+    pthread_mutex_t lock;
 
     struct {
         char *name;
@@ -55,19 +54,13 @@ struct Global {
 
     struct {
         enum Direction direction;
-        u32            animation_id;
-        u32            body_id;
+        u32 animation_id;
+        u32 body_id;
+
+        b8 on_collision;
     } PlayerState;
 
-    struct {
-        f32 alpha;
-        enum FadeState state;
-    } FadeState;
-
     // editor/debugging
-    
-    vec4s gradient;
-
     struct {
         struct ImGui *editor;
         vec2 start_point, end_point;
@@ -78,11 +71,10 @@ struct Global {
         b8 toggle_editor;
         b8 toggle_collision;
         b8 toggle_show_collider;
-    };
 
-    struct {
-        pthread_mutex_t lock;
-    } threads;
+        b8 reload_chunk;
+        b8 reset_chunk;
+    };
 };
 
 extern struct Global global;

@@ -21,7 +21,7 @@ void collider_menu(void) {
     static char mask_buf[50];
     static char flag_buf[50];
 
-    list = physics_get_static_body_list();
+    list = global.physics->static_body_list;
 
     igBegin("Collider List", NULL, 0);
     igCheckbox("Show Collider", &global.toggle_show_collider);
@@ -121,7 +121,12 @@ void collider_menu(void) {
             "CHUNK_VILLAGE_TOP_RIGHT",
             "CHUNK_VILLAGE_TUNNEL"   ,
             "CHUNK_INSIDE_LIBRARY"   ,
-            "CHUNK_INSIDE_RESTAURANT"
+            "CHUNK_INSIDE_RESTAURANT",
+            "CHUNK_INSIDE_CHURCH",
+            "CHUNK_INSIDE_FISH",
+            "CHUNK_INSIDE_OG_HOME",
+            "CHUNK_INSIDE_LJ_HOME",
+            "CHUNK_INSIDE_VC_HOME",
         };
 
         igSetNextItemWidth(260.0f);
@@ -158,19 +163,17 @@ void collider_menu(void) {
 
         switch (selected_idx) {
             case 0:
-                physics_static_body_create((vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, NULL);
+                physics_static_body_create(global.physics, (vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, NULL);
                 break;
             default:
-                physics_static_body_create((vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, global.collision_callback);
+                physics_static_body_create(global.physics, (vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, global.collision_callback);
                 break;
         }
-
-        fprintf(stdout, "pos:[%d,%d] size:[%d,%d]\n", (s32)global.start_point[0], (s32)global.start_point[1], (s32)size.x, (s32)size.y);
     }
     igSeparator();
 
     for (u32 i = 0; i < list->len; ++i) {
-        Static_Body *body = physics_static_body_get(i);
+        Static_Body *body = physics_static_body_get(global.physics, i);
 
         GET_LAYER_STRING(body->collision_mask, mask_buf);
         GET_LAYER_STRING(body->collision_flag, flag_buf);

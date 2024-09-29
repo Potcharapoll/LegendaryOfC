@@ -2,15 +2,17 @@
 #include "../defs.h"
 #include "../engine/logger.h"
 
-void camera_init(struct Camera **camera, vec2s position) {
-    *camera = malloc(sizeof(**camera));
-    ASSERT(*camera != NULL, "Failed to allocate memory for camera", __FILE__, __LINE__);
+struct Camera *camera_init(vec2s position) {
+    struct Camera *camera = malloc(sizeof(*camera));
+    ASSERT(camera != NULL, "Failed to allocate memory for camera", __FILE__, __LINE__);
 
-    (*camera)->position = position;
-    (*camera)->front    = (vec3s){0.0f, 0.0f, -1.0f};
-    (*camera)->up       = (vec3s){0.0f, 1.0f, 0.0f};
+    camera->position = position;
+    camera->front    = (vec3s){0.0f, 0.0f, -1.0f};
+    camera->up       = (vec3s){0.0f, 1.0f, 0.0f};
 
     LOG_TRACE("Camera: Successfully initialized camera");
+
+    return camera;
 }
 
 void camera_update(struct Camera *camera) {

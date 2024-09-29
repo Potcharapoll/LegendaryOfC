@@ -23,6 +23,7 @@
 #define BLUE   (vec4s){0,0,1,1}
 #define ORANGE (vec4s){1,0.6,0.3,1}
 #define CYAN   (vec4s){0,1,1,1}
+#define YELLOW (vec4s){1,1,0.4,1}
 
 #define SPAWN_COORD (vec2s){5,3}
 
@@ -32,4 +33,6 @@
 #define TEXTURE_TILE       "res/tilesets/tileset.png"
 #define TEXTURE_INSIDE     "res/tilesets/inside.png"
 #define TEXTURE_STRUCTURES "res/tilesets/structures.png"
+
+#define INPUT_DELAY 0.15f
 #endif

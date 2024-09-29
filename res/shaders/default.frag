@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 frag_color;
 
 in vec4 color;
 in vec2 tex_coord;
@@ -11,31 +11,31 @@ uniform sampler2D tex[8];
 void main() {
     switch (tex_slot) {
         case -1:
-            fragColor = color;
+            frag_color = color;
             break;
         case 0:
-            fragColor = color * texture(tex[0], tex_coord);
+            frag_color = color * texture(tex[0], tex_coord);
             break;
         case 1:
-            fragColor = color * texture(tex[1], tex_coord);
+            frag_color = color * texture(tex[1], tex_coord);
             break;
         case 2:
-            fragColor = color * texture(tex[2], tex_coord);
+            frag_color = color * texture(tex[2], tex_coord);
             break;
         case 3:
-            fragColor = color * texture(tex[3], tex_coord);
+            frag_color = color * texture(tex[3], tex_coord);
             break;
         case 4:
-            fragColor = color * texture(tex[4], tex_coord);
+            frag_color = color * texture(tex[4], tex_coord);
             break;
         case 5:
-            fragColor = color * texture(tex[5], tex_coord);
+            frag_color = color * texture(tex[5], tex_coord);
             break;
         case 6:
-            fragColor = color * texture(tex[6], tex_coord);
+            frag_color = color * texture(tex[6], tex_coord);
             break;
         case 7:
-            fragColor = color * texture(tex[7], tex_coord);
+            frag_color = color * texture(tex[7], tex_coord);
             break;
     }
 }

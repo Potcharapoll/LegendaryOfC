@@ -1,16 +1,8 @@
 #include "physics.h"
-#include "renderer.h"
 
 #include "../util/array_list.h"
 #include "../engine/logger.h"
 #include "../global.h"
-#include "../defs.h"
-
-static array_list *_body_list;
-static array_list *_static_body_list;
-
-static u8 iterations       = 10;
-static b8 player_collision = false;
 
 static void collision_response(Body *body, Static_Body *static_body, AABB minkowski) {
     if (global.toggle_collision) return;
@@ -27,44 +19,48 @@ static void collision_response(Body *body, Static_Body *static_body, AABB minkow
     if (static_body->on_hit_by_body) { static_body->on_hit_by_body(static_body, body); }
 }
 
-static void collision_check(Body *body) {
+static void collision_check(Physics *self, Body *body) {
     Static_Body *static_body;
 
-    for (u32 i = 0; i < _static_body_list->len; i++) {
-        static_body = physics_static_body_get(i);
+    for (u32 i = 0; i < self->static_body_list->len; i++) {
+        static_body = physics_static_body_get(self, i);
 
         if (static_body->collision_mask == COLLISION_LAYER_NONE) continue;
 
         if (aabb_intersect_aabb(static_body->aabb, body->aabb)) {
             collision_response(body, static_body, aabb_minkowski_diff(static_body->aabb, body->aabb));
-            player_collision = true;
         }
     }
 }
 
-void physics_init(void) {
-    _body_list = array_list_init(sizeof(Body), 0);
-    _static_body_list = array_list_init(sizeof(Static_Body), 0);
+Physics* physics_init(u8 iterations) {
+    Physics *physics = malloc(sizeof(*physics));
+
+    physics->iterations = iterations;
+    physics->body_list = array_list_init(sizeof(Body), 0);
+    physics->static_body_list = array_list_init(sizeof(Static_Body), 0);
 
     LOG_TRACE("Physics: Successfully initialized physics");
+
+    return physics;
 }
 
-void physics_destroy(void) {
-    array_list_destroy(_body_list);
-    array_list_destroy(_static_body_list);
+void physics_destroy(Physics *self) {
+    array_list_destroy(self->body_list);
+    array_list_destroy(self->static_body_list);
+    free(self);
 
     LOG_TRACE("Physics: Successfully destroyed physics");
 }
 
 // we suppose to have only 1 movable body so we don't need to loop through the movable and check collision for it
-void physics_update(f32 dt) {
+void physics_update(Physics *self, f32 dt) {
     Body *body;
-    player_collision = false;
 
-    for (u32 i = 0; i < _body_list->len; ++i ) {
-        body = physics_body_get(i);
-        vec2s scaled_velocity = glms_vec2_scale(body->velocity, global.dt * (1.0 / iterations));
-        for (u8 j = 0; j < iterations; ++j) {
+    for (u32 i = 0; i < self->body_list->len; ++i ) {
+        body = physics_body_get(self, i);
+        vec2s scaled_velocity = glms_vec2_scale(body->velocity, global.dt * (1.0 / self->iterations));
+        for (u8 j = 0; j < self->iterations; ++j) {
 
             // update position
             body->position.x += scaled_velocity.x;
@@ -74,35 +70,12 @@ void physics_update(f32 dt) {
             body->aabb.center.x = body->position.x + body->aabb.half_size.x;
             body->aabb.center.y = body->position.y + body->aabb.half_size.y;
 
-            collision_check(body);
+            collision_check(self, body);
         }
     }
 }
 
-void physics_render_collider(void) {
-    Body *body; 
-    for (u32 i = 0; i < _body_list->len; i++) {
-        body = physics_body_get(i);
-        renderer_append_aabb(body->aabb, (player_collision) ? RED : GREEN);
-    }
-
-    Static_Body *static_body; 
-    for (u32 i = 0; i < _static_body_list->len; i++) {
-        static_body = physics_static_body_get(i);
-
-        if (static_body->collision_flag & COLLISION_LAYER_SOLID) {
-            renderer_append_aabb(static_body->aabb, WHITE);
-        }
-        else if (static_body->collision_flag & COLLISION_LAYER_TELEPORTER) {
-            renderer_append_aabb(static_body->aabb, BLACK);
-        }
-        else if (static_body->collision_flag & COLLISION_LAYER_DIALOG) {
-            renderer_append_aabb(static_body->aabb, BLUE);
-        }
-    }
-}
-
-u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collision_flag) {
+u64 physics_body_create(Physics *self, vec2s position, vec2s size, u8 collision_mask, u8 collision_flag) {
     Body body = {
         .position       = position,
         .velocity       = {0,0},
@@ -114,19 +87,19 @@ u64 physics_body_create(vec2s position, vec2s size, u8 collision_mask, u8 collis
         },
     };
     
-    array_list_append(_body_list, &body);
-    return _body_list->len - 1;
+    array_list_append(self->body_list, &body);
+    return self->body_list->len - 1;
 }
 
-Body* physics_body_get(u64 body_id) {
-    return array_list_get(_body_list, body_id);
+Body* physics_body_get(Physics *self, u64 body_id) {
+    return array_list_get(self->body_list, body_id);
 }
 
-u64  physics_static_body_create(
-        vec2s position, 
-        vec2s size, 
-        u8 collision_mask, 
-        u8 collision_flag, 
+void physics_body_reset(Physics *self) {
+    self->body_list->len = 0;
+}
+
+u64  physics_static_body_create(Physics *self, vec2s position, vec2s size, u8 collision_mask, u8 collision_flag, 
         void(*on_hit_by_body)(Static_Body *body, Body *other)) {
     Static_Body body = {
         .aabb = { 
@@ -138,23 +111,19 @@ u64  physics_static_body_create(
         .on_hit_by_body = (on_hit_by_body) ? on_hit_by_body : NULL,
     };
 
-    array_list_append(_static_body_list, &body);
-    return _static_body_list->len - 1;
+    array_list_append(self->static_body_list, &body);
+    return self->static_body_list->len - 1;
 }
 
-Static_Body* physics_static_body_get(u64 body_id) {
-    return array_list_get(_static_body_list, body_id); 
+Static_Body* physics_static_body_get(Physics *self, u64 body_id) {
+    return array_list_get(self->static_body_list, body_id); 
 }
 
-void physics_static_body_reset(void) {
-    _static_body_list->len = 0;
+void physics_static_body_reset(Physics *self) {
+    self->static_body_list->len = 0;
 }
 
-array_list* physics_get_static_body_list(void) {
-    return _static_body_list;
-}
-
-b8  aabb_intersect_aabb(AABB a, AABB b) {
+b8 aabb_intersect_aabb(AABB a, AABB b) {
     vec2s min, max;
     aabb_min_max(aabb_minkowski_diff(a,b), &min, &max);
 
@@ -171,7 +140,6 @@ AABB aabb_minkowski_diff(AABB a, AABB b) {
         .center    = glms_vec2_sub(a.center, b.center),
         .half_size = glms_vec2_add(a.half_size, b.half_size)
     };
-
     return res;
 }
 

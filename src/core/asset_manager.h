@@ -10,7 +10,7 @@ struct AssetManager{
     hash_table_t *shaders;
 };
 
-void asset_manager_init(struct AssetManager **self);
+struct AssetManager* asset_manager_init(void);
 void asset_manager_destroy(struct AssetManager *self);
 
 void asset_manager_push_texture(struct AssetManager *self, char *name, char *path);

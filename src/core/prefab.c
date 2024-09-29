@@ -2,7 +2,7 @@
 #include "../util/hashtable.h"
 #include "../engine/logger.h"
 
-hash_table_t *prefabs = NULL;
+static hash_table_t *prefabs = NULL;
 
 void prefab_init(void) {
     prefabs = hashtable_init(sizeof(Prefab));

@@ -9,7 +9,7 @@ static GLuint _compile(GLenum type, char *path) {
     char *txt;
 
     fp = fopen(path, "rb");
-    if (fp == NULL) { LOG_FETAL("Failed to open file at %s", path); }
+    if (fp == NULL) { LOG_FETAL("Shader: Failed to open file at %s", path); }
 
     fseek(fp, 0, SEEK_END);
     len = ftell(fp);

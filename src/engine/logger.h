@@ -37,7 +37,7 @@ void log_msg(log_level level, char *fmt, ...);
                 case GL_INVALID_FRAMEBUFFER_OPERATION: err_string = "INVALID FRAMEBUFFER OPERATION"; break;\
             }\
             \
-            LOG_ERROR("OpenGL error: %s at %s:%d\n", err_string, file, line);\
+            LOG_ERROR("OpenGL error: %s at %s:%d", err_string, file, line);\
         }\
     }
 

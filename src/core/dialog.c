@@ -3,7 +3,7 @@
 
 #include "dialog.h"
 #include "asset_manager.h"
-#include "renderer.h"
+/* #include "renderer.h" */
 
 #include <string.h>
 
@@ -32,84 +32,61 @@ static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
 static b8 next_dialog   = true;
 static b8 animation_end = false;
 
-static ivec2s get_char_coord(char c) {
-    static u8 text_index[3][27] = {
-        "!@#$%^&*()_+-={}[]:\";\'<>,.?",
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ/",
-        "abcdefghijklmnopqrstuvwxyz ",
-    };
+/* static void dialog_render_text(char *text, vec2s size, vec3s pos, vec4s color) { */
+/*     f32 tex_coord[4]; */
 
-    ivec2s result = {0};
+/*     struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT); */
+/*     vec2s cell_size = {(f32)sp->stride / sp->texture.size.x, (f32)sp->stride / sp->texture.size.y}; */
 
-    for (u8 y = 0; y < 3; ++y) {
-        for (u8 x = 0; x < 27; ++x) {
-            if (c == text_index[y][x]) {
-                result.x = x;
-                result.y = y;
-                break;
-            }
-        }
-    }
+/*     for (u32 idx = 0; idx < strlen(text); ++idx) { */
+/*         ivec2s char_coord = get_char_coord(text[idx]); */
 
+/*         tex_coord[0] = cell_size.x * char_coord.x; */
+/*         tex_coord[1] = cell_size.x * char_coord.x + cell_size.x; */
+/*         tex_coord[2] = cell_size.y * char_coord.y; */
+/*         tex_coord[3] = cell_size.y * char_coord.y + cell_size.y; */
 
-    return result;
-}
+/*         /1* renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord); *1/ */
+/*         pos.x += (size.x * 0.5); */
+/*     } */
+/* } */
 
-static void dialog_render_text(char *text, vec2s size, vec3s pos, vec4s color) {
-    f32 tex_coord[4];
-
-    struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT);
-    vec2s cell_size = {(f32)sp->stride / sp->texture.size.x, (f32)sp->stride / sp->texture.size.y};
-
-    for (u32 idx = 0; idx < strlen(text); ++idx) {
-        ivec2s char_coord = get_char_coord(text[idx]);
-
-        tex_coord[0] = cell_size.x * char_coord.x;
-        tex_coord[1] = cell_size.x * char_coord.x + cell_size.x;
-        tex_coord[2] = cell_size.y * char_coord.y;
-        tex_coord[3] = cell_size.y * char_coord.y + cell_size.y;
-
-        renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord);
-        pos.x += (size.x * 0.5);
-    }
-}
-
-static void dialog_render_text_animation(char *text, vec2s size, vec3s pos, vec4s color) {
-    static u32 current_rendered_idx = 0;
-    static u32 max_rendered_idx     = 0;
+/* static void dialog_render_text_animation(char *text, vec2s size, vec3s pos, vec4s color) { */
+/*     static u32 current_rendered_idx = 0; */
+/*     static u32 max_rendered_idx     = 0; */
 
 
-    if (next_dialog) {
-        current_rendered_idx = 0;
-        max_rendered_idx     = strlen(text);
-        next_dialog          = false;
-        animation_end        = false;
-    }
+/*     if (next_dialog) { */
+/*         current_rendered_idx = 0; */
+/*         max_rendered_idx     = strlen(text); */
+/*         next_dialog          = false; */
+/*         animation_end        = false; */
+/*     } */
     
 
-    f32 tex_coord[4];
+/*     f32 tex_coord[4]; */
 
-    struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT);
-    vec2s cell_size = {(f32)sp->stride / sp->texture.size.x, (f32)sp->stride / sp->texture.size.y};
+/*     struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT); */
+/*     vec2s cell_size = {(f32)sp->stride / sp->texture.size.x, (f32)sp->stride / sp->texture.size.y}; */
 
-    for (u32 idx = 0; idx < current_rendered_idx; ++idx) {
-        ivec2s char_coord = get_char_coord(text[idx]);
+/*     for (u32 idx = 0; idx < current_rendered_idx; ++idx) { */
+/*         ivec2s char_coord = get_char_coord(text[idx]); */
 
-        tex_coord[0] = cell_size.x * char_coord.x;
-        tex_coord[1] = cell_size.x * char_coord.x + cell_size.x;
-        tex_coord[2] = cell_size.y * char_coord.y;
-        tex_coord[3] = cell_size.y * char_coord.y + cell_size.y;
+/*         tex_coord[0] = cell_size.x * char_coord.x; */
+/*         tex_coord[1] = cell_size.x * char_coord.x + cell_size.x; */
+/*         tex_coord[2] = cell_size.y * char_coord.y; */
+/*         tex_coord[3] = cell_size.y * char_coord.y + cell_size.y; */
 
-        renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord);
-        pos.x += (size.x * 0.5);
-    }
+/*         /1* renderer_append_quad_texture(LAYER_DIALOG, pos, size, color, sp->texture, tex_coord); *1/ */
+/*         pos.x += (size.x * 0.5); */
+/*     } */
 
-    if (current_rendered_idx >= max_rendered_idx) {
-        current_rendered_idx++;
-    } else {
-        animation_end = true;
-    }
-}
+/*     if (current_rendered_idx >= max_rendered_idx) { */
+/*         current_rendered_idx++; */
+/*     } else { */
+/*         animation_end = true; */
+/*     } */
+/* } */
 
 struct Dialog* dialog_create(char *name) {
     u32 len = strlen(name);
@@ -197,40 +174,40 @@ void dialog_input(void) {
 }
 
 void dialog_render(void) {
-    vec3s camera_pos = { global.camera->position.x, global.camera->position.y, 0.0f};
-    vec3s pos        = {0};
-    renderer_append_quad(LAYER_DIALOG, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR);
+    /* vec3s camera_pos = { global.camera->position.x, global.camera->position.y, 0.0f}; */
+    /* vec3s pos        = {0}; */
+    /* renderer_append_quad(LAYER_DIALOG, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR); */
 
-    pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TITLE]);
-    dialog_render_text(global.DialogState.name, (vec2s){10,11}, pos, BLUE);
-    dialog_render_text(global.DialogState.name, (vec2s){10,10}, pos, DIALOG_TEXT_COLOR);
+    /* pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TITLE]); */
+    /* dialog_render_text(global.DialogState.name, (vec2s){10,11}, pos, BLUE); */
+    /* dialog_render_text(global.DialogState.name, (vec2s){10,10}, pos, DIALOG_TEXT_COLOR); */
 
-    pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TEXT]);
-    if (global.DialogState.curr_dialog_node->type == DIALOG_QUESTION) {
-        struct DialogQuestion *content = global.DialogState.curr_dialog_node->dialog;
-        dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
+    /* pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TEXT]); */
+    /* if (global.DialogState.curr_dialog_node->type == DIALOG_QUESTION) { */
+    /*     struct DialogQuestion *content = global.DialogState.curr_dialog_node->dialog; */
+    /*     dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
 
-        u8 selected_answer = DIALOG_POSITION_LAST - 5 + global.DialogState.selected_answer;
-        if (animation_end) {
-            pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER1]);
-            dialog_render_text(content->answer[0], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
+    /*     u8 selected_answer = DIALOG_POSITION_LAST - 5 + global.DialogState.selected_answer; */
+    /*     if (animation_end) { */
+    /*         pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER1]); */
+    /*         dialog_render_text(content->answer[0], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
 
-            pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER2]);
-            dialog_render_text(content->answer[1], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
+    /*         pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER2]); */
+    /*         dialog_render_text(content->answer[1], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
 
-            pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER3]);
-            dialog_render_text(content->answer[2], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
+    /*         pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER3]); */
+    /*         dialog_render_text(content->answer[2], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
 
-            pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER4]);
-            dialog_render_text(content->answer[3], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
+    /*         pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER4]); */
+    /*         dialog_render_text(content->answer[3], DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
 
-            pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], dialog_render_position[DIALOG_POSITION_SELECT]));
-            renderer_append_quad(LAYER_DIALOG, pos, DIALOG_SELECT_SIZE, DIALOG_TEXT_COLOR);
-        }
-    }
-    else {
-        struct DialogText *content = global.DialogState.curr_dialog_node->dialog;
-        dialog_render_text_animation(content->text, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR);
-    }
+    /*         pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], dialog_render_position[DIALOG_POSITION_SELECT])); */
+    /*         renderer_append_quad(LAYER_DIALOG, pos, DIALOG_SELECT_SIZE, DIALOG_TEXT_COLOR); */
+    /*     } */
+    /* } */
+    /* else { */
+    /*     struct DialogText *content = global.DialogState.curr_dialog_node->dialog; */
+    /*     dialog_render_text_animation(content->text, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
+    /* } */
 }
 

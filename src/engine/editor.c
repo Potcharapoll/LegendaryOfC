@@ -1,7 +1,8 @@
 #include "editor.h"
 #include "editor_internal.h"
-#include "../global.h"
 #include "logger.h"
+
+#include "../global.h"
 
 // NOTE: Use Multi-Viewport cuase an error from GLFW 
 // GLFW Error Callback 65548: Wayland: The platform does not provide the window position
@@ -12,8 +13,6 @@ void editor_init(void) {
 
     editor->context = igCreateContext(NULL);
     editor->io      = igGetIO();
-
-    /* editor->io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; */
 
     ImGui_ImplGlfw_InitForOpenGL(global.window->handle, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
@@ -44,11 +43,4 @@ void editor_render(void) {
 
     igRender();
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
-
-    /* if (global.editor->io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) { */
-    /*   GLFWwindow *backup_current_window = glfwGetCurrentContext(); */
-    /*   igUpdatePlatformWindows(); */
-    /*   igRenderPlatformWindowsDefault(NULL, NULL); */
-    /*   glfwMakeContextCurrent(backup_current_window); */
-    /* } */
 }
