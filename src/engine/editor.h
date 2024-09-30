@@ -1,3 +1,4 @@
+#ifdef DEBUG
 #ifndef EDITOR_H
 #define EDITOR_H
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
@@ -14,4 +15,5 @@ struct ImGui {
 void editor_init(void);
 void editor_destroy(void);
 void editor_render(void);
+#endif
 #endif

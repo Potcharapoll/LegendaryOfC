@@ -1,4 +1,5 @@
-/* #define DEBUG */
+#include "core/dialog.h"
+#pragma GCC diagnostic ignored "-Wmissing-braces"
 
 #include "core/timer.h"
 #include "engine/logger.h"
@@ -8,10 +9,9 @@
 #include "core/renderer.h"
 #include "core/player.h"
 #include "core/prefab.h"
-#include "core/scnce.h"
+#include "core/scene.h"
 
 #include "gfx/window.h"
-
 
 #include "global.h"
 #include "defs.h"
@@ -33,8 +33,10 @@
 
 // We will make a function to handle setup for all acts of the game
 
-// SUGGEST: Maybe attach the renderer to scnce to make it can render text and fade when we want, and also the fade layer
+// SUGGEST: Maybe attach the renderer to scene to make it can render text and fade when we want, and also the fade layer
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
+
+Dialog *text_dialog;
 
 typedef enum {
     LAYER_BASE,
@@ -52,7 +54,7 @@ static void _append_collider(void) {
     Body *body; 
     for (u32 i = 0; i < global.physics->body_list->len; i++) {
         body = physics_body_get(global.physics, i);
-        line_renderer_append_aabb(line_renderer, body->aabb, (global.PlayerState.on_collision) ? RED : GREEN);
+        line_renderer_append_aabb(line_renderer, body->aabb, GREEN);
     }
 
     Static_Body *static_body; 
@@ -72,10 +74,9 @@ static void _append_collider(void) {
 }
 #endif
 
-TextRenderer *text_renderer;
-QuadRenderer **quad_renderer;
+static QuadRenderer **quad_renderer;
 
-static ivec2s get_char_coord(char c) {
+static ivec2s _get_char_coord(char c) {
     static u8 text_index[3][27] = {
         "!@#$%^&*()_+-={}[]:\";\'<>,.?",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ/",
@@ -98,7 +99,7 @@ static ivec2s get_char_coord(char c) {
 }
 
 static void _collision_callback(Static_Body *body, Body *other) {
-    Chunk *chunk = global.scnce->chunk;
+    Chunk *chunk = global.scene->chunk;
 
     if ((body->collision_flag & COLLISION_LAYER_TELEPORTER) == COLLISION_LAYER_TELEPORTER) {
         for (u8 i = 0; i < chunk->teleporter_count; ++i) {
@@ -108,8 +109,8 @@ static void _collision_callback(Static_Body *body, Body *other) {
                 other->velocity = glms_vec2_zero();
                 player_set_animation(IDLE, global.PlayerState.direction);
 
-                if (global.scnce->fade_state == FADE_NONE) global.scnce->fade_state = FADE_OUT;
-                if (global.scnce->faded) scnce_change_chunk(global.scnce, other, chunk->teleporter[i].chunkId, chunk->teleporter[i].target_coord);
+                if (global.scene->fade_state == FADE_NONE) global.scene->fade_state = FADE_OUT;
+                if (global.scene->faded) scene_change_chunk(global.scene, other, chunk->teleporter[i].chunkId, chunk->teleporter[i].target_coord);
             }
         }
         return;
@@ -121,60 +122,59 @@ static void _collision_callback(Static_Body *body, Body *other) {
 }
 
 static void input_handling(void) {
-    if (global.scnce->fade_state == FADE_NONE) player_input();
+    if (global.scene->fade_state == FADE_NONE) player_input();
 
 #ifdef DEBUG
-    static f32 delay = 0.0f;
-
-    delay += global.dt;
-
-    if (delay >= 0.15) {
+    if (global.input_delay >= INPUT_DELAY) {
         if (window_get_key(global.window, GLFW_KEY_X)) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
         else if (window_get_key(global.window, GLFW_KEY_Z)) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
 
         if (window_get_key(global.window, GLFW_KEY_I)) {
             global.toggle_collision = !global.toggle_collision;
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
         if (window_get_key(global.window, GLFW_KEY_U)) {
             global.toggle_show_collider = !global.toggle_show_collider;
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
         if (window_get_key(global.window, GLFW_KEY_Y)) {
             global.toggle_editor = !global.toggle_editor;
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
 
-        if (glfwGetMouseButton(global.window->handle, GLFW_MOUSE_BUTTON_LEFT)) {
-            if (global.cursor_mode == START_POINT) {
-                global.start_point[0] = global.window->mouse.orthox;
-                global.start_point[1] = global.window->mouse.orthoy;
+        if (window_get_mouse_button(global.window, GLFW_MOUSE_BUTTON_LEFT)) {
+
+            switch (global.cursor_mode) {
+                case CURSOR_MODE_START_POINT:
+                    global.start_point[0] = global.window->mouse.orthox;
+                    global.start_point[1] = global.window->mouse.orthoy;
+                    break;
+                case CURSOR_MODE_END_POINT:
+                    global.end_point[0] = global.window->mouse.orthox;
+                    global.end_point[1] = global.window->mouse.orthoy;
+                    break;
+                default:
+                    break;
             }
-            else if (global.cursor_mode == END_POINT) {
-                global.end_point[0] = global.window->mouse.orthox;
-                global.end_point[1] = global.window->mouse.orthoy;
-            }
-            delay = 0.0f;
+            global.input_delay = 0.0f;
         }
-        if (glfwGetMouseButton(global.window->handle, GLFW_MOUSE_BUTTON_RIGHT)) {
-            global.cursor_mode = (global.cursor_mode + 1) % 3;
-            delay = 0.0f;
+        if (window_get_mouse_button(global.window, GLFW_MOUSE_BUTTON_RIGHT)) {
+            global.cursor_mode = (global.cursor_mode + 1) % CURSOR_MODE_LAST;
+            global.input_delay = 0.0f;
         }
     }
 #endif
 }
 
 void setup(void) {
-    global.act = ACT0; // unused
-
-    global.gradient = glms_vec4_zero();
     global.collision_callback = _collision_callback;
+    global.get_char_coord = _get_char_coord;
 
     pthread_mutex_init(&global.lock, NULL);
     global.asset_manager = asset_manager_init();
@@ -184,33 +184,39 @@ void setup(void) {
     asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
     asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
 
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81,  3, 27, 32);
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32,  4,  8, 16);
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TILE,         56,  7,  8, 16);
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     1692, 36, 47, 16);
-    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_STRUCTURES,  368, 23, 18, 16);
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81, (ivec2s){27, 3}, (ivec2s){32,32});
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32, (ivec2s){ 8, 4}, (ivec2s){16,22});
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_NPC,          21, (ivec2s){ 7, 3}, (ivec2s){16,23});
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TILE,         56, (ivec2s){ 8, 7}, (ivec2s){16,16});
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     1692, (ivec2s){47,36}, (ivec2s){16,16});
+    asset_manager_push_spritesheet(global.asset_manager, TEXTURE_STRUCTURES,  368, (ivec2s){18,23}, (ivec2s){16,16});
 
-    global.timer = timer_create();
+    global.timer = timer_init();
     global.physics = physics_init(10);
     global.animations = animation_init();
 
     player_init();
     prefab_init();
 
-    global.scnce = scnce_init();
-    scnce_change_scnce(global.scnce, MENU);
+    global.scene = scene_init();
+    scene_change_scene(global.scene, MENU);
 
-#ifdef DEBUG 
-    asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
-    line_renderer = line_renderer_init();
-    editor_init();
-#endif
-
-    text_renderer = text_renderer_init(get_char_coord);
     quad_renderer = malloc(LAYER_LAST * sizeof(quad_renderer));
     for (u8 i = 0; i < LAYER_LAST; ++i) {
         quad_renderer[i] = quad_renderer_init();
     }
+
+#ifdef DEBUG 
+    global.cursor_mode = CURSOR_MODE_NORMAL;
+    glm_vec2_zero(global.start_point);
+    glm_vec2_zero(global.end_point);
+
+    asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
+    line_renderer = line_renderer_init();
+    editor_init();
+
+    scene_change_scene(global.scene, INGAME);
+#endif
 
     { // create prefabs
         struct Spritesheet *structures_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_STRUCTURES);
@@ -246,6 +252,14 @@ void setup(void) {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    text_dialog = dialog_create();
+
+    DialogText text = {.text = "Here we go again! I Sus!"};
+    dialog_append(text_dialog, "KEY", DIALOG_TYPE_TEXT, &text);
+    dialog_append(text_dialog, "MEY", DIALOG_TYPE_TEXT, &text);
+    dialog_append(text_dialog, "ABC", DIALOG_TYPE_TEXT, &text);
 }
 
 void update(void) {
@@ -256,10 +270,10 @@ void update(void) {
 
     Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
 
-    scnce_update(global.scnce, player_body);
+    scene_update(global.scene, player_body);
     timer_update(global.timer);
 
-    if (global.scnce->scnce_state == INGAME) { 
+    if (global.scene->scene_state == INGAME) { 
 
         input_handling();
 
@@ -270,14 +284,14 @@ void update(void) {
         struct Spritesheet *spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TILE);
         for (s32 y = 0; y < CHUNK_SIZE_Y; y++) {
             for (s32 x = 0; x < CHUNK_SIZE_X; x++) {
-                u32 uv = global.scnce->chunk->uv[CHUNK_SIZE_X * y + x]; 
+                u32 uv = global.scene->chunk->uv[CHUNK_SIZE_X * y + x]; 
 
                 if (uv == (u32)-1) { continue; }
 
-                u32 row    = uv / spritesheet->cols;
-                u32 col    = uv % spritesheet->cols;
-                f32 cellx  = spritesheet->stride / spritesheet->size.x;
-                f32 celly  = spritesheet->stride / spritesheet->size.y; 
+                u32 row    = uv / spritesheet->grid_size.x;
+                u32 col    = uv % spritesheet->grid_size.x;
+                f32 cellx  = spritesheet->cell_size.x / spritesheet->size.x;
+                f32 celly  = spritesheet->cell_size.y / spritesheet->size.y; 
 
                 f32 tex_coord[4] = {
                     (cellx * col), 
@@ -285,7 +299,11 @@ void update(void) {
                     (celly * row), 
                     (celly * row) + celly
                 };
-                vec3s position   = {global.scnce->chunk->position.x + x * TILE_SIZE, global.scnce->chunk->position.y + y * TILE_SIZE, 0.0};
+                vec3s position   = {
+                    global.scene->chunk->position.x + x * TILE_SIZE, 
+                    global.scene->chunk->position.y + y * TILE_SIZE, 
+                    0.0
+                };
                 quad_renderer_append_quad_texture(quad_renderer[LAYER_BASE], position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord);
             }
         }
@@ -294,14 +312,14 @@ void update(void) {
         u32 offset = CHUNK_SIZE_Y * CHUNK_SIZE_X;
         for (s32 y = 0; y < CHUNK_SIZE_Y; y++) {
             for (s32 x = 0; x < CHUNK_SIZE_X; x++) {
-                u32 uv = global.scnce->chunk->uv[offset + CHUNK_SIZE_X * y + x]; 
+                u32 uv = global.scene->chunk->uv[offset + CHUNK_SIZE_X * y + x]; 
 
                 if (uv == 0) continue;
 
-                u32 row    = uv / spritesheet->cols;
-                u32 col    = uv % spritesheet->cols;
-                f32 cellx  = spritesheet->stride / spritesheet->size.x;
-                f32 celly  = spritesheet->stride / spritesheet->size.y; 
+                u32 row    = uv / spritesheet->grid_size.x;
+                u32 col    = uv % spritesheet->grid_size.x;
+                f32 cellx  = spritesheet->cell_size.x / spritesheet->size.x;
+                f32 celly  = spritesheet->cell_size.y / spritesheet->size.y; 
 
                 f32 tex_coord[4] = {
                     (cellx * col), 
@@ -309,14 +327,14 @@ void update(void) {
                     (celly * row), 
                     (celly * row) + celly
                 };
-                vec3s position   = {global.scnce->chunk->position.x + x * TILE_SIZE, global.scnce->chunk->position.y + y * TILE_SIZE, 0.0};
+                vec3s position   = {global.scene->chunk->position.x + x * TILE_SIZE, global.scene->chunk->position.y + y * TILE_SIZE, 0.0};
                 quad_renderer_append_quad_texture(quad_renderer[LAYER_BASE_UPPER], position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord);
             }
         }
 
         // prefab
-        for (u8 i = 0; i < global.scnce->chunk->prefab_count; ++i) {
-            quad_renderer_append_prefab(quad_renderer[LAYER_STRUCTURE], global.scnce->chunk->prefab[i].coord, global.scnce->chunk->prefab[i].name);
+        for (u8 i = 0; i < global.scene->chunk->prefab_count; ++i) {
+            quad_renderer_append_prefab(quad_renderer[LAYER_STRUCTURE], global.scene->chunk->prefab[i].coord, global.scene->chunk->prefab[i].name);
         }
 
 
@@ -343,57 +361,41 @@ void update(void) {
         }
     }
     else {
-        text_renderer->quad_count = 0;
-
         if (global.input_delay >= INPUT_DELAY && window_get_key(global.window, GLFW_KEY_SPACE)) {
+            scene_fade_out(global.scene);
             global.input_delay = 0.0f;
-            scnce_fade_out(global.scnce);
         }
 
-        if (global.scnce->scnce_state == MENU) {
-            if (global.scnce->faded) { 
-                scnce_change_scnce(global.scnce, INTRO); 
+        if (global.scene->scene_state == MENU) {
+            if (global.scene->faded) { 
+                scene_change_scene(global.scene, INTRO); 
             }
-            text_renderer_append_text(text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
         }
         else { 
-            if (!global.scnce->faded && !global.timer->busy) {
-                timer_start(global.timer, 3.0f);
+            if (!global.scene->faded && !global.timer->busy) {
+                timer_start(global.timer, 5.0f);
             } 
 
-            text_renderer_append_text(text_renderer, "A few days ago, I received a letter, It was written about my" ,     (vec3s){PROJECTION_WIDTH*0.5 - (60*3.5*0.5), 120}, 7, YELLOW);
-            text_renderer_append_text(text_renderer, "missing grandfather and where I could find him. I was so confused", (vec3s){PROJECTION_WIDTH*0.5 - (65*3.5*0.5), 112}, 7, YELLOW);
-            text_renderer_append_text(text_renderer, "I had no choice, so I decided to go to the place",                  (vec3s){PROJECTION_WIDTH*0.5 - (48*3.5*0.5), 104}, 7, YELLOW);
-            text_renderer_append_text(text_renderer, "where it was written, called 'CVillage'.",                          (vec3s){PROJECTION_WIDTH*0.5 - (40*3.5*0.5), 96},  7, YELLOW);
-
             if (global.timer->on_time) {
-                scnce_fade_out(global.scnce);
+                scene_fade_out(global.scene);
             }
             
-            if (global.scnce->faded && global.timer->busy) {
+            if (global.scene->faded && global.timer->busy) {
                 timer_reset(global.timer);
+                scene_change_scene(global.scene, INGAME);
 
-                text_renderer->quad_count = 0;
-                scnce_change_scnce(global.scnce, INGAME);
             }
 
         }
     }
  
-    // TODO: Separate scnce fade layer and maybe gradient too
-    { 
-        quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.scnce->camera->position.x,global.scnce->camera->position.y,0.0f}, 
-                (vec2s){WIDTH, HEIGHT}, global.gradient);
-        quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.scnce->camera->position.x,global.scnce->camera->position.y,0.0f}, 
-                (vec2s){WIDTH, HEIGHT}, (vec4s){0,0,0,global.scnce->fade_alpha});
-    }
-
-    text_renderer_render(text_renderer);
-    quad_renderer_render(quad_renderer[LAYER_TOP]);
+    scene_render(global.scene);
 
 #ifdef DEBUG
+    if (!global.scene->dialog) scene_attach_dialog(global.scene, text_dialog);
         if (global.toggle_show_collider) _append_collider();
         line_renderer_render(line_renderer);
+
         if (global.toggle_editor) editor_render();
 #endif
 }
@@ -402,14 +404,12 @@ void update(void) {
 void cleanup(void) {
     pthread_mutex_destroy(&global.lock);
     asset_manager_destroy(global.asset_manager);
-    scnce_destroy(global.scnce);
+    scene_destroy(global.scene);
 
 #ifdef DEBUG
     line_renderer_destroy(line_renderer);
     editor_destroy();
 #endif
-    text_renderer_destroy(text_renderer);
-
     for (u8 i = 0; i < LAYER_LAST; ++i) {
         quad_renderer_destroy(quad_renderer[i]);
     }
@@ -420,15 +420,16 @@ void cleanup(void) {
     animation_destroy(global.animations);
     prefab_destroy();
 
+    dialog_delete(text_dialog);
+
     LOG_TRACE("Window: Cleaning up");
 }
 
 int main(void) {
 #ifdef DEBUG
-    LOG_INFO("LegendaryOfC Version 1.1 DEBUG Mode");
+    LOG_INFO("LegendaryOfC Version 0.1 DEBUG Mode");
 #else
-    // not release for now
-    LOG_INFO("LegendaryOfC Version 0.1 Non-Debug Mode");
+    LOG_INFO("LegendaryOfC Version 0.1 Release Mode");
 #endif
 
     struct Window window;

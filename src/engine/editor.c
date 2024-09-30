@@ -1,3 +1,4 @@
+#ifdef DEBUG
 #include "editor.h"
 #include "editor_internal.h"
 #include "logger.h"
@@ -7,7 +8,6 @@
 // NOTE: Use Multi-Viewport cuase an error from GLFW 
 // GLFW Error Callback 65548: Wayland: The platform does not provide the window position
 
-#ifdef DEBUG
 void editor_init(void) {
     struct ImGui *editor = malloc(sizeof(*editor));
     ASSERT(editor != NULL, "Failed to allocate memory for editor", __FILE__, __LINE__);

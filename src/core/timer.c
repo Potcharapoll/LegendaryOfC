@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-Timer *timer_create(void) {
+Timer *timer_init(void) {
     Timer *timer = malloc(sizeof(*timer));
     if (timer == NULL) {
         LOG_FETAL("Cannot allocate memory for timer");

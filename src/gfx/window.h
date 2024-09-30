@@ -22,5 +22,6 @@ struct Window {
 void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup);
 void window_loop(struct Window *self);
 void window_destroy(struct Window *self);
-b8   window_get_key(struct Window *self, int key);
+b8 window_get_key(struct Window *self, int key);
+b8 window_get_mouse_button(struct Window *self, int button);
 #endif

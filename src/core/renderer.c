@@ -12,10 +12,10 @@ static int texture_slot[8] = {0,1,2,3,4,5,6,7};
 
 QuadRenderer *quad_renderer_init(void) {
     QuadRenderer *renderer = malloc(sizeof(*renderer));
-    assert(renderer);
+    ASSERT(renderer != NULL, "Failed to allocate memory for QuadRenderer", __FILE__, __LINE__);
 
     renderer->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
-    assert(renderer->vertices);
+    ASSERT(renderer->vertices != NULL, "Failed to allocate memory for QuadRenderer->vertices", __FILE__, __LINE__);
 
     renderer->shader        = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "default_shader"); 
     renderer->quad_count    = 0;
@@ -80,7 +80,7 @@ void quad_renderer_render(QuadRenderer *renderer) {
     if (renderer->quad_count == 0) return;
 
     GL_TRY(shader_bind(renderer->shader));
-    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scnce->camera)));
+    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scene->camera)));
     GL_TRY(shader_uniform_int_array(renderer->shader, "tex", 8, texture_slot));
 
     GL_TRY(glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo)); 
@@ -104,8 +104,8 @@ void quad_renderer_append_prefab(QuadRenderer *renderer, vec2s coord, char *pref
     Prefab *prefab = prefab_get(prefab_name);
 
     vec3s position = { 
-        global.scnce->chunk->position.x + TILE_SIZE * coord.x, 
-        global.scnce->chunk->position.y + TILE_SIZE * coord.y, 
+        global.scene->chunk->position.x + TILE_SIZE * coord.x, 
+        global.scene->chunk->position.y + TILE_SIZE * coord.y, 
         0.0f
     };
 
@@ -202,14 +202,14 @@ TextRenderer *text_renderer_init(ivec2s (*get_char_coord)(char)) {
     struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT);
 
     TextRenderer *renderer = malloc(sizeof(*renderer));
-    assert(renderer);
+    ASSERT(renderer != NULL, "Failed to allocate memory for TextRenderer", __FILE__, __LINE__);
 
     renderer->vertices = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
-    assert(renderer->vertices);
+    ASSERT(renderer->vertices != NULL, "Failed to allocate memory for TextRenderer->vertices", __FILE__, __LINE__);
 
     renderer->shader  = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "texture_shader"); 
     renderer->texture = sp->texture;
-    renderer->quad_count = 0;
+    renderer->char_count = 0;
     renderer->get_char_coord = get_char_coord;
 
     GL_TRY(glGenVertexArrays(1, &renderer->vao));
@@ -268,7 +268,7 @@ void text_renderer_append_text(TextRenderer *renderer, char *text, vec3s positio
     f32 tex_coord[4];
 
     struct Spritesheet *sp = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TEXT);
-    vec2s cell_size = {(f32)sp->stride / sp->texture.size.x, (f32)sp->stride / sp->texture.size.y};
+    vec2s cell_size = {(f32)sp->cell_size.x / sp->texture.size.x, (f32)sp->cell_size.y / sp->texture.size.y};
 
     vec3s pos = position;
     for (u32 idx = 0; idx < strlen(text); ++idx) {
@@ -286,7 +286,7 @@ void text_renderer_append_text(TextRenderer *renderer, char *text, vec3s positio
         tex_coord[2] = cell_size.y * char_coord.y;
         tex_coord[3] = cell_size.y * char_coord.y + cell_size.y;
 
-        u32 idx = renderer->quad_count++;
+        u32 idx = renderer->char_count++;
         renderer->vertices[idx * 4 + 0] = (QuadVertex){ 
             .position  = { .x = pos.x, .y = pos.y, .z = pos.z}, 
                 .color     = color, 
@@ -312,30 +312,33 @@ void text_renderer_append_text(TextRenderer *renderer, char *text, vec3s positio
 }
 
 void text_renderer_render(TextRenderer *renderer) {
-    if (renderer->quad_count == 0) return;
+    if (renderer->char_count == 0) return;
 
     GL_TRY(shader_bind(renderer->shader));
-    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scnce->camera)));
+    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scene->camera)));
     GL_TRY(texture_bind(renderer->texture, 0));
 
     GL_TRY(glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo)); 
     GL_TRY(glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES_PER_BATCH * sizeof(QuadVertex), renderer->vertices));
 
     GL_TRY(glBindVertexArray(renderer->vao));
-    GL_TRY(glDrawElements(GL_TRIANGLES, (6 * renderer->quad_count), GL_UNSIGNED_INT, 0));
+    GL_TRY(glDrawElements(GL_TRIANGLES, (6 * renderer->char_count), GL_UNSIGNED_INT, 0));
 
     GL_TRY(glBindTexture(GL_TEXTURE_2D, 0));
     GL_TRY(glBindVertexArray(0));
     GL_TRY(shader_unbind());
+
+    renderer->char_count = 0;
 }
 
 LineRenderer *line_renderer_init(void) {
     LineRenderer *renderer = malloc(sizeof(*renderer));
-    assert(renderer);
+    ASSERT(renderer != NULL, "Failed to allocate memory for LineRenderer", __FILE__, __LINE__);
 
     renderer->shader     = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "line_shader"); 
-    renderer->vertices   = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
     renderer->line_count = 0;
+    renderer->vertices   = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
+    ASSERT(renderer->vertices != NULL, "Failed to allocate memory for LineRenderer->vertices", __FILE__, __LINE__);
 
     GL_TRY(glGenVertexArrays(1, &renderer->vao));
     GL_TRY(glGenBuffers(1, &renderer->vbo));
@@ -365,7 +368,7 @@ void line_renderer_render(LineRenderer *renderer) {
     if (renderer->line_count == 0) return;
 
     GL_TRY(shader_bind(renderer->shader));
-    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scnce->camera)));
+    GL_TRY(shader_uniform_viewproj(renderer->shader, get_view_proj(global.scene->camera)));
 
     GL_TRY(glBindVertexArray(renderer->vao));
     GL_TRY(glDrawArrays(GL_LINES, 0, (renderer->line_count * 2)));
@@ -373,6 +376,8 @@ void line_renderer_render(LineRenderer *renderer) {
     GL_TRY(glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES_PER_BATCH * sizeof(struct LineVertex), renderer->vertices));
     GL_TRY(glBindVertexArray(0));
     GL_TRY(shader_unbind());
+
+    renderer->line_count = 0;
 }
 
 void line_renderer_append_line_segment(LineRenderer *renderer, vec2s start, vec2s end, vec4s color) {

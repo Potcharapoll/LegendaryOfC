@@ -28,8 +28,8 @@ void asset_manager_push_texture(struct AssetManager *self, char *name, char *pat
     LOG_DEBUG("AssetManager: Successfully pushed texture name \'%s\' from path \'%s\'", name, path);
 }
 
-void asset_manager_push_spritesheet(struct AssetManager *self, char *name, u32 count, u32 rows, u32 cols, u32 stride) {
-    struct Spritesheet spritesheet = spritesheet_load(name, count, rows, cols, stride);
+void asset_manager_push_spritesheet(struct AssetManager *self, char *name, u32 count, ivec2s grid_size, ivec2s cell_size) {
+    struct Spritesheet spritesheet = spritesheet_load(name, count, grid_size, cell_size);
     hashtable_insert(self->spritesheets, name, &spritesheet);
 
     LOG_DEBUG("AssetManager: Successfully pushed spritesheet name \'%s\' from path \'%s\'", name, name);

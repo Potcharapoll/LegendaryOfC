@@ -18,23 +18,23 @@ static Body *player_body;
 void player_init(void) {
     struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
 
-    adef_idle[DOWN]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){3},(u8[]){0},1);
-    adef_idle[UP]    = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){2},(u8[]){0},1);
-    adef_idle[RIGHT] = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){1},(u8[]){0},1);
+    adef_idle[DOWN]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){2},(u8[]){0},1);
+    adef_idle[UP]    = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){1},(u8[]){0},1);
+    adef_idle[RIGHT] = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){0},(u8[]){0},1);
     adef_idle[LEFT]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0},(u8[]){0},(u8[]){0},1);
-    adef_walk[DOWN]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){3,3,3,3,3,3,3,3},(u8[]){0,1,2,3,4,5,6,7}, 8);
-    adef_walk[UP]    = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){2,2,2,2,2,2,2,2},(u8[]){0,1,2,3,4,5,6,7}, 8);
-    adef_walk[RIGHT] = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){1,1,1,1,1,1,1,1},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[DOWN]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){2,2,2,2,2,2,2,2},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[UP]    = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){1,1,1,1,1,1,1,1},(u8[]){0,1,2,3,4,5,6,7}, 8);
+    adef_walk[RIGHT] = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){0,0,0,0,0,0,0,0},(u8[]){0,1,2,3,4,5,6,7}, 8);
     adef_walk[LEFT]  = animation_definition_create(global.animations, player_spritesheet, (f32[]){0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1}, (u8[]){0,0,0,0,0,0,0,0},(u8[]){0,1,2,3,4,5,6,7}, 8);
 
     astate_walk[DOWN]  = animation_state_create(global.animations, adef_walk[DOWN], true, false);
     astate_walk[UP]    = animation_state_create(global.animations, adef_walk[UP], true, false);
     astate_walk[RIGHT] = animation_state_create(global.animations, adef_walk[RIGHT], true, false);
-    astate_walk[LEFT]  = animation_state_create(global.animations, adef_walk[LEFT], true, false);
+    astate_walk[LEFT]  = animation_state_create(global.animations, adef_walk[LEFT], true, true);
     astate_idle[DOWN]  = animation_state_create(global.animations, adef_idle[DOWN], false, false);
     astate_idle[UP]    = animation_state_create(global.animations, adef_idle[UP], false, false);
     astate_idle[RIGHT] = animation_state_create(global.animations, adef_idle[RIGHT], false, false);
-    astate_idle[LEFT]  = animation_state_create(global.animations, adef_idle[LEFT], false, false);
+    astate_idle[LEFT]  = animation_state_create(global.animations, adef_idle[LEFT], false, true);
 
     global.PlayerState.direction    = DOWN;
     global.PlayerState.animation_id = astate_idle[DOWN];
@@ -88,23 +88,21 @@ void player_get_tex_coord(f32 *tex_coord) {
     u32 frame = astate->current_frame_index;
     u32 row   = astate->definition->frames[frame].row;
     u32 col   = astate->definition->frames[frame].col;
-    f32 cellX = astate->definition->spritesheet->stride / astate->definition->spritesheet->size.x; 
-    f32 cellY = 32 / astate->definition->spritesheet->size.y; 
+    f32 cellX = astate->definition->spritesheet->cell_size.x / astate->definition->spritesheet->size.x; 
+    f32 cellY = astate->definition->spritesheet->cell_size.y / astate->definition->spritesheet->size.y; 
 
     f32 *_tex_coord = (f32[]){cellX * col, cellX * col + cellX, cellY * row, cellY * row + cellY};
 
     if (astate->flipped) {
-        tex_coord[0] = _tex_coord[2];
-        tex_coord[1] = _tex_coord[3];
-        tex_coord[2] = _tex_coord[0];
-        tex_coord[3] = _tex_coord[1];
+        tex_coord[0] = _tex_coord[1];
+        tex_coord[1] = _tex_coord[0];
     }
     else {
         tex_coord[0] = _tex_coord[0];
         tex_coord[1] = _tex_coord[1];
-        tex_coord[2] = _tex_coord[2];
-        tex_coord[3] = _tex_coord[3];
     }
+    tex_coord[2] = _tex_coord[2];
+    tex_coord[3] = _tex_coord[3];
 }
 
 void player_set_animation(enum PlayerAnimation animation, enum Direction direction) {

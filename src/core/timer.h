@@ -10,7 +10,8 @@ typedef struct Timer {
     b8 busy;    // when it's working
 } Timer;
 
-Timer *timer_create(void);
+// rimwe_create is conflict with time.h library, so I change it to timer_init
+Timer *timer_init(void);
 void timer_destroy(Timer *timer);
 void timer_start(Timer *timer, f32 target);
 void timer_update(Timer *timer);

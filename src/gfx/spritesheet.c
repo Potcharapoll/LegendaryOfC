@@ -1,16 +1,14 @@
 #include "spritesheet.h"
 #include "texture.h"
 
-struct Spritesheet spritesheet_load(char *path, u32 count, u32 rows, u32 cols, u32 stride) {
-    struct Spritesheet spritesheet;
+Spritesheet spritesheet_load(char *path, u32 count, ivec2s grid_size, ivec2s cell_size) {
+    Spritesheet spritesheet;
 
     spritesheet.texture = texture_load(path);
-    spritesheet.stride  = stride;
-    spritesheet.count   = count;
-    spritesheet.cols    = cols;
-    spritesheet.rows    = rows;
-    spritesheet.size    = (vec2s){spritesheet.texture.size.x, spritesheet.texture.size.y};
-
+    spritesheet.count = count;
+    spritesheet.size = (vec2s){spritesheet.texture.size.x, spritesheet.texture.size.y};
+    spritesheet.cell_size = cell_size;
+    spritesheet.grid_size = grid_size;
     return spritesheet;
 }
 

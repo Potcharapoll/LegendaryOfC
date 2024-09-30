@@ -23,7 +23,10 @@ void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec
         .color       = color,
     };
 
-    vec2s cell_size = {(f32)spritesheet->stride / spritesheet->texture.size.x, (f32)spritesheet->stride / spritesheet->texture.size.y };
+    vec2s cell_size = {
+        (f32)spritesheet->cell_size.x / spritesheet->texture.size.x, 
+        (f32)spritesheet->cell_size.y / spritesheet->texture.size.y 
+    };
 
     prefab.tex_coord[0] = cell_size.x * grid_coord.x;
     prefab.tex_coord[1] = cell_size.x * grid_coord.z;

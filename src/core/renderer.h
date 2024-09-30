@@ -41,7 +41,7 @@ typedef struct TextRenderer {
     struct Shader shader;
     struct Texture texture;
 
-    u32 quad_count;
+    u32 char_count;
     QuadVertex *vertices;
 
     // function to get char coordinate

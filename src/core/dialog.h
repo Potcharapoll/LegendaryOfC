@@ -5,45 +5,46 @@
 #define DIALOG_FRAME_SIZE  (vec2s){PROJECTION_WIDTH, 75.0f}
 #define DIALOG_SELECT_SIZE (vec2s){2,2}
 #define DIALOG_TEXT_SIZE   (vec2s){8,8}
-
 #include "../util/types.h"
 
 enum DialogType {
-    DIALOG_TEXT,
-    DIALOG_QUESTION,
+    DIALOG_TYPE_TEXT,
+    DIALOG_TYPE_QUESTION,
 
-    DIALOG_LAST
+    DIALOG_TYPE_LAST
 };
 
-struct DialogQuestion {
+typedef struct {
     char *question;
 
     char *answer[4];
-    u32 correct_answer_idx;
+    u8 correct_answer_idx;
 
     char *correct_answer_text;
     char *wrong_answer_text;
-};
+}DialogQuestion;
 
-struct DialogText { char *text; };
+typedef struct { 
+    char *text; 
+} DialogText;
 
-struct DialogNode {
+typedef struct DialogNode {
+    char *name;
     enum DialogType type;
     void *dialog;
 
     struct DialogNode *next;
-};
+}DialogNode;
 
-struct Dialog {
-    char *name;
-    struct DialogNode *contents;
-};
+typedef struct Dialog {
+    u32 length;
+    DialogNode *contents;
+} Dialog;
 
-void dialog_init(void);
-void dialog_destroy(void);
-struct Dialog* dialog_create(char *name);
-void dialog_delete(struct Dialog *dialog);
-void dialog_append(struct Dialog *dialog, enum DialogType type, void *data);
+Dialog* dialog_create(void);
+void dialog_delete(Dialog *dialog);
+
+void dialog_append(Dialog *dialog, char *name, enum DialogType type, void *data);
 void dialog_render(void);
 void dialog_input(void);
 #endif

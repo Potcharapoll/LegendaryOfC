@@ -1,6 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#pragma GCC diagnostic ignored "-Wmissing-braces"
 #ifdef DEBUG
 #include "engine/editor.h"
 #endif
@@ -13,57 +14,50 @@
 #include "core/animation.h"
 #include "core/physics.h"
 #include "core/player.h"
-#include "core/scnce.h"
+#include "core/scene.h"
 #include "core/timer.h"
 
 #include <pthread.h>
 
 enum CursorMode {
-    START_POINT,
-    END_POINT,
-    NORMAL
+    CURSOR_MODE_START_POINT,
+    CURSOR_MODE_END_POINT,
+    CURSOR_MODE_NORMAL,
+
+    CURSOR_MODE_LAST
 };
 
-// Introduction (ACT0)
 enum GameAct {
-    ACT0,
-    ACT1,
-    ACT2,
-    ACT3,
-    ACT4
+    GAME_ACT1,
+    GAME_ACT2,
+    GAME_ACT3,
+    GAME_ACT4
 };
 
 struct Global {
     struct Window *window;
     struct AssetManager *asset_manager;
-    Scnce *scnce;
+    Scene *scene;
     Physics *physics;
     Animation *animations;
     Timer *timer;
 
     f32 dt;
     f32 input_delay;
-
-    vec4s gradient;
-    enum GameAct act;
     pthread_mutex_t lock;
 
     struct {
-        char *name;
-        struct DialogNode *curr_dialog_node;
-
-        u8 selected_answer;
-    } DialogState;
+        enum GameAct act;
+    } GameState;
 
     struct {
         enum Direction direction;
         u32 animation_id;
         u32 body_id;
-
-        b8 on_collision;
     } PlayerState;
 
-    void(*collision_callback)(Static_Body* body, Body *other);
+    void   (*collision_callback)(Static_Body* body, Body *other);
+    ivec2s (*get_char_coord)(char c);
 
 #ifdef DEBUG
     struct {

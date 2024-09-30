@@ -4,15 +4,15 @@
 #include "../gfx/texture.h"
 #include <cglm/types-struct.h>
 
-struct Spritesheet {
-    u32       count;
-    u32       rows;
-    u32       cols;
-    u32       stride;
-    vec2s     size;
-    struct Texture texture;
-};
+typedef struct Spritesheet {
+    u32 count;
+    ivec2s grid_size;
+    ivec2s cell_size;
+    vec2s size;
 
-struct Spritesheet spritesheet_load(char *path, u32 count, u32 rows, u32 cols, u32 stride);
-void spritesheet_destroy(struct Spritesheet self);
+    struct Texture texture;
+}Spritesheet;
+
+Spritesheet spritesheet_load(char *path, u32 count, ivec2s grid_size, ivec2s cell_size);
+void spritesheet_destroy(Spritesheet self);
 #endif

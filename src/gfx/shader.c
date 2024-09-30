@@ -1,7 +1,7 @@
 #include "shader.h"
 #include "../engine/logger.h"
 
-#include <glad/glad.h>
+#include <assert.h>
 
 static GLuint _compile(GLenum type, char *path) {
     FILE *fp;

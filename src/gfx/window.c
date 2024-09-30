@@ -3,6 +3,7 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "GLFW/glfw3.h"
 
 static void error_callback(int err, const char *dest) {
     printf("GLFW Error Callback %d: %s\n", err, dest);
@@ -75,4 +76,8 @@ void window_destroy(struct Window *self) {
 
 b8   window_get_key(struct Window *self, int key) {
     return (glfwGetKey(self->handle, key) == GLFW_PRESS);
+}
+
+b8 window_get_mouse_button(struct Window *self, int button) {
+    return (glfwGetMouseButton(self->handle, button) == GLFW_PRESS);
 }
