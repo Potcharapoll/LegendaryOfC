@@ -33,8 +33,12 @@ typedef struct Scene {
     // plan to use for filter for the night time 
     vec4s gradient;
 
-    Dialog *dialog;
+    // !!temp
+    DialogNode *dialog;
     b8 on_dialog;
+
+    // for handle the question dialog
+    u8 selected_answer;
 
     // for render text, dialog, and other things in the corresponding scene
     //
@@ -56,6 +60,8 @@ void scene_render(Scene *self);
 void scene_change_chunk(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord);
 
 void scene_change_scene(Scene *self, enum SceneState scene);
+DialogNode *scene_get_curr_dialog(Scene *self);
+void scene_dialog_next(Scene *self);
 
 void scene_attach_dialog(Scene *self, Dialog *dialog);
 

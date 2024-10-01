@@ -1,22 +1,23 @@
-#include "core/dialog.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 
-#include "core/timer.h"
 #include "engine/logger.h"
 
 #include "core/asset_manager.h"
-#include "core/animation.h"
 #include "core/renderer.h"
+#include "core/animation.h"
+#include "core/dialog.h"
+#include "core/physics.h"
 #include "core/player.h"
 #include "core/prefab.h"
 #include "core/scene.h"
+#include "core/timer.h"
 
 #include "gfx/window.h"
 
 #include "global.h"
 #include "defs.h"
 
-//   ~85%
+//   ~87% (10% -> progression, 1% others, 2% sounds)
 //   Progression system       -- ON GOING --
 //   Finish Editor            -- PLANNED  --
 //   Sounds system            -- PLANNED  --
@@ -27,13 +28,12 @@
 //           Finish inside art                    (DONE)
 //           place collider                       (DONE)
 //           camera                               (CAN SKIP)
-//           progression                          (5%)
+//           progression                          (25%)
 //
 //           Night gradient -> (64,25,71,140) or (0,0,0,174)
 
-// We will make a function to handle setup for all acts of the game
+// TODO: Scene text animation
 
-// SUGGEST: Maybe attach the renderer to scene to make it can render text and fade when we want, and also the fade layer
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
 
 Dialog *text_dialog;
@@ -122,7 +122,10 @@ static void _collision_callback(Static_Body *body, Body *other) {
 }
 
 static void input_handling(void) {
-    if (global.scene->fade_state == FADE_NONE) player_input();
+    if (global.scene->scene_state == INGAME) {
+        if (global.scene->fade_state == FADE_NONE && !global.scene->on_dialog) player_input();
+        else if (global.scene->on_dialog) dialog_input();
+    }
 
 #ifdef DEBUG
     if (global.input_delay >= INPUT_DELAY) {
@@ -145,6 +148,16 @@ static void input_handling(void) {
         }
         if (window_get_key(global.window, GLFW_KEY_Y)) {
             global.toggle_editor = !global.toggle_editor;
+            global.input_delay = 0.0f;
+        }
+
+        if (window_get_key(global.window, GLFW_KEY_Q)) {
+            Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
+            player_body->velocity = glms_vec2_zero();
+            player_set_animation(IDLE, global.PlayerState.direction);
+
+            scene_attach_dialog(global.scene, text_dialog);
+
             global.input_delay = 0.0f;
         }
 
@@ -211,11 +224,9 @@ void setup(void) {
     glm_vec2_zero(global.start_point);
     glm_vec2_zero(global.end_point);
 
-    asset_manager_push_shader(global.asset_manager, "line_shader",    "res/shaders/line.vert",    "res/shaders/line.frag");
+    asset_manager_push_shader(global.asset_manager, "line_shader", "res/shaders/line.vert", "res/shaders/line.frag");
     line_renderer = line_renderer_init();
     editor_init();
-
-    scene_change_scene(global.scene, INGAME);
 #endif
 
     { // create prefabs
@@ -254,12 +265,7 @@ void setup(void) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    text_dialog = dialog_create();
-
-    DialogText text = {.text = "Here we go again! I Sus!"};
-    dialog_append(text_dialog, "KEY", DIALOG_TYPE_TEXT, &text);
-    dialog_append(text_dialog, "MEY", DIALOG_TYPE_TEXT, &text);
-    dialog_append(text_dialog, "ABC", DIALOG_TYPE_TEXT, &text);
+    text_dialog = dialog_load_from_file("res/data/dialog/dialog_start");
 }
 
 void update(void) {
@@ -274,7 +280,7 @@ void update(void) {
     timer_update(global.timer);
 
     if (global.scene->scene_state == INGAME) { 
-
+        
         input_handling();
 
         animation_update(global.animations, global.dt);
@@ -392,7 +398,6 @@ void update(void) {
     scene_render(global.scene);
 
 #ifdef DEBUG
-    if (!global.scene->dialog) scene_attach_dialog(global.scene, text_dialog);
         if (global.toggle_show_collider) _append_collider();
         line_renderer_render(line_renderer);
 

@@ -124,10 +124,11 @@ static inline void _scene_setup_collider(Scene *self) {
 }
 
 static void _scene_dialog_render(Scene *self) {
-    DialogNode *curr = self->dialog->contents;
+    DialogNode *curr = self->dialog;
 
     vec3s camera_pos = { self->camera->position.x, self->camera->position.y, 0.0f};
     vec3s pos        = {0};
+
     quad_renderer_append_quad(self->quad_renderer, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR);
 
     pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TITLE]);
@@ -137,13 +138,11 @@ static void _scene_dialog_render(Scene *self) {
     pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TEXT]);
 
     if (curr->type == DIALOG_TYPE_QUESTION) {
-        static u8 selected_answer = 0;
-        
         DialogQuestion *content = curr->dialog;
         /* dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
         text_renderer_append_text(self->text_renderer, content->question, pos, 8, DIALOG_TEXT_COLOR);
 
-        selected_answer = (selected_answer + DIALOG_POSITION_LAST - 5);
+        u8 selected_answer = (self->selected_answer + DIALOG_POSITION_LAST - 5);
         /* if (animation_end) { */
 
             for (u8 i = 0; i < 4; ++i) {
@@ -178,6 +177,7 @@ Scene* scene_init(void) {
 
     scene->dialog = NULL;
     scene->on_dialog = false;
+    scene->selected_answer = 0;
 
     scene->camera = camera_init((vec2s){0,0});
     scene->chunk  = NULL;
@@ -284,8 +284,7 @@ void scene_render(Scene *self) {
             break;
     }
 
-    if (self->scene_state == INGAME && self->dialog && !self->faded) {
-        puts("HEere");
+    if (self->scene_state == INGAME && self->on_dialog && !self->faded) {
         _scene_dialog_render(self);
     }
 
@@ -338,12 +337,14 @@ void scene_attach_dialog(Scene *self, Dialog *dialog) {
         return;
     }
 
-    self->dialog = dialog;
+    self->dialog = dialog->contents;
+    self->on_dialog = true;
 }
 
 void scene_change_scene(Scene *self, enum SceneState scene) {
     self->scene_state = scene;
 
+    // TODO: Fix fadeing
     switch (scene) {
         case MENU:
             LOG_DEBUG("Scene: Menu state");
@@ -358,9 +359,23 @@ void scene_change_scene(Scene *self, enum SceneState scene) {
             scene_change_chunk(self, physics_body_get(global.physics, global.PlayerState.body_id), CHUNK_SPAWN, SPAWN_COORD);
             
             global.GameState.act = GAME_ACT1;
-            /* scene_fade_in(self); */
+            scene_fade_in(self);
             break;
         case ENDGAME:
             break;
     }
 }  
+
+DialogNode *scene_get_curr_dialog(Scene *self) {
+    return self->dialog; 
+}
+
+void scene_dialog_next(Scene *self) {
+    self->dialog = self->dialog->next;
+
+    if (!self->dialog)  {
+        LOG_DEBUG("Scene: Dialog ended");
+        self->dialog = NULL;
+        self->on_dialog = false;
+    }
+}

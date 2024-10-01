@@ -16,12 +16,11 @@ enum DialogType {
 
 typedef struct {
     char *question;
-
     char *answer[4];
-    u8 correct_answer_idx;
+    u8 correct_idx;
 
-    char *correct_answer_text;
-    char *wrong_answer_text;
+    char *correct_text;
+    char *wrong_text;
 }DialogQuestion;
 
 typedef struct { 
@@ -42,6 +41,7 @@ typedef struct Dialog {
 } Dialog;
 
 Dialog* dialog_create(void);
+Dialog* dialog_load_from_file(char *path);
 void dialog_delete(Dialog *dialog);
 
 void dialog_append(Dialog *dialog, char *name, enum DialogType type, void *data);
