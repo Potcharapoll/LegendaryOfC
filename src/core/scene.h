@@ -26,15 +26,16 @@ typedef struct Scene {
     Chunks chunk_id; 
     Chunk *chunk;
 
-    f32 fade_alpha;
     enum FadeState fade_state;
-    b8 faded;
+    f32 fade_alpha;
+    b8 faded, fading;
 
     // plan to use for filter for the night time 
     vec4s gradient;
 
     // !!temp
     DialogNode *dialog;
+    char *dialog_tag;
     b8 on_dialog;
 
     // for handle the question dialog
@@ -63,7 +64,7 @@ void scene_change_scene(Scene *self, enum SceneState scene);
 DialogNode *scene_get_curr_dialog(Scene *self);
 void scene_dialog_next(Scene *self);
 
-void scene_attach_dialog(Scene *self, Dialog *dialog);
+void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag);
 
 void scene_fade_reset(Scene *self);
 void scene_fade_out(Scene *self);

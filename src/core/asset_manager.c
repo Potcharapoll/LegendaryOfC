@@ -8,6 +8,7 @@ struct AssetManager* asset_manager_init(void) {
 
     am->shaders      = hashtable_init(sizeof(struct Shader));
     am->spritesheets = hashtable_init(sizeof(struct Spritesheet));
+    am->textures     = hashtable_init(sizeof(struct Texture));
 
     LOG_TRACE("AssetManager: Successfully initialized AssetManager");
     return am;
@@ -15,6 +16,7 @@ struct AssetManager* asset_manager_init(void) {
 
 void asset_manager_destroy(struct AssetManager *self) {
     hashtable_destroy(self->shaders);
+    hashtable_destroy(self->textures);
     hashtable_destroy(self->spritesheets);
     free(self);
 

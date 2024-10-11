@@ -167,7 +167,7 @@ void collider_menu(void) {
                 physics_static_body_create(global.physics, (vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, NULL);
                 break;
             default:
-                physics_static_body_create(global.physics, (vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, global.collision_callback);
+                physics_static_body_create(global.physics, (vec2s){global.start_point[0], global.start_point[1]}, size, _mask, _flag, NULL);
                 break;
         }
     }

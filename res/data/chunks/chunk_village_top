@@ -77,8 +77,8 @@ pos:[176,944] size:[16,14]
 
 [teleporter]
 count:2
-pos:[240,768] size:[32,4] target_coord:[-1.0,22.5] chunkid:1
-pos:[240,1024] size:[32,4] target_coord:[-1.0,1.0] chunkid:8
+pos:[240,768] size:[32,4] target_coord:[-1.0,22.5] chunkid:1 tag:t
+pos:[240,1024] size:[32,4] target_coord:[-1.0,1.0] chunkid:8 tag:a
 
 [dialog]
 count:0

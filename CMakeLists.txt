@@ -79,6 +79,7 @@ add_executable(${PROJECT_NAME}
     src/core/dialog.c
     src/core/scene.c
     src/core/timer.c
+    src/core/game.c
 
     src/engine/logger.c
     src/engine/editor.c

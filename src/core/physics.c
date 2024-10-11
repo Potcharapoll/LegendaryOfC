@@ -61,7 +61,7 @@ void physics_update(Physics *self, f32 dt) {
 
     for (u32 i = 0; i < self->body_list->len; ++i ) {
         body = physics_body_get(self, i);
-        vec2s scaled_velocity = glms_vec2_scale(body->velocity, global.dt * (1.0 / self->iterations));
+        vec2s scaled_velocity = glms_vec2_scale(body->velocity, dt * (1.0 / self->iterations));
         for (u8 j = 0; j < self->iterations; ++j) {
 
             // update position

@@ -47,4 +47,6 @@ void dialog_delete(Dialog *dialog);
 void dialog_append(Dialog *dialog, char *name, enum DialogType type, void *data);
 void dialog_render(void);
 void dialog_input(void);
+
+void dialog_list(Dialog *dialog);
 #endif

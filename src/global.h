@@ -1,6 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#include "util/hashtable.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #ifdef DEBUG
 #include "engine/editor.h"
@@ -27,28 +28,19 @@ enum CursorMode {
     CURSOR_MODE_LAST
 };
 
-enum GameAct {
-    GAME_ACT1,
-    GAME_ACT2,
-    GAME_ACT3,
-    GAME_ACT4
-};
-
 struct Global {
-    struct Window *window;
+    struct Window       *window;
     struct AssetManager *asset_manager;
-    Scene *scene;
-    Physics *physics;
-    Animation *animations;
-    Timer *timer;
+    Scene               *scene;
+    Physics             *physics;
+    Animation           *animations;
+    Timer               *timer;
+    hash_table_t        *dialogs;
 
     f32 dt;
     f32 input_delay;
+    u32 game_state_flag;
     pthread_mutex_t lock;
-
-    struct {
-        enum GameAct act;
-    } GameState;
 
     struct {
         enum Direction direction;
@@ -56,7 +48,8 @@ struct Global {
         u32 body_id;
     } PlayerState;
 
-    void   (*collision_callback)(Static_Body* body, Body *other);
+    void   (*dialog_callback)(Static_Body* body, Body *other);
+    void   (*teleporter_callback)(Static_Body* body, Body *other);
     ivec2s (*get_char_coord)(char c);
 
 #ifdef DEBUG
@@ -64,7 +57,6 @@ struct Global {
         struct ImGui *editor;
         vec2 start_point, end_point;
         enum CursorMode cursor_mode;
-
 
         b8 toggle_editor;
         b8 toggle_collision;

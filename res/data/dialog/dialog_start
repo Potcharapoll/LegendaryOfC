@@ -1,9 +1,3 @@
 name: "You"
 type: "text"
 text: "Finally...We're here. Let's investigate around the village."
-name: "You"
-type: "question"
-text: "What is the language you will learn in this game?"
-answer: ["C","A","F","G"]
-wrong: "Unfortunately, you're wrong! try again."
-correct: [0,"Oh! you're right! keep it up!"]

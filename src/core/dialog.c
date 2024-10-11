@@ -318,3 +318,29 @@ void dialog_input(void) {
         }
     }
 }
+
+void dialog_list(Dialog *dialog) {
+  DialogNode *node = dialog->contents;
+
+  printf("Length: %d\n", dialog->length);
+  while (node != NULL) {
+    switch (node->type) {
+      case DIALOG_TYPE_TEXT:
+        ;
+        DialogText *text = node->dialog;
+        fprintf(stdout, "Name: %s\nText: %s\n", node->name, text->text);
+        break;
+      case DIALOG_TYPE_QUESTION:
+        ;
+        DialogQuestion *question = node->dialog;
+        fprintf(stdout, "Name: %s\nText: %s\n", node->name, question->question);
+        fprintf(stdout, "Choice/Answer: {%s,%s,%s,%s}, %d\n", question->answer[0], question->answer[1], question->answer[2], question->answer[3], question->correct_idx);
+        fprintf(stdout, "Wrong/Correct: {%s,%s}\n", question->wrong_text, question->correct_text);
+        break;
+      default:
+        break;
+    }
+
+    node = node->next;
+  }
+}

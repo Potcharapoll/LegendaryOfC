@@ -8,14 +8,16 @@ typedef struct {
     vec2s  target_coord;
     ivec2s size;
 
+    char tag;
     u8  chunkId;
     u32 body_id;
 } ChunkTeleporter;
 
 typedef struct {
-    ivec2s coord;
-    ivec2s size;
-    u8 dialogId;
+    vec2s pos;
+    vec2s size;
+
+    char tag[50]; 
     u32 body_id;
 } ChunkDialog;
 

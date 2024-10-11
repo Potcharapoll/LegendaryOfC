@@ -80,7 +80,7 @@ pos:[283,4] size:[15,22]
 
 [teleporter]
 count:1
-pos:[192,0] size:[30,4] target_coord:[21.0,17] chunkid:1
+pos:[192,0] size:[30,4] target_coord:[21.0,17] chunkid:1 tag:t
 
 [dialog]
 count:0

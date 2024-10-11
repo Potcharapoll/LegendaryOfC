@@ -85,7 +85,8 @@ pos:[265,92] size:[2,37]
 
 [teleporter]
 count:1
-pos:[161,0] size:[47,5] target_coord:[5.0,18.0] chunkid:1
+pos:[161,0] size:[47,5] target_coord:[5.0,18.0] chunkid:1 tag:t
 
 [dialog]
-count:0
+count:1
+pos:[150,81] size:[11,3] tag:dialog_roxy

@@ -1,5 +1,8 @@
 #ifndef DEFS_H
 #define DEFS_H
+
+#define VERSION   0.1
+
 #define WIDTH     1280
 #define HEIGHT    768
 #define TITLE     "LegendaryOfC"
@@ -34,6 +37,7 @@
 #define TEXTURE_TILE       "res/images/tilesets/tileset.png"
 #define TEXTURE_INSIDE     "res/images/tilesets/inside.png"
 #define TEXTURE_STRUCTURES "res/images/tilesets/structures.png"
+#define TEXTURE_INTERACT   "res/images/interact.png"
 
 #define CHUNK_SPAWN_PATH             "res/data/chunks/chunk_spawn"
 #define CHUNK_VILLAGE_ENTRANCE_PATH  "res/data/chunks/chunk_village_entrance"
@@ -52,4 +56,14 @@
 #define CHUNK_INSIDE_OG_HOME_PATH    "res/data/chunks/chunk_inside_og_home"
 #define CHUNK_INSIDE_VC_HOME_PATH    "res/data/chunks/chunk_inside_vc_home"
 #define INPUT_DELAY 0.15f
+
+#define TAG_TUNNEL     'a'
+#define TAG_LIBRARY    'b'
+#define TAG_RESTAURANT 'c'
+#define TAG_FISH       'd'
+#define TAG_CHURCH     'e'
+#define TAG_LJ_HOME    'f'
+#define TAG_OG_HOME    'g'
+#define TAG_VC_HOME    'h'
+#define TAG_NORMAL     't'
 #endif

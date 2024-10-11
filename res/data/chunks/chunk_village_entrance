@@ -84,13 +84,13 @@ pos:[128,608] size:[112,16]
 
 [teleporter]
 count:7
-pos:[76,384] size:[40,4] target_coord:[-1.0,22.5] chunkid:0
-pos:[0,624] size:[4,32] target_coord:[28.5,-1.0] chunkid:2
-pos:[476,528] size:[4,32] target_coord:[1.0,-1.0] chunkid:3
-pos:[240,764] size:[32,4] target_coord:[-1.0, 1.0] chunkid:4
-pos:[240,600] size:[32,4] target_coord:[10.5, 8.0] chunkid:9
-pos:[71,683] size:[34,7] target_coord:[11.0,1.0] chunkid:10
-pos:[333,672] size:[22,4] target_coord:[12.5,0.5] chunkid:11
+pos:[76,384] size:[40,4] target_coord:[-1.0,22.5] chunkid:0 tag:t
+pos:[0,624] size:[4,32] target_coord:[28.5,-1.0] chunkid:2 tag:t
+pos:[476,528] size:[4,32] target_coord:[1.0,-1.0] chunkid:3 tag:t
+pos:[240,764] size:[32,4] target_coord:[-1.0, 1.0] chunkid:4 tag:t
+pos:[240,600] size:[32,4] target_coord:[10.5, 8.0] chunkid:9 tag:b
+pos:[71,683] size:[34,7] target_coord:[11.0,1.0] chunkid:10 tag:c
+pos:[333,672] size:[22,4] target_coord:[12.5,0.5] chunkid:11 tag:e
 
 [dialog]
 count:0

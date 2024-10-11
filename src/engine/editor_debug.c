@@ -1,5 +1,6 @@
 #ifdef DEBUG
 #include "editor_internal.h"
+#include "../core/game.h"
 #include "../global.h"
 
 #include <float.h>
@@ -7,6 +8,14 @@
 void debug_menu(void) {
     igBegin("Debug", NULL, 0);
 
+    igText("GameState");
+    char buf[33];
+    for (u8 i = 0; i < 32; ++i) {
+      buf[i] = ((global.game_state_flag >> i) & 1) ? '1' : '0';
+    }
+    igText("Flag: %s", buf);
+    igText("Act : %hhu", game_get_act());
+    igSpacing();
 
     igText("Scene");
     igText("SceneState: %s", (global.scene->scene_state == MENU) ? "MENU" : (global.scene->scene_state == INTRO) ? "INTRO" : (global.scene->scene_state == INGAME) ? "INGAME" : "ENDGAME");

@@ -3,7 +3,6 @@
 #include "../engine/logger.h"
 
 #include "chunk.h"
-#include "renderer.h"
 
 #include <string.h>
 
@@ -12,8 +11,8 @@
 #define FORMAT_IN_UPPER      "%hhu "
 #define FORMAT_IN_PREFAB     "coord:[%f,%f] %s\n"
 #define FORMAT_IN_COLLIDER   "pos:[%f,%f] size:[%u,%u]\n"
-#define FORMAT_IN_TELEPORTER "pos:[%f,%f] size:[%u,%u] target_coord:[%f,%f] chunkid:%hhu\n"
-#define FORMAT_IN_DIALOG     "coord:[%u,%u] size:[%u,%u] dialogid:%hhu\n"
+#define FORMAT_IN_TELEPORTER "pos:[%f,%f] size:[%u,%u] target_coord:[%f,%f] chunkid:%hhu tag:%c\n"
+#define FORMAT_IN_DIALOG     "pos:[%f,%f] size:[%f,%f] tag:%s\n"
 #define FORMAT_IN_COUNT      "count:%u\n"
 
 Chunk* chunk_load_from_file(char *path) {
@@ -104,7 +103,7 @@ Chunk* chunk_load_from_file(char *path) {
                         &chunk->teleporter[i].pos.x, &chunk->teleporter[i].pos.y, 
                         &chunk->teleporter[i].size.x, &chunk->teleporter[i].size.y, 
                         &chunk->teleporter[i].target_coord.x, &chunk->teleporter[i].target_coord.y, 
-                        &chunk->teleporter[i].chunkId);
+                        &chunk->teleporter[i].chunkId, &chunk->teleporter[i].tag);
             }
             memset(key, 0, sizeof(key));
         }
@@ -117,9 +116,9 @@ Chunk* chunk_load_from_file(char *path) {
 
             for (uint8_t i = 0; i < size; ++i) {
                 fscanf(stream, FORMAT_IN_DIALOG, 
-                        &chunk->dialog[i].coord.x, &chunk->dialog[i].coord.y, 
+                        &chunk->dialog[i].pos.x, &chunk->dialog[i].pos.y, 
                         &chunk->dialog[i].size.x, &chunk->dialog[i].size.y, 
-                        &chunk->dialog[i].dialogId);
+                        chunk->dialog[i].tag);
             }
             memset(key, 0, sizeof(key));
         }

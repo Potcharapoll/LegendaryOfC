@@ -4,10 +4,12 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "game.h"
 #include "renderer.h"
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 
 static Chunk **_chunks = NULL;
 
@@ -47,6 +49,7 @@ static void _fade_update(Scene *self) {
 
             if (self->fade_alpha < 0.0) {
                 self->fade_alpha = 0.0f;
+                self->fading = false;
                 scene_fade_reset(self);
             }
             break;
@@ -57,6 +60,7 @@ static void _fade_update(Scene *self) {
 
             if (self->fade_alpha > 1.0) {
                 self->fade_alpha = 1.0f;
+                self->fading = false;
                 self->faded = true;
             }
             break;
@@ -101,25 +105,24 @@ static inline void _scene_load_chunk(void) {
 static inline void _scene_setup_collider(Scene *self) {
     physics_static_body_reset(global.physics);
 
-    vec2s pos = (vec2s){self->chunk->position.x, self->chunk->position.y};
     for (u32 i = 0; i < self->chunk->collider_count; ++i) {
         physics_static_body_create(global.physics,
                 (vec2s){self->chunk->collider[i].pos.x, self->chunk->collider[i].pos.y}, 
                 (vec2s){self->chunk->collider[i].size.x, self->chunk->collider[i].size.y}, 
-                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, global.collision_callback); 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL); 
     } 
 
     for (u32 i = 0; i < self->chunk->teleporter_count; ++i) {
         self->chunk->teleporter[i].body_id = physics_static_body_create(global.physics,
                 (vec2s){self->chunk->teleporter[i].pos.x, self->chunk->teleporter[i].pos.y}, 
                 (vec2s){self->chunk->teleporter[i].size.x, self->chunk->teleporter[i].size.y}, 
-                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, global.collision_callback); 
+                COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, global.teleporter_callback); 
     } 
 
     for (u32 i = 0; i < self->chunk->dialog_count; ++i) {
         self->chunk->dialog[i].body_id = physics_static_body_create(global.physics,
-                (vec2s){pos.x + TILE_SIZE * self->chunk->dialog[i].coord.x, pos.y + TILE_SIZE * self->chunk->dialog[i].coord.y}, 
-                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, global.collision_callback); 
+                (vec2s){self->chunk->dialog[i].pos.x,self->chunk->dialog[i].pos.y}, 
+                DEFAULT_SCALE, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, global.dialog_callback); 
     } 
 }
 
@@ -169,7 +172,9 @@ Scene* scene_init(void) {
 
     scene->fade_alpha = 0.0f;
     scene->fade_state = FADE_NONE;
+    scene->fading     = false;
     scene->faded      = false;
+
     scene->gradient   = glms_vec4_zero();
 
     scene->quad_renderer = quad_renderer_init();
@@ -325,17 +330,23 @@ void scene_fade_reset(Scene *self) {
 
 void scene_fade_out(Scene *self) {
     self->fade_state = FADE_OUT;
+    self->fading = true;
 }
 
 void scene_fade_in(Scene *self) {
     self->fade_state = FADE_IN;
+    self->fading = true;
 }
 
-void scene_attach_dialog(Scene *self, Dialog *dialog) {
+void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag) {
     if (self->dialog != NULL) {
         LOG_ERROR("Scene: Failed to attach dialog to scene, dialog isn't NULL");
         return;
     }
+
+    self->dialog_tag = malloc(strlen(tag) + 1);
+    strcpy(self->dialog_tag, tag);
+    LOG_WARN("Scene: Tag %s", self->dialog_tag);
 
     self->dialog = dialog->contents;
     self->on_dialog = true;
@@ -357,8 +368,6 @@ void scene_change_scene(Scene *self, enum SceneState scene) {
             LOG_DEBUG("Scene: Ingame state");
             _scene_load_chunk();
             scene_change_chunk(self, physics_body_get(global.physics, global.PlayerState.body_id), CHUNK_SPAWN, SPAWN_COORD);
-            
-            global.GameState.act = GAME_ACT1;
             scene_fade_in(self);
             break;
         case ENDGAME:
@@ -375,7 +384,10 @@ void scene_dialog_next(Scene *self) {
 
     if (!self->dialog)  {
         LOG_DEBUG("Scene: Dialog ended");
+        game_update_dialog_state(self->dialog_tag); 
+
         self->dialog = NULL;
         self->on_dialog = false;
+        free(self->dialog_tag);
     }
 }
