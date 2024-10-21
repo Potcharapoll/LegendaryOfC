@@ -1,10 +1,12 @@
 #include "renderer.h"
 #include "asset_manager.h"
+#include "chunk.h"
 #include "prefab.h"
 
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "scene.h"
 
 #include <string.h>
 
@@ -14,7 +16,7 @@ QuadRenderer *quad_renderer_init(void) {
     QuadRenderer *renderer = malloc(sizeof(*renderer));
     ASSERT(renderer != NULL, "Failed to allocate memory for QuadRenderer", __FILE__, __LINE__);
 
-    renderer->vertices      = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
+    renderer->vertices = malloc(MAX_VERTICES_PER_BATCH * sizeof(*renderer->vertices));
     ASSERT(renderer->vertices != NULL, "Failed to allocate memory for QuadRenderer->vertices", __FILE__, __LINE__);
 
     renderer->shader        = *(struct Shader*)asset_manager_get_shader(global.asset_manager, "default_shader"); 
@@ -100,14 +102,16 @@ void quad_renderer_render(QuadRenderer *renderer) {
     renderer->quad_count = 0;
 }
 
+// weird?
 void quad_renderer_append_prefab(QuadRenderer *renderer, vec2s coord, char *prefab_name) {
-    Prefab *prefab = prefab_get(prefab_name);
+  ChunkRenderInfo *render_info = scene_get_chunk_render_info();
+  Prefab *prefab = prefab_get(prefab_name);
 
-    vec3s position = { 
-        global.scene->chunk->position.x + TILE_SIZE * coord.x, 
-        global.scene->chunk->position.y + TILE_SIZE * coord.y, 
-        0.0f
-    };
+  vec3s position = { 
+    render_info->position.x + TILE_SIZE * coord.x, 
+    render_info->position.y + TILE_SIZE * coord.y, 
+    0.0f
+  };
 
     quad_renderer_append_quad_texture(renderer, position, prefab->size, prefab->color, prefab->spritesheet->texture, prefab->tex_coord);
 }
@@ -249,7 +253,7 @@ TextRenderer *text_renderer_init(ivec2s (*get_char_coord)(char)) {
     GL_TRY(glEnableVertexAttribArray(3));
 
     GL_TRY(glBindVertexArray(0));
-    free(indices);
+    FREE(indices);
 
     return renderer;
 }
@@ -260,8 +264,8 @@ void text_renderer_destroy(TextRenderer *renderer) {
     glDeleteBuffers(1, &renderer->ebo);
     glDeleteTextures(1, &renderer->texture.handle);
 
-    free(renderer->vertices);
-    free(renderer);
+    FREE(renderer->vertices);
+    FREE(renderer);
 }
 
 void text_renderer_append_text(TextRenderer *renderer, char *text, vec3s position, u8 size, vec4s color) {
@@ -273,9 +277,9 @@ void text_renderer_append_text(TextRenderer *renderer, char *text, vec3s positio
     vec3s pos = position;
     for (u32 idx = 0; idx < strlen(text); ++idx) {
 
-        if (text[idx] == '\n') {
+        if (text[idx] == '|') {
             pos.x = position.x;
-            pos.y -= (size * 1.0);
+            pos.y -= (size * 1.25);
             continue;
         }
 
@@ -360,8 +364,8 @@ LineRenderer *line_renderer_init(void) {
 void line_renderer_destroy(LineRenderer *renderer) {
     glDeleteVertexArrays(1, &renderer->vao);
     glDeleteBuffers(1, &renderer->vbo);
-    free(renderer->vertices);
-    free(renderer);
+    FREE(renderer->vertices);
+    FREE(renderer);
 }
 
 void line_renderer_render(LineRenderer *renderer) {

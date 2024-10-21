@@ -1,5 +1,7 @@
 #include "shader.h"
+
 #include "../engine/logger.h"
+#include "../defs.h"
 
 #include <assert.h>
 
@@ -20,7 +22,7 @@ static GLuint _compile(GLenum type, char *path) {
     fread(txt, 1, len, fp);
     fclose(fp);
 
-    GLuint shader = glCreateShader(type);
+    GL_TRY(GLuint shader = glCreateShader(type));
     GL_TRY(glShaderSource(shader, 1, (const GLchar* const *)&txt, (const GLint*)&len));
     GL_TRY(glCompileShader(shader));
     
@@ -31,7 +33,8 @@ static GLuint _compile(GLenum type, char *path) {
         GL_TRY(glGetShaderInfoLog(shader, 512, NULL, log));
         puts(log);
     }
-    free(txt);
+
+    FREE(txt);
     return shader;
 }
 

@@ -73,4 +73,5 @@ count:1
 pos:[131,0] size:[20,4] target_coord:[6,17] chunkid:2 tag:t
 
 [dialog]
-count:0
+count:1
+pos:[141,62] size:[12,4] tag:parmy

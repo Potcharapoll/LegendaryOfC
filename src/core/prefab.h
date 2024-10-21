@@ -3,7 +3,7 @@
 #include "../gfx/spritesheet.h"
 
 typedef struct {
-    struct Spritesheet *spritesheet;
+    Spritesheet *spritesheet;
     f32 tex_coord[4];
     vec4s color;
     vec2s size;
@@ -11,6 +11,6 @@ typedef struct {
 
 void prefab_init(void);
 void prefab_destroy(void);
-void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec2s size, vec4s grid_coord);
+void prefab_create(char *name, Spritesheet *spritesheet, vec4s color, vec2s size, vec4s grid_coord);
 Prefab* prefab_get(char *name);
 #endif

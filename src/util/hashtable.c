@@ -1,5 +1,7 @@
 #include "hashtable.h"
 
+#include "../defs.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -13,11 +15,18 @@ u64 hash(char *key) {
     return idx % HT_CAPACITY;
 }
 
-hash_table_t* hashtable_init(size_t data_size) {
+hash_table_t* hashtable_init(size_t data_size, void(*free_value)(void*)) {
     hash_table_t *table = malloc(sizeof(*table));
     table->count        = 0;
     table->data_size    = data_size;
     table->entries      = calloc(HT_CAPACITY, sizeof(entry_t*));
+
+    if (free_value) {
+      table->free_value = free_value;
+    }
+    else {
+      table->free_value = NULL;
+    }
 
     for (int i = 0; i < HT_CAPACITY; i++) {
         table->entries[i] = NULL;
@@ -97,9 +106,9 @@ bool hashtable_delete(hash_table_t *self, char *key) {
         self->entries[idx] = NULL;
     }
 
-    free(item->value);
-    free(item->key);
-    free(item);
+    FREE(item->value);
+    FREE(item->key);
+    FREE(item);
 
     return found;
 }
@@ -113,13 +122,18 @@ bool hashtable_destroy(hash_table_t *self) {
              entry_t *tmp = curr;
              curr = curr->next;
 
-             free(tmp->value);
-             free(tmp->key);
-             free(tmp);
+             if (self->free_value) {
+              self->free_value(tmp->value);
+             }
+             else {
+               FREE(tmp->value);
+             }
+             FREE(tmp->key);
+             FREE(tmp);
          }
     }
-    free(self->entries);
-    free(self);
+    FREE(self->entries);
+    FREE(self);
 
     return true;
 }

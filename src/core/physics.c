@@ -37,9 +37,10 @@ static void collision_check(Physics *self, Body *body) {
 
 Physics* physics_init(u8 iterations) {
     Physics *physics = malloc(sizeof(*physics));
+    ASSERT(physics != NULL, "Cannot allocate memory for physics", __FILE__, __LINE__);
 
-    physics->iterations = iterations;
-    physics->body_list = array_list_init(sizeof(Body), 0);
+    physics->iterations       = iterations;
+    physics->body_list        = array_list_init(sizeof(Body), 0);
     physics->static_body_list = array_list_init(sizeof(Static_Body), 0);
 
     LOG_TRACE("Physics: Successfully initialized physics");
@@ -55,7 +56,6 @@ void physics_destroy(Physics *self) {
     LOG_TRACE("Physics: Successfully destroyed physics");
 }
 
-// we suppose to have only 1 movable body so we don't need to loop through the movable and check collision for it
 void physics_update(Physics *self, f32 dt) {
     Body *body;
 
@@ -64,11 +64,8 @@ void physics_update(Physics *self, f32 dt) {
         vec2s scaled_velocity = glms_vec2_scale(body->velocity, dt * (1.0 / self->iterations));
         for (u8 j = 0; j < self->iterations; ++j) {
 
-            // update position
-            body->position.x += scaled_velocity.x;
-            body->position.y += scaled_velocity.y;
-
-            // update center
+            body->position.x   += scaled_velocity.x;
+            body->position.y   += scaled_velocity.y;
             body->aabb.center.x = body->position.x + body->aabb.half_size.x;
             body->aabb.center.y = body->position.y + body->aabb.half_size.y;
 

@@ -68,6 +68,7 @@ void window_loop(struct Window *self) {
 
 void window_destroy(struct Window *self) {
     self->cleanup();
+
     glfwDestroyWindow(self->handle);
     glfwTerminate();
     LOG_TRACE("Window destroyed");

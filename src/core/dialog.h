@@ -7,12 +7,11 @@
 #define DIALOG_TEXT_SIZE   (vec2s){8,8}
 #include "../util/types.h"
 
-enum DialogType {
-    DIALOG_TYPE_TEXT,
-    DIALOG_TYPE_QUESTION,
-
-    DIALOG_TYPE_LAST
-};
+typedef enum {
+    DIALOG_TYPE_TEXT     = 0,
+    DIALOG_TYPE_QUESTION = 1,
+}DialogType;
+#define DIALOG_TYPE_LAST (DIALOG_TYPE_QUESTION + 1)
 
 typedef struct {
     char *question;
@@ -26,11 +25,10 @@ typedef struct {
 typedef struct { 
     char *text; 
 } DialogText;
-
 typedef struct DialogNode {
-    char *name;
-    enum DialogType type;
-    void *dialog;
+    char       name[20];
+    DialogType type;
+    void      *dialog;
 
     struct DialogNode *next;
 }DialogNode;
@@ -40,13 +38,24 @@ typedef struct Dialog {
     DialogNode *contents;
 } Dialog;
 
-Dialog* dialog_create(void);
+typedef struct {
+  char *dialog_tag;
+  b8 append_act;
+} DialogPacket;
+
+DialogPacket* dialog_packet_create(char *tag, b8 append_act);
+void dialog_packet_free(DialogPacket **packet);
+
 Dialog* dialog_load_from_file(char *path);
+DialogQuestion* dialog_load_question_from_file(char *path);
 void dialog_delete(Dialog *dialog);
 
-void dialog_append(Dialog *dialog, char *name, enum DialogType type, void *data);
+void dialog_append(Dialog *dialog, char *name, DialogType type, void *data);
 void dialog_render(void);
 void dialog_input(void);
 
 void dialog_list(Dialog *dialog);
+
+DialogText* _get_new_dialog_text(char *txt);
+DialogQuestion* _get_new_dialog_question(char *question, char *answer[4], char *wrong_txt, char *correct_txt, u8 correct_idx);
 #endif

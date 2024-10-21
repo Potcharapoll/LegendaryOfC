@@ -12,6 +12,6 @@ Spritesheet spritesheet_load(char *path, u32 count, ivec2s grid_size, ivec2s cel
     return spritesheet;
 }
 
-void spritesheet_destroy(struct Spritesheet self) {
+void spritesheet_destroy(Spritesheet self) {
     texture_destroy(self.texture);
 }

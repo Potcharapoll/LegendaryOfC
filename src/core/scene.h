@@ -13,33 +13,31 @@ enum FadeState {
 };
 
 enum SceneState {
-    MENU,
-    INTRO,
-    INGAME,
-    ENDGAME,
+    SCENE_MENU,
+    SCENE_INTRO,
+    SCENE_INGAME,
+    SCENE_ENDGAME,
 };
 
 typedef struct Scene {
     enum SceneState scene_state;
-    Camera *camera;
+    Camera         *camera;
 
-    Chunks chunk_id; 
-    Chunk *chunk;
+    Chunks      chunk_id; 
+    array_list *chunk_colliders;
+    array_list *chunk_teleporters;
+    array_list *chunk_dialogs;
 
     enum FadeState fade_state;
-    f32 fade_alpha;
-    b8 faded, fading;
-
-    // plan to use for filter for the night time 
-    vec4s gradient;
+    f32            fade_alpha;
+    b8             faded; 
+    b8             fading;
 
     // !!temp
     DialogNode *dialog;
-    char *dialog_tag;
-    b8 on_dialog;
-
-    // for handle the question dialog
-    u8 selected_answer;
+    char       *dialog_tag;
+    b8          on_dialog;
+    u8          selected_answer;
 
     // for render text, dialog, and other things in the corresponding scene
     //
@@ -64,9 +62,14 @@ void scene_change_scene(Scene *self, enum SceneState scene);
 DialogNode *scene_get_curr_dialog(Scene *self);
 void scene_dialog_next(Scene *self);
 
+void scene_add_chunk_dialog(Scene *self, ChunkDialog dialog);
 void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag);
+void scene_reset_collider(Scene *scene);
 
 void scene_fade_reset(Scene *self);
 void scene_fade_out(Scene *self);
 void scene_fade_in(Scene *self);
+
+ChunkRenderInfo* scene_get_chunk_render_info(void);
+Chunk* scene_get_curr_chunk(void);
 #endif

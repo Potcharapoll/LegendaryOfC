@@ -1,6 +1,8 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#define FREE(x) free(x); x = NULL;
+
 #define VERSION   0.1
 
 #define WIDTH     1280

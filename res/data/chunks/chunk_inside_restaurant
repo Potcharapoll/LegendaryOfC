@@ -58,7 +58,7 @@ count:1
 coord:[0,0] inside_restaurant
 
 [collider]
-count:23
+count:24
 pos:[0,0] size:[161,5]
 pos:[208,0] size:[144,5]
 pos:[347,5] size:[5,165]
@@ -82,11 +82,13 @@ pos:[294,21] size:[14,15]
 pos:[117,90] size:[150,2]
 pos:[117,92] size:[2,41]
 pos:[265,92] size:[2,37]
+pos:[99,125] size:[13,8]
 
 [teleporter]
 count:1
 pos:[161,0] size:[47,5] target_coord:[5.0,18.0] chunkid:1 tag:t
 
 [dialog]
-count:1
-pos:[150,81] size:[11,3] tag:dialog_roxy
+count:2
+pos:[150,81] size:[11,3] tag:roxy
+pos:[99,120] size:[13,5] tag:emma

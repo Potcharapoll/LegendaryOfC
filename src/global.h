@@ -1,7 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include "util/hashtable.h"
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #ifdef DEBUG
 #include "engine/editor.h"
@@ -35,7 +34,6 @@ struct Global {
     Physics             *physics;
     Animation           *animations;
     Timer               *timer;
-    hash_table_t        *dialogs;
 
     f32 dt;
     f32 input_delay;

@@ -20,90 +20,31 @@
 
 #include <string.h>
 
-// BUG: Multiple space when on intro will freeze at black screen
-
-//   ~87% (10% -> progression, 1% others, 2% sounds)
+//   ~88% (10% -> progression, 1% others, 2% sounds)
 //   Progression system       -- ON GOING --
 //   Finish Editor            -- PLANNED  --
 //   Sounds system            -- PLANNED  --
 //
-//   PLAN -- Fix prefab position of inside chunks.(DONE) 
-//           Gradient color (Day/Night)           (DONE)
-//           Logger                               (DONE)
-//           Finish inside art                    (DONE)
-//           place collider                       (DONE)
-//           camera                               (CAN SKIP)
-//           progression                          (25%)
+//   ---------------------------- PLAN -- 
+//   camera                               (CAN SKIP)
+//   progression                          (25%)
 //
-//           Night gradient -> (64,25,71,140) or (0,0,0,174)
+//   Night gradient -> (64,25,71,140) or (0,0,0,174)
 
 // TODO: Scene text animation
-
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
+//
+// Act 2
+// - TODO -
+// * Attach 2 question along to dialog when start the act (random)
+// * If correct all will update flag
+// * If wrong immediatly end
 
-typedef enum {
-  LAYER_BASE,
-  LAYER_BASE_UPPER,
-  LAYER_STRUCTURE,
-  LAYER_TOP,
-
-  LAYER_LAST
-} RenderLayer;
-
-typedef struct {
-  char *dialog_tag;
-  b8 append_act;
-} DialogPacket;
-
-static b8 interact_render = false;
+static b8 collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
 
 #ifdef DEBUG
 LineRenderer *line_renderer;
-
-// ======================== DialogPacket ===================================
-
-static DialogPacket* dialog_packet_create(char *tag, b8 append_act) {
-  DialogPacket *new = malloc(sizeof(*new));
-  new->append_act = append_act;
-  new->dialog_tag = tag;
-  return new;
-}
-
-static void dialog_packet_free(DialogPacket **packet) {
-  free(*packet);
-  *packet = NULL;
-}
-
-// =========================================================================
-
-static void _scene_attach_dialog(DialogPacket *packet) {
-  char buf[60];
-  const entry_t *item = NULL;
-
-  if (packet->append_act) {
-    snprintf(buf,60,"%s_act%d", packet->dialog_tag,  game_get_act());
-  }
-  else {
-    strcpy(buf, packet->dialog_tag);
-  }
-
-  item = hashtable_search(global.dialogs, buf);
-  LOG_DEBUG("Dialog tag: %s", buf);
-
-  /* assert(item != NULL); */
-  /* assert(item->value != NULL); */
-  /* assert(item->key != NULL); */
-  /* assert(strlen(item->key) > 0); */
-
-  Dialog *dialog = *(Dialog**)item->value;
-  /* assert(dialog != NULL); */
-
-
-  // buf is local variable and it will be destroyed after finish this function
-  // that makes our dialog_tag be empty value.
-  scene_attach_dialog(global.scene, dialog, buf);
-}
 
 static void _append_collider(void) {
   Body *body; 
@@ -129,7 +70,6 @@ static void _append_collider(void) {
 }
 #endif
 
-static QuadRenderer **quad_renderer;
 
 static ivec2s _get_char_coord(char c) {
   static u8 text_index[3][27] = {
@@ -184,37 +124,68 @@ static b8 _teleporter_check(char tag) {
       break;
   }
 
+  LOG_DEBUG("Check Teleporter tag %c", tag);
   return (!status);
 }
 
 static void _dialog_callback(Static_Body *body, Body *other) {
-  Chunk *chunk = global.scene->chunk;
 
-  for (u8 i = 0; i < chunk->dialog_count; ++i) {
-    Static_Body *dialog_body = physics_static_body_get(global.physics, chunk->dialog[i].body_id);
+  if (global.scene->chunk_dialogs == NULL) {
+    LOG_ERROR("Cannot run _dialog_callback due to chunk_dialogs is NULL");
+    return;
+  }
+
+  collide_dialog = true;
+  array_list *dialog_list = global.scene->chunk_dialogs;
+
+  for (u8 i = 0; i < dialog_list->len; ++i) {
+
+    ChunkDialog *dialog = array_list_get(dialog_list, i);
+    assert(dialog != NULL);
+
+    Static_Body *dialog_body = physics_static_body_get(global.physics, dialog->body_id);
+    assert(dialog_body != NULL);
 
     if (body == dialog_body) {
-      dialog_packet = dialog_packet_create(chunk->dialog[i].tag, true); 
+      dialog_packet = dialog_packet_create(dialog->tag, true); 
       break;
     }
   }
 
-  interact_render = true;
+  game_state_on(GAME_STATE_SHOW_INTERACT);
 }
 
 static void _teleporter_callback(Static_Body *body, Body *other) {
-  Chunk *chunk = global.scene->chunk;
 
-  for (u8 i = 0; i < chunk->teleporter_count; ++i) {
-    Static_Body *teleporter_body = physics_static_body_get(global.physics, chunk->teleporter[i].body_id);
+  if (global.scene->chunk_teleporters == NULL) {
+    LOG_ERROR("Cannot run _teleporter_callback due to chunk_teleporters is NULL");
+    return;
+  }
+
+  array_list *teleporter_list = global.scene->chunk_teleporters;
+
+  for (u32 i = 0; i < teleporter_list->len; ++i) {
+
+    ChunkTeleporter *teleporter = array_list_get(teleporter_list, i);
+    assert(teleporter != NULL);
+
+    Static_Body *teleporter_body = physics_static_body_get(global.physics, teleporter->body_id);
+    assert(teleporter_body != NULL);
 
     if (body == teleporter_body) {
+      LOG_DEBUG("Teleporting");
+
       other->velocity = glms_vec2_zero();
       player_set_animation(IDLE, global.PlayerState.direction);
 
-      if (_teleporter_check(chunk->teleporter[i].tag)) { 
-        if (global.scene->fade_state == FADE_NONE) global.scene->fade_state = FADE_OUT;
-        if (global.scene->faded) scene_change_chunk(global.scene, other, chunk->teleporter[i].chunkId, chunk->teleporter[i].target_coord);
+
+      if (_teleporter_check(teleporter->tag)) { 
+        if (global.scene->fade_state == FADE_NONE) scene_fade_out(global.scene);
+
+        if (global.scene->faded) {
+          game_change_chunk(other, teleporter->chunkId, teleporter->target_coord);
+          break;
+        }
       }
       else {
         vec2s pv;
@@ -224,10 +195,41 @@ static void _teleporter_callback(Static_Body *body, Body *other) {
         other->position.x += pv.x;
         other->position.y += pv.y;
 
-        dialog_packet = dialog_packet_create("dialog_locked", false);
+        if (!dialog_packet) { dialog_packet = dialog_packet_create("dialog_locked", false); }
       }
     }
   }
+}
+
+static void _load_prefab(void) {
+  struct Spritesheet *structures_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_STRUCTURES);
+  prefab_create("bus_station", structures_spritesheet, WHITE, (vec2s){48,48},  (vec4s){12,12,15,15});
+  prefab_create("bus_stop",    structures_spritesheet, WHITE, (vec2s){16,32},  (vec4s){15,12,16,14});
+  prefab_create("restaurant",  structures_spritesheet, WHITE, (vec2s){112,96}, (vec4s){ 6, 0,13, 6});
+  prefab_create("library",     structures_spritesheet, WHITE, (vec2s){160,80}, (vec4s){ 0,18,10,23});
+  prefab_create("church",      structures_spritesheet, WHITE, (vec2s){80,96},  (vec4s){12,15,17,21});
+  prefab_create("fish_shop",   structures_spritesheet, WHITE, (vec2s){80,64},  (vec4s){13, 0,18, 4});
+  prefab_create("slider",      structures_spritesheet, WHITE, (vec2s){80,64},  (vec4s){13, 4,18, 8});
+  prefab_create("horse1",      structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){14, 8,16,10});
+  prefab_create("horse2",      structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){16, 8,18,10});
+  prefab_create("nathan_home", structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 6,12,12,18});
+  prefab_create("orange_home", structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0, 0, 6, 6});
+  prefab_create("old_g_home",  structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0, 6, 6,12});
+  prefab_create("g_home",      structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0,12, 6,18});
+  prefab_create("vc_home",     structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 6, 6,12,12});
+  prefab_create("sign_down",   structures_spritesheet, WHITE, (vec2s){48,32},  (vec4s){12,10,15,12});
+  prefab_create("sign_left",   structures_spritesheet, WHITE, (vec2s){16,48},  (vec4s){17,12,18,15});
+  prefab_create("plant_pot",   structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){12, 8,14,10});
+  prefab_create("image",       structures_spritesheet, WHITE, (vec2s){16,16},  (vec4s){16,12,17,13});
+
+  struct Spritesheet *inside_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_INSIDE);
+  prefab_create("inside_library",    inside_spritesheet, WHITE, (vec2s){352,192}, (vec4s){0,0,23,13});
+  prefab_create("inside_restaurant", inside_spritesheet, WHITE, (vec2s){352,176}, (vec4s){0,13,23,24});
+  prefab_create("inside_church",     inside_spritesheet, WHITE, (vec2s){192,336}, (vec4s){23,0,36,22});
+  prefab_create("inside_fish",       inside_spritesheet, WHITE, (vec2s){160,144}, (vec4s){36,0,47,10});
+  prefab_create("inside_lj_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){0,24,14,36});
+  prefab_create("inside_vc_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){14,24,28,36});
+  prefab_create("inside_og_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){28,24,42,36});
 }
 
 static void input_handling(void) {
@@ -236,24 +238,28 @@ static void input_handling(void) {
   if (global.input_delay >= INPUT_DELAY) {
 
     switch (global.scene->scene_state) {
-      case MENU:
-      case INTRO:
+      case SCENE_MENU:
+      case SCENE_INTRO:
         if (window_get_key(global.window, GLFW_KEY_SPACE) && !global.scene->fading) {
+          LOG_DEBUG("SPACE");
           scene_fade_out(global.scene);
           global.input_delay = 0.0f;
         }
         break;
-      case INGAME:
+      case SCENE_INGAME:
         if (global.scene->fade_state == FADE_NONE && !global.scene->on_dialog) {
           player_input();
 
           if (window_get_key(global.window, GLFW_KEY_E)) {
             if (dialog_packet) {
+
+              LOG_DEBUG("YES");
+
               Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
               player_body->velocity = glms_vec2_zero();
               player_set_animation(IDLE, global.PlayerState.direction);
 
-              _scene_attach_dialog(dialog_packet);
+              game_attach_dialog(dialog_packet);
               dialog_packet_free(&dialog_packet);
             }
             global.input_delay = 0.0f;
@@ -315,21 +321,12 @@ static void input_handling(void) {
 }
 
 void setup(void) {
-  global.teleporter_callback = _teleporter_callback;
-  global.dialog_callback = _dialog_callback;
-  global.get_char_coord = _get_char_coord;
-  global.dialogs = hashtable_init(sizeof(Dialog*));
-
   pthread_mutex_init(&global.lock, NULL);
-  global.asset_manager = asset_manager_init();
+  global.asset_manager       = asset_manager_init();
 
-  game_init();
-
-  // Separate "default_shader" and "texture_shader" because default_shader is used with 8 slot textures with RGBa,
-  // otherwise "texture_shader" is used only with 1 slot textures alpha.
   asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
   asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
-
+  asset_manager_push_texture(global.asset_manager, TEXTURE_INTERACT, TEXTURE_INTERACT);
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81, (ivec2s){27, 3}, (ivec2s){32,32});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32, (ivec2s){ 8, 4}, (ivec2s){16,22});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_NPC,          21, (ivec2s){ 7, 3}, (ivec2s){16,23});
@@ -337,22 +334,21 @@ void setup(void) {
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_INSIDE,     1692, (ivec2s){47,36}, (ivec2s){16,16});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_STRUCTURES,  368, (ivec2s){18,23}, (ivec2s){16,16});
 
-  asset_manager_push_texture(global.asset_manager, TEXTURE_INTERACT, TEXTURE_INTERACT);
+  global.teleporter_callback = _teleporter_callback;
+  global.dialog_callback     = _dialog_callback;
+  global.get_char_coord      = _get_char_coord;
+  global.timer               = timer_init();
+  global.physics             = physics_init(10);
+  global.animations          = animation_init();
+  global.scene               = scene_init();
 
-  global.timer = timer_init();
-  global.physics = physics_init(10);
-  global.animations = animation_init();
+
+  prefab_init();
+  _load_prefab();
 
   player_init();
-  prefab_init();
 
-  global.scene = scene_init();
-  scene_change_scene(global.scene, MENU);
-
-  quad_renderer = malloc(LAYER_LAST * sizeof(quad_renderer));
-  for (u8 i = 0; i < LAYER_LAST; ++i) {
-    quad_renderer[i] = quad_renderer_init();
-  }
+  game_init();
 
 #ifdef DEBUG 
   global.cursor_mode = CURSOR_MODE_NORMAL;
@@ -364,51 +360,13 @@ void setup(void) {
   editor_init();
 #endif
 
-  { // create prefabs
-    struct Spritesheet *structures_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_STRUCTURES);
-    prefab_create("bus_station", structures_spritesheet, WHITE, (vec2s){48,48},  (vec4s){12,12,15,15});
-    prefab_create("bus_stop",    structures_spritesheet, WHITE, (vec2s){16,32},  (vec4s){15,12,16,14});
-    prefab_create("restaurant",  structures_spritesheet, WHITE, (vec2s){112,96}, (vec4s){ 6, 0,13, 6});
-    prefab_create("library",     structures_spritesheet, WHITE, (vec2s){160,80}, (vec4s){ 0,18,10,23});
-    prefab_create("church",      structures_spritesheet, WHITE, (vec2s){80,96},  (vec4s){12,15,17,21});
-    prefab_create("fish_shop",   structures_spritesheet, WHITE, (vec2s){80,64},  (vec4s){13, 0,18, 4});
-    prefab_create("slider",      structures_spritesheet, WHITE, (vec2s){80,64},  (vec4s){13, 4,18, 8});
-    prefab_create("horse1",      structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){14, 8,16,10});
-    prefab_create("horse2",      structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){16, 8,18,10});
-    prefab_create("nathan_home", structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 6,12,12,18});
-    prefab_create("orange_home", structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0, 0, 6, 6});
-    prefab_create("old_g_home",  structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0, 6, 6,12});
-    prefab_create("g_home",      structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 0,12, 6,18});
-    prefab_create("vc_home",     structures_spritesheet, WHITE, (vec2s){96,96},  (vec4s){ 6, 6,12,12});
-    prefab_create("sign_down",   structures_spritesheet, WHITE, (vec2s){48,32},  (vec4s){12,10,15,12});
-    prefab_create("sign_left",   structures_spritesheet, WHITE, (vec2s){16,48},  (vec4s){17,12,18,15});
-    prefab_create("plant_pot",   structures_spritesheet, WHITE, (vec2s){32,32},  (vec4s){12, 8,14,10});
-
-    struct Spritesheet *inside_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_INSIDE);
-    prefab_create("inside_library",    inside_spritesheet, WHITE, (vec2s){352,192}, (vec4s){0,0,23,13});
-    prefab_create("inside_restaurant", inside_spritesheet, WHITE, (vec2s){352,176}, (vec4s){0,13,23,24});
-    prefab_create("inside_church",     inside_spritesheet, WHITE, (vec2s){192,336}, (vec4s){23,0,36,22});
-    prefab_create("inside_fish",       inside_spritesheet, WHITE, (vec2s){160,144}, (vec4s){36,0,47,10});
-    prefab_create("inside_lj_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){0,24,14,36});
-    prefab_create("inside_vc_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){14,24,28,36});
-    prefab_create("inside_og_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){28,24,42,36});
-  }
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
-  Dialog *temp;
-
-  temp = dialog_load_from_file("res/data/dialog/dialog_start");
-  hashtable_insert(global.dialogs, "dialog_start", &temp);
-
-  temp = dialog_load_from_file("res/data/dialog/dialog_roxy_act1");
-  hashtable_insert(global.dialogs, "dialog_roxy_act1", &temp);
-
-  temp = dialog_load_from_file("res/data/dialog/dialog_locked");
-  hashtable_insert(global.dialogs, "dialog_locked", &temp);
+  scene_change_scene(global.scene, SCENE_MENU);
 }
 
 void update(void) {
@@ -422,13 +380,16 @@ void update(void) {
   timer_update(global.timer);
   game_update();
 
+  if (!collide_dialog && dialog_packet) { dialog_packet_free(&dialog_packet); }
+  collide_dialog = false;
+
   switch (global.scene->scene_state) {
-    case MENU:
+    case SCENE_MENU:
       if (global.scene->faded) { 
-        scene_change_scene(global.scene, INTRO); 
+        scene_change_scene(global.scene, SCENE_INTRO); 
       }
       break;
-    case INTRO:
+    case SCENE_INTRO:
       if (!global.scene->faded && !global.timer->busy) {
         timer_start(global.timer, 5.0f);
       } 
@@ -439,104 +400,15 @@ void update(void) {
 
       if (global.scene->faded && global.timer->busy) {
         timer_reset(global.timer);
-        scene_change_scene(global.scene, INGAME);
+        scene_change_scene(global.scene, SCENE_INGAME);
 
         game_setup_act(GAME_ACT1);
       }
       break;
-    case INGAME:
+    case SCENE_INGAME:
       animation_update(global.animations, global.dt);
       physics_update(global.physics, global.dt);
-
-      { // render
-        struct Spritesheet *spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TILE);
-        for (s32 y = 0; y < CHUNK_SIZE_Y; y++) {
-          for (s32 x = 0; x < CHUNK_SIZE_X; x++) {
-            u32 uv = global.scene->chunk->uv[CHUNK_SIZE_X * y + x]; 
-
-            if (uv == (u32)-1) { continue; }
-
-            u32 row    = uv / spritesheet->grid_size.x;
-            u32 col    = uv % spritesheet->grid_size.x;
-            f32 cellx  = spritesheet->cell_size.x / spritesheet->size.x;
-            f32 celly  = spritesheet->cell_size.y / spritesheet->size.y; 
-
-            f32 tex_coord[4] = {
-              (cellx * col), 
-              (cellx * col) + cellx, 
-              (celly * row), 
-              (celly * row) + celly
-            };
-            vec3s position   = {
-              global.scene->chunk->position.x + x * TILE_SIZE, 
-              global.scene->chunk->position.y + y * TILE_SIZE, 
-              0.0
-            };
-            quad_renderer_append_quad_texture(quad_renderer[LAYER_BASE], position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord);
-          }
-        }
-
-        u32 offset = CHUNK_SIZE_Y * CHUNK_SIZE_X;
-        for (s32 y = 0; y < CHUNK_SIZE_Y; y++) {
-          for (s32 x = 0; x < CHUNK_SIZE_X; x++) {
-            u32 uv = global.scene->chunk->uv[offset + CHUNK_SIZE_X * y + x]; 
-
-            if (uv == 0) continue;
-
-            u32 row    = uv / spritesheet->grid_size.x;
-            u32 col    = uv % spritesheet->grid_size.x;
-            f32 cellx  = spritesheet->cell_size.x / spritesheet->size.x;
-            f32 celly  = spritesheet->cell_size.y / spritesheet->size.y; 
-
-            f32 tex_coord[4] = {
-              (cellx * col), 
-              (cellx * col) + cellx, 
-              (celly * row), 
-              (celly * row) + celly
-            };
-            vec3s position   = {global.scene->chunk->position.x + x * TILE_SIZE, global.scene->chunk->position.y + y * TILE_SIZE, 0.0};
-            quad_renderer_append_quad_texture(quad_renderer[LAYER_BASE_UPPER], position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord);
-          }
-        }
-
-        // prefab
-        for (u8 i = 0; i < global.scene->chunk->prefab_count; ++i) {
-          quad_renderer_append_prefab(quad_renderer[LAYER_STRUCTURE], global.scene->chunk->prefab[i].coord, global.scene->chunk->prefab[i].name);
-        }
-
-        { // append player to LAYER_TOP
-          struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
-          f32 tex_coord[4];
-
-          player_get_tex_coord(tex_coord);
-          quad_renderer_append_quad_texture(quad_renderer[LAYER_TOP], (vec3s){player_body->position.x,player_body->position.y, 0.0f}, 
-              PLAYER_SIZE, WHITE, player_spritesheet->texture, tex_coord);
-        }
-
-        if (interact_render && !global.scene->on_dialog) {
-          struct Texture *tex = asset_manager_get_texture(global.asset_manager, TEXTURE_INTERACT);
-
-          vec3s pos = {
-            .x = global.scene->camera->position.x + PROJECTION_WIDTH/2.0f - tex->size.y/4.0f,
-            .y = global.scene->camera->position.y + 5,
-          };
-          quad_renderer_append_quad_texture(quad_renderer[LAYER_TOP], pos, (vec2s){tex->size.x/4.0f, tex->size.y/4.0f}, WHITE, *tex, NULL);
-
-          interact_render = false;
-        }
-
-#ifdef DEBUG
-        { // append start_point, end_point, and cursor to LAYER_TOP
-          quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.start_point[0], global.start_point[1], 0.0f}, (vec2s){1,1}, GREEN);
-          quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.end_point[0], global.end_point[1], 0.0f}, (vec2s){1,1}, BLUE);
-          quad_renderer_append_quad(quad_renderer[LAYER_TOP], (vec3s){global.window->mouse.orthox, global.window->mouse.orthoy, 0.0f}, (vec2s){1,1}, WHITE);
-        }
-#endif
-
-      }
-
-      for (u8 i = 0; i < LAYER_LAST; ++i) { quad_renderer_render(quad_renderer[i]); }
-
+      game_render(player_body);
       break;
     default:
       break;
@@ -550,29 +422,23 @@ void update(void) {
 
   if (global.toggle_editor) editor_render();
 #endif
-
 }
 
 void cleanup(void) {
   pthread_mutex_destroy(&global.lock);
-  asset_manager_destroy(global.asset_manager);
+  timer_destroy(global.timer);
+  physics_destroy(global.physics);
+  animation_destroy(global.animations);
   scene_destroy(global.scene);
+  prefab_destroy();
+  game_destroy();
 
-  hashtable_destroy(global.dialogs);
+  asset_manager_destroy(global.asset_manager);
 
 #ifdef DEBUG
   line_renderer_destroy(line_renderer);
   editor_destroy();
 #endif
-  for (u8 i = 0; i < LAYER_LAST; ++i) {
-    quad_renderer_destroy(quad_renderer[i]);
-  }
-  free(quad_renderer);
-
-  timer_destroy(global.timer);
-  physics_destroy(global.physics);
-  animation_destroy(global.animations);
-  prefab_destroy();
 
   LOG_TRACE("Window: Cleaning up");
 }
@@ -584,7 +450,8 @@ int main(void) {
   LOG_INFO("LegendaryOfC Version %.1f Release Mode", VERSION);
 #endif
 
-  struct Window window;
+  struct Window window = {0};
+
   window_init(&window, setup, update, cleanup);
 
   global.window = &window;

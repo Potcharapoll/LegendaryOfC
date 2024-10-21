@@ -58,7 +58,7 @@ count:1
 coord:[17,5] nathan_home
 
 [collider]
-count:15
+count:14
 pos:[224,767] size:[16,49]
 pos:[135,816] size:[82,13]
 pos:[135,960] size:[82,13]
@@ -66,8 +66,7 @@ pos:[217,816] size:[7,47]
 pos:[217,896] size:[7,80]
 pos:[128,816] size:[7,160]
 pos:[224,976] size:[16,80]
-pos:[272,879] size:[32,177]
-pos:[272,767] size:[32,97]
+pos:[272,767] size:[32,289]
 pos:[144,848] size:[16,14]
 pos:[144,896] size:[16,14]
 pos:[144,944] size:[16,14]

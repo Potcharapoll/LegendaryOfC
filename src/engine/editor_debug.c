@@ -18,7 +18,7 @@ void debug_menu(void) {
     igSpacing();
 
     igText("Scene");
-    igText("SceneState: %s", (global.scene->scene_state == MENU) ? "MENU" : (global.scene->scene_state == INTRO) ? "INTRO" : (global.scene->scene_state == INGAME) ? "INGAME" : "ENDGAME");
+    igText("SceneState: %s", (global.scene->scene_state == SCENE_MENU) ? "MENU" : (global.scene->scene_state == SCENE_INTRO) ? "INTRO" : (global.scene->scene_state == SCENE_INGAME) ? "INGAME" : "ENDGAME");
     igSpacing();
 
     igText("ChunkId: %d", global.scene->chunk_id);
@@ -54,7 +54,6 @@ void debug_menu(void) {
     igText("Camera");
     static vec2 pos; 
     static vec3 up, front;
-    static vec4 color;
 
     if (igButton("Update Camera", (ImVec2){})) {
         glm_vec2_copy((vec2){global.scene->camera->position.x, global.scene->camera->position.y}, pos);
@@ -75,15 +74,6 @@ void debug_menu(void) {
     if (igSliderFloat2("position", pos, -1000.0f, 1000.0f, "%.3f", 0)) {
         global.scene->camera->position.x = pos[0];
         global.scene->camera->position.y = pos[1];
-    }
-    igSpacing();
-
-
-    if (igColorEdit4("Gradient", color, 0)) {
-        global.scene->gradient.x = color[0];
-        global.scene->gradient.y = color[1];
-        global.scene->gradient.z = color[2];
-        global.scene->gradient.w = color[3];
     }
     igSeparator();
 

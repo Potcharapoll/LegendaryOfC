@@ -5,7 +5,7 @@
 static hash_table_t *prefabs = NULL;
 
 void prefab_init(void) {
-    prefabs = hashtable_init(sizeof(Prefab));
+    prefabs = hashtable_init(sizeof(Prefab), NULL);
 
     LOG_TRACE("Prefab: Successfully initialized prefab");
 }
@@ -16,7 +16,7 @@ void prefab_destroy(void){
     LOG_TRACE("Prefab: Successfully destroyed prefab");
 }
 
-void prefab_create(char *name, struct Spritesheet *spritesheet, vec4s color, vec2s size, vec4s grid_coord) {
+void prefab_create(char *name, Spritesheet *spritesheet, vec4s color, vec2s size, vec4s grid_coord) {
     Prefab prefab = {
         .spritesheet = spritesheet,
         .size        = size,

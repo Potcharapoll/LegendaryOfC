@@ -1,9 +1,10 @@
-#include "../global.h"
-#include "../defs.h"
-#include "../engine/logger.h"
-
 #include "chunk.h"
 
+#include "../engine/logger.h"
+#include "../defs.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define FORMAT_IN_POSITION   "pos:[%f,%f]\n"
@@ -16,172 +17,155 @@
 #define FORMAT_IN_COUNT      "count:%u\n"
 
 Chunk* chunk_load_from_file(char *path) {
-    FILE *stream;
-    Chunk* chunk = malloc(sizeof(*chunk));
+  FILE *stream;
+  Chunk* chunk = malloc(sizeof(*chunk));
+  ASSERT(chunk != NULL, "Failed to allocate memory for chunk", __FILE__, __LINE__);
 
-    stream = fopen(path, "rb");
-    if (stream == NULL) { LOG_FETAL("Failed to load chunk from file at path \'%s\'", path); }
+  stream = fopen(path, "rb");
+  if (stream == NULL) { LOG_FETAL("Failed to load chunk from file at path \'%s\'", path); }
 
-    chunk->uv = malloc((CHUNK_SIZE_X * CHUNK_SIZE_Y * 2) * sizeof(*chunk->uv));
-    ASSERT(chunk->uv != NULL, "Failed to allocate memory for chunk->uv", __FILE__, __LINE__);
+  chunk->render_info = malloc(sizeof(*chunk->render_info));
+  ASSERT(chunk->render_info != NULL, "Failed to allocate memory for chunk->render_info", __FILE__, __LINE__);
 
-    char c;
-    uint32_t size;
-     
-    char *keywords[] = {"position", "base", "upper", "prefab", "collider", "teleporter", "dialog"};
-    char key[50];
+  chunk->render_info->uv = malloc((CHUNK_SIZE_X * CHUNK_SIZE_Y * 2) * sizeof(*chunk->render_info->uv));
+  ASSERT(chunk->render_info->uv != NULL, "Failed to allocate memory for chunk->uv", __FILE__, __LINE__);
 
-    while ((c = fgetc(stream)) != EOF) {
-        if (c == ' ' || c == '\n') continue;
+  chunk->render_info->prefab = array_list_init(sizeof(ChunkPrefab), 0);
+  chunk->dialog     = array_list_init(sizeof(ChunkDialog), 0);
+  chunk->teleporter = array_list_init(sizeof(ChunkTeleporter), 0);
+  chunk->collider   = array_list_init(sizeof(ChunkCollider), 0);
 
-        if (c == '[') {
-            fscanf(stream, "%[a-z]]", key);
-        }
+  char c;
+  uint32_t size;
 
-        if (0 == strcmp(key, keywords[0])) {
-            fgets(key, sizeof(key), stream);
-            fscanf(stream, FORMAT_IN_POSITION, &chunk->position.x, &chunk->position.y);
-            chunk->position.z = chunk->position.x + (TILE_SIZE * CHUNK_SIZE_X);
-            chunk->position.w = chunk->position.y + (TILE_SIZE * CHUNK_SIZE_Y);
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[1])) {
-            fgets(key, sizeof(key), stream);
-            for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
-                for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
-                    fscanf(stream, FORMAT_IN_BASE, &chunk->uv[y * CHUNK_SIZE_X + x]);
-                }
-            }
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[2])) {
-            u32 offset = CHUNK_SIZE_X * CHUNK_SIZE_Y;
-            fgets(key, sizeof(key), stream);
-            for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
-                for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
-                    fscanf(stream, FORMAT_IN_UPPER, &chunk->uv[offset + y * CHUNK_SIZE_X + x]);
-                }
-            }
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[3])) {
-            fgets(key, sizeof(key), stream);
-            fscanf(stream, FORMAT_IN_COUNT, &size);
-            chunk->prefab = malloc(size * sizeof(*chunk->prefab));
-            ASSERT(chunk->prefab != NULL, "Failed to allocate memory for chunk->prefab", __FILE__, __LINE__);
-            chunk->prefab_count = size;
+  char *keywords[] = {"position", "base", "upper", "prefab", "collider", "teleporter", "dialog"};
+  char key[50];
 
-            for (uint8_t i = 0; i < size; ++i) {
-                fscanf(stream, FORMAT_IN_PREFAB, &chunk->prefab[i].coord.x, &chunk->prefab[i].coord.y, chunk->prefab[i].name);
-            }
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[4])) {
-            fgets(key, sizeof(key), stream);
-            fscanf(stream, FORMAT_IN_COUNT, &size);
-            chunk->collider = malloc(size * sizeof(*chunk->collider));
-            ASSERT(chunk->collider != NULL, "Failed to allocate memory for chunk->collider", __FILE__, __LINE__);
-            chunk->collider_count = size;
+  while ((c = fgetc(stream)) != EOF) {
+    if (c == ' ' || c == '\n') continue;
 
-            for (uint8_t i = 0; i < size; ++i) {
-                fscanf(stream, FORMAT_IN_COLLIDER, 
-                    &chunk->collider[i].pos.x, &chunk->collider[i].pos.y,
-                    &chunk->collider[i].size.x, &chunk->collider[i].size.y
-                    );
-            }
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[5])) {
-            fgets(key, sizeof(key), stream);
-            fscanf(stream, FORMAT_IN_COUNT, &size);
-            chunk->teleporter = malloc(size * sizeof(*chunk->teleporter));
-            ASSERT(chunk->teleporter != NULL, "Failed to allocate memory for chunk->teleporter", __FILE__, __LINE__);
-            chunk->teleporter_count = size;
-
-            for (uint8_t i = 0; i < size; ++i) {
-                fscanf(stream, FORMAT_IN_TELEPORTER, 
-                        &chunk->teleporter[i].pos.x, &chunk->teleporter[i].pos.y, 
-                        &chunk->teleporter[i].size.x, &chunk->teleporter[i].size.y, 
-                        &chunk->teleporter[i].target_coord.x, &chunk->teleporter[i].target_coord.y, 
-                        &chunk->teleporter[i].chunkId, &chunk->teleporter[i].tag);
-            }
-            memset(key, 0, sizeof(key));
-        }
-        else if (0 == strcmp(key, keywords[6])) {
-            fgets(key, sizeof(key), stream);
-            fscanf(stream, FORMAT_IN_COUNT, &size);
-            chunk->dialog = malloc(size * sizeof(*chunk->dialog));
-            ASSERT(chunk->dialog != NULL, "Failed to allocate memory for chunk->dialog", __FILE__, __LINE__);
-            chunk->dialog_count = size;
-
-            for (uint8_t i = 0; i < size; ++i) {
-                fscanf(stream, FORMAT_IN_DIALOG, 
-                        &chunk->dialog[i].pos.x, &chunk->dialog[i].pos.y, 
-                        &chunk->dialog[i].size.x, &chunk->dialog[i].size.y, 
-                        chunk->dialog[i].tag);
-            }
-            memset(key, 0, sizeof(key));
-        }
+    if (c == '[') {
+      fscanf(stream, "%[a-z]]", key);
     }
-    fclose(stream);
 
-    LOG_DEBUG("Chunk: Successfully to load chunk from file at path \'%s\'", path);
-    return chunk;
+    if (0 == strcmp(key, keywords[0])) {
+      fgets(key, sizeof(key), stream);
+      fscanf(stream, FORMAT_IN_POSITION, &chunk->render_info->position.x, &chunk->render_info->position.y);
+      chunk->render_info->position.z = chunk->render_info->position.x + (TILE_SIZE * CHUNK_SIZE_X);
+      chunk->render_info->position.w = chunk->render_info->position.y + (TILE_SIZE * CHUNK_SIZE_Y);
+
+#ifdef CHUNK_PRINT_CONTENT
+      fprintf(stdout, "%.2f %.2f %.2f %.2f\n", chunk->render_info->position.x, chunk->render_info->position.y, chunk->render_info->position.z, chunk->render_info->position.w);
+#endif
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[1])) {
+      fgets(key, sizeof(key), stream);
+      for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
+        for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
+          fscanf(stream, FORMAT_IN_BASE, &chunk->render_info->uv[y * CHUNK_SIZE_X + x]);
+        }
+      }
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[2])) {
+      u32 offset = CHUNK_SIZE_X * CHUNK_SIZE_Y;
+      fgets(key, sizeof(key), stream);
+      for (u8 y = 0; y < CHUNK_SIZE_Y; ++y) {
+        for (u8 x = 0; x < CHUNK_SIZE_X; ++x) {
+          fscanf(stream, FORMAT_IN_UPPER, &chunk->render_info->uv[offset + y * CHUNK_SIZE_X + x]);
+        }
+      }
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[3])) {
+      fgets(key, sizeof(key), stream);
+      fscanf(stream, FORMAT_IN_COUNT, &size);
+
+      ChunkPrefab prefab = {0};
+      for (uint8_t i = 0; i < size; ++i) {
+        fscanf(stream, FORMAT_IN_PREFAB, &prefab.coord.x, &prefab.coord.y, prefab.name);
+
+        fprintf(stdout, FORMAT_IN_PREFAB, prefab.coord.x, prefab.coord.y, prefab.name);
+        array_list_append(chunk->render_info->prefab, &prefab);
+      }
+
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[4])) {
+      fgets(key, sizeof(key), stream);
+      fscanf(stream, FORMAT_IN_COUNT, &size);
+
+      ChunkCollider collider = {0};
+      for (uint8_t i = 0; i < size; ++i) {
+        fscanf(stream, FORMAT_IN_COLLIDER, &collider.pos.x, &collider.pos.y, &collider.size.x, &collider.size.y);
+
+#ifdef CHUNK_PRINT_CONTENT
+        fprintf(stdout, FORMAT_IN_COLLIDER, collider.pos.x, collider.pos.y, collider.size.x, collider.size.y);
+#endif
+        array_list_append(chunk->collider, &collider);
+      }
+
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[5])) {
+      fgets(key, sizeof(key), stream);
+      fscanf(stream, FORMAT_IN_COUNT, &size);
+
+      ChunkTeleporter teleporter = {0};
+      for (uint8_t i = 0; i < size; ++i) {
+        fscanf(stream, FORMAT_IN_TELEPORTER, 
+            &teleporter.pos.x, &teleporter.pos.y, 
+            &teleporter.size.x, &teleporter.size.y, 
+            &teleporter.target_coord.x, &teleporter.target_coord.y, 
+            &teleporter.chunkId, &teleporter.tag);
+
+#ifdef CHUNK_PRINT_CONTENT
+        fprintf(stdout, FORMAT_IN_TELEPORTER, 
+            teleporter.pos.x, teleporter.pos.y, 
+            teleporter.size.x, teleporter.size.y, 
+            teleporter.target_coord.x, teleporter.target_coord.y, 
+            teleporter.chunkId, teleporter.tag);
+#endif
+        array_list_append(chunk->teleporter, &teleporter);
+      }
+
+      memset(key, 0, sizeof(key));
+    }
+    else if (0 == strcmp(key, keywords[6])) {
+      fgets(key, sizeof(key), stream);
+      fscanf(stream, FORMAT_IN_COUNT, &size);
+
+      ChunkDialog dialog = {0};
+      for (uint8_t i = 0; i < size; ++i) {
+        fscanf(stream, FORMAT_IN_DIALOG, &dialog.pos.x, &dialog.pos.y, &dialog.size.x, &dialog.size.y, dialog.tag);
+
+#ifdef CHUNK_PRINT_CONTENT
+        fprintf(stdout, FORMAT_IN_DIALOG, dialog.pos.x, dialog.pos.y, dialog.size.x, dialog.size.y, dialog.tag);
+#endif
+        array_list_append(chunk->dialog, &dialog);
+      }
+
+      memset(key, 0, sizeof(key));
+    }
+  }
+  fclose(stream);
+
+  LOG_DEBUG("Chunk: Successfully to load chunk from file at path \'%s\'", path);
+  return chunk;
 }
 
-/* void chunk_render(void) { */
-/*     Chunk *chunk = global.ChunkState.chunk; */
-/*     struct Spritesheet *spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TILE); */
+void chunk_destroy(Chunk **self) {
+  Chunk *tmp = *self;
 
-/*     // base layer */
-/*     for (s32 y = 0; y < CHUNK_SIZE_Y; y++) { */
-/*         for (s32 x = 0; x < CHUNK_SIZE_X; x++) { */
-/*             u32 uv = chunk->uv[CHUNK_SIZE_X * y + x]; */ 
-            
-/*             if (uv == (u32)-1) { continue; } */
+  array_list_destroy(tmp->render_info->prefab);
+  array_list_destroy(tmp->dialog);
+  array_list_destroy(tmp->collider);
+  array_list_destroy(tmp->teleporter);
 
-/*             u32 row    = uv / spritesheet->cols; */
-/*             u32 col    = uv % spritesheet->cols; */
-/*             f32 cellx  = spritesheet->stride / spritesheet->size.x; */
-/*             f32 celly  = spritesheet->stride / spritesheet->size.y; */ 
+  free(tmp->render_info->uv);
+  free(tmp->render_info);
+  free(tmp);
 
-/*             f32 tex_coord[4] = { */
-/*                 (cellx * col), */ 
-/*                 (cellx * col) + cellx, */ 
-/*                 (celly * row), */ 
-/*                 (celly * row) + celly */
-/*             }; */
-/*             vec3s position   = {chunk->position.x + x * TILE_SIZE, chunk->position.y + y * TILE_SIZE, 0.0}; */
-/*             renderer_append_quad_texture(LAYER_BASE, position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord); */
-/*         } */
-/*     } */
-
-/*     // base upper layer */
-/*     u32 offset = CHUNK_SIZE_Y * CHUNK_SIZE_X; */
-/*     for (s32 y = 0; y < CHUNK_SIZE_Y; y++) { */
-/*         for (s32 x = 0; x < CHUNK_SIZE_X; x++) { */
-/*             u32 uv = chunk->uv[offset + CHUNK_SIZE_X * y + x]; */ 
-
-/*             if (uv == 0) continue; */
-
-/*             u32 row    = uv / spritesheet->cols; */
-/*             u32 col    = uv % spritesheet->cols; */
-/*             f32 cellx  = spritesheet->stride / spritesheet->size.x; */
-/*             f32 celly  = spritesheet->stride / spritesheet->size.y; */ 
-
-/*             f32 tex_coord[4] = { */
-/*                 (cellx * col), */ 
-/*                 (cellx * col) + cellx, */ 
-/*                 (celly * row), */ 
-/*                 (celly * row) + celly */
-/*             }; */
-/*             vec3s position   = {chunk->position.x + x * TILE_SIZE, chunk->position.y + y * TILE_SIZE, 0.0}; */
-/*             renderer_append_quad_texture(LAYER_BASE_UPPER, position, DEFAULT_SCALE, WHITE, spritesheet->texture, tex_coord); */
-/*         } */
-/*     } */
-
-/*     // prefab */
-/*     for (u8 i = 0; i < chunk->prefab_count; ++i) { */
-/*         renderer_append_prefab(LAYER_STRUCTURE, chunk->prefab[i].coord, chunk->prefab[i].name); */
-/*     } */
-/* } */
+  *self = NULL;
+}

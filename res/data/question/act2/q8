@@ -1,0 +1,6 @@
+name: " "
+type: "question"
+text: "8?"
+answer: ["1a","2b","3c","4d"]
+wrong_answer_text: "Wrong"
+correct_answer: [0,"Right"]
