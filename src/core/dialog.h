@@ -34,13 +34,13 @@ typedef struct DialogNode {
 }DialogNode;
 
 typedef struct Dialog {
-    u32 length;
+    u32         length;
     DialogNode *contents;
 } Dialog;
 
 typedef struct {
   char *dialog_tag;
-  b8 append_act;
+  b8    append_act;
 } DialogPacket;
 
 DialogPacket* dialog_packet_create(char *tag, b8 append_act);
@@ -50,6 +50,8 @@ Dialog* dialog_load_from_file(char *path);
 DialogQuestion* dialog_load_question_from_file(char *path);
 void dialog_delete(Dialog *dialog);
 
+void dialog_append_last(Dialog *dialog, char *name, DialogType type, void *data);
+void dialog_append_question_from_file(Dialog *dialog, char *name, char *path);
 void dialog_append(Dialog *dialog, char *name, DialogType type, void *data);
 void dialog_render(void);
 void dialog_input(void);

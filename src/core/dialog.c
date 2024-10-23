@@ -3,6 +3,7 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "game.h"
 #include "scene.h"
 
 #define DIALOG_NAME_FORMAT              "name: \"%[^\"]\"\n"
@@ -162,6 +163,83 @@ Dialog* dialog_load_from_file(char *path) {
   return dialog;
 }
 
+// temp 
+void dialog_append_question_from_file(Dialog *dialog, char *name, char *path) {
+  assert(dialog != NULL);
+  assert(name != NULL);
+  assert(path != NULL);
+
+  FILE *fp;
+
+  fp = fopen(path, "rb");
+  if (fp == NULL) {
+    LOG_ERROR("Dialog: Failed to load question from path \'%s\'", path);
+  }
+
+  char line[200];
+
+  char txt[100];
+  char wrong[100];
+  char correct[100];
+  char *ans[4];
+  u8 correct_idx;
+
+  fgets(line, sizeof(line), fp);
+  sscanf(line, DIALOG_TEXT_FORMAT, txt);
+
+  fgets(line, sizeof(line), fp);
+
+  for (u8 i = 0; i < 4; ++i) ans[i] = malloc(100);
+  sscanf(line, DIALOG_ANSWER_FORMAT, ans[0], ans[1], ans[2], ans[3]);
+
+  fgets(line, sizeof(line), fp);
+  sscanf(line, DIALOG_WRONG_ANSWER_TEXT_FORMAT, wrong);
+
+  fgets(line, sizeof(line), fp);
+  sscanf(line, DIALOG_CORRECT_ANSWER_FORMAT, &correct_idx, correct);
+
+  fclose(fp);
+
+  DialogQuestion *q = _get_new_dialog_question(txt, ans, wrong, correct, correct_idx);
+  for (u8 i = 0; i < 4; ++i) free(ans[i]);
+
+  DialogNode *new_node = malloc(sizeof(*new_node));
+  new_node->type   = DIALOG_TYPE_QUESTION;
+  new_node->dialog = q;
+  new_node->next   = NULL;
+  strcpy(new_node->name, name);
+
+  DialogNode *curr = dialog->contents;
+
+  while (curr->next != NULL) {
+    curr = curr->next;
+  }
+
+  curr->next = new_node;
+}
+
+// temp
+void dialog_append_last(Dialog *dialog, char *name, DialogType type, void *data) {
+  assert(dialog != NULL);
+  assert(name != NULL);
+  assert(type == DIALOG_TYPE_QUESTION || type == DIALOG_TYPE_TEXT);
+  assert(data != NULL);
+
+  DialogNode *new_node = malloc(sizeof(*new_node));
+  new_node->type   = type;
+  new_node->dialog = data;
+  new_node->next   = NULL;
+  strcpy(new_node->name, name);
+
+  DialogNode *curr = dialog->contents;
+
+  while (curr->next != NULL) {
+    curr = curr->next;
+  }
+
+  curr->next = new_node;
+}
+
 void dialog_delete(Dialog *dialog) {
 
 
@@ -207,39 +285,67 @@ void dialog_delete(Dialog *dialog) {
 }
 
 void dialog_append(Dialog *dialog, char *name, DialogType type, void *data) {
+  
+  assert(dialog != NULL);
+
+  assert(name != NULL);
+  
+  assert(data != NULL);
+
+  assert(type == DIALOG_TYPE_QUESTION || type == DIALOG_TYPE_TEXT);
+
   DialogNode *node = malloc(sizeof(*node));
 
   node->type   = type;
+
   node->next   = NULL;
+
   strcpy(node->name, name);
 
   if (type == DIALOG_TYPE_TEXT) {
+
     DialogText *text     = data;
+
     DialogText *new_text = _get_new_dialog_text(text->text);
 
     node->dialog = new_text;
+
   }
   else if (type == DIALOG_TYPE_QUESTION) {
+
     DialogQuestion *question     = data;
+
     DialogQuestion *new_question = _get_new_dialog_question(question->question, question->answer, question->wrong_text, question->correct_text, question->correct_idx);
 
     node->dialog = new_question;
+
   }
   else {
+
     LOG_FETAL("Dialog: Invalid Dialog Type");
+
   }
 
   if (dialog->contents == NULL) {
+
     dialog->contents = node;
+
   }
   else {
+
     DialogNode *curr = dialog->contents;
+
     while (curr->next != NULL) {
+
       curr = curr->next;
+
     } 
     curr->next = node;
+
   }
+
   dialog->length++;
+
 }
 
 DialogQuestion* dialog_load_question_from_file(char *path) {
@@ -274,72 +380,69 @@ DialogQuestion* dialog_load_question_from_file(char *path) {
 
   fclose(fp);
 
+  DialogQuestion *q = _get_new_dialog_question(txt, ans, wrong, correct, correct_idx);
   for (u8 i = 0; i < 4; ++i) free(ans[i]);
-  return _get_new_dialog_question(txt, ans, wrong, correct, correct_idx);
+
+  return q;
 }
 
 void dialog_input(void) {
-  /* if (animation_end && delay >= 0.2) { */
-  /*     if(window_get_key(global.window, GLFW_KEY_SPACE)) { */
-  /*         if(global.DialogState.curr_dialog_node->type == DIALOG_QUESTION){ */
-  /*             struct DialogQuestion *qt = global.DialogState.curr_dialog_node->dialog; */
-
-  /*             struct DialogNode *node = malloc(sizeof(*node)); */
-  /*             node->type      = DIALOG_TEXT; */
-  /*             node->dialog    = malloc(sizeof(struct DialogText)); */ 
-  /*             node->next      = NULL; */
-
-  /*             if (global.DialogState.selected_answer == qt->correct_answer_idx) { */
-  /*                 memcpy(node->dialog, &(struct DialogText){.text = qt->correct_answer_text }, sizeof(struct DialogText)); */
-  /*             } */
-  /*             else { */
-  /*                 memcpy(node->dialog, &(struct DialogText){.text = qt->wrong_answer_text }, sizeof(struct DialogText)); */
-  /*             } */
-
-  /*             global.DialogState.curr_dialog_node->next = node; */
-  /*         } */
-
-  /*         global.DialogState.curr_dialog_node = global.DialogState.curr_dialog_node->next; */
-  /*         next_dialog = true; */
-  /*         delay = 0.0f; */
-  /*     } */
-
-  /*     if (window_get_key(global.window, GLFW_KEY_S) && global.DialogState.curr_dialog_node->type == DIALOG_QUESTION) { */
-  /*         global.DialogState.selected_answer = (global.DialogState.selected_answer + 1) % 4; */
-  /*         delay = 0.0f; */
-  /*     } */
-  /* } */
-
   DialogNode *curr = scene_get_curr_dialog(global.scene);
 
   if (global.input_delay >= INPUT_DELAY) {
 
     if (curr->type == DIALOG_TYPE_QUESTION) {
+
       if(window_get_key(global.window, GLFW_KEY_SPACE)) {
-        if(curr->type == DIALOG_TYPE_QUESTION){
-          DialogQuestion *qt = curr->dialog;
 
-          DialogNode *node = malloc(sizeof(*node));
-          node->type = DIALOG_TYPE_TEXT;
-          node->next = NULL;
-          strcpy(node->name, curr->name);
+        DialogQuestion *qt = curr->dialog;
 
-          if (global.scene->selected_answer == qt->correct_idx) {
-            node->dialog = _get_new_dialog_text(qt->correct_text);
-          }
-          else {
-            node->dialog = _get_new_dialog_text(qt->wrong_text);
-          }
+        // lost memory
+        DialogNode *node = malloc(sizeof(*node));
+        node->type = DIALOG_TYPE_TEXT;
+        node->next = NULL;
+        strcpy(node->name, curr->name);
 
+
+        if (global.scene->selected_answer != qt->correct_idx) {
+          LOG_DEBUG("Dialog: Select Wrong answer (%d != %d)", global.scene->selected_answer, qt->correct_idx);
+
+          node->dialog = _get_new_dialog_text(qt->wrong_text);
+          scene_dialog_set(global.scene, node);
         }
+        else {
+          if (curr->next == NULL) {
+            switch (game_get_act()) {
+              case GAME_ACT2:
+                // check If the player talked to all npcs or not and then decide the dialog to send (ACT2)
+                node->dialog = _get_new_dialog_text(qt->correct_text);
+                curr->next   = node;
+                break;
+              case GAME_ACT3:
+                break;
+              case GAME_ACT4:
+                break;
+              default:
+                break;
+            }
+          }
 
-        scene_dialog_next(global.scene);
+          scene_dialog_next(global.scene);
+        }
         global.input_delay = 0.0f;
       }
 
-      if (window_get_key(global.window, GLFW_KEY_S) && curr->type == DIALOG_TYPE_QUESTION) {
-        global.scene->selected_answer = (global.scene->selected_answer + 1) % 4;
+      if (window_get_key(global.window, GLFW_KEY_S)) {
+        global.scene->selected_answer = (global.scene->selected_answer < 3) ? global.scene->selected_answer + 1 : global.scene->selected_answer;
+
+        LOG_DEBUG("Dialog: Select %d", global.scene->selected_answer);
         global.input_delay = 0.0f;
+      }
+      else if (window_get_key(global.window, GLFW_KEY_W)) {
+        global.scene->selected_answer = (global.scene->selected_answer > 0) ? global.scene->selected_answer - 1 : global.scene->selected_answer;
+
+          LOG_DEBUG("Dialog: Select %d", global.scene->selected_answer);
+          global.input_delay = 0.0f;
       }
     }
     else {
@@ -347,8 +450,8 @@ void dialog_input(void) {
         scene_dialog_next(global.scene);
         global.input_delay = 0.0f;
       }
-
     }
+
   }
 }
 
@@ -386,10 +489,15 @@ DialogPacket* dialog_packet_create(char *tag, b8 append_act) {
   DialogPacket *new = malloc(sizeof(*new));
   new->append_act = append_act;
   new->dialog_tag = tag;
+
+  LOG_DEBUG("Dialog: Create new dialog packet");
+
   return new;
 }
 
 void dialog_packet_free(DialogPacket **packet) {
   free(*packet);
   *packet = NULL;
+
+  LOG_DEBUG("Dialog: Destroy dialog packet");
 }

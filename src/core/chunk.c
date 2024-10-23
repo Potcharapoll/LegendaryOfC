@@ -86,7 +86,9 @@ Chunk* chunk_load_from_file(char *path) {
       for (uint8_t i = 0; i < size; ++i) {
         fscanf(stream, FORMAT_IN_PREFAB, &prefab.coord.x, &prefab.coord.y, prefab.name);
 
+#ifdef CHUNK_PRINT_CONTENT
         fprintf(stdout, FORMAT_IN_PREFAB, prefab.coord.x, prefab.coord.y, prefab.name);
+#endif
         array_list_append(chunk->render_info->prefab, &prefab);
       }
 

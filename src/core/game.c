@@ -5,6 +5,7 @@
 #include "../defs.h"
 
 #include "dialog.h"
+#include "physics.h"
 #include "scene.h"
 
 #include <string.h>
@@ -39,40 +40,39 @@ static void _load_dialog(enum GameAct act) {
   switch (act) {
     case GAME_ACT1:
       {
-        hashtable_Dialog_insert(test_dialog, "dialog_start",  dialog_load_from_file("res/data/dialog/dialog_start"));
-        hashtable_Dialog_insert(test_dialog, "dialog_locked", dialog_load_from_file("res/data/dialog/dialog_locked"));
+        hashtable_Dialog_insert(test_dialog, "dialog_start",      dialog_load_from_file("res/data/dialog/dialog_start"));
+        hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1_emma",  dialog_load_from_file("res/data/dialog/dialog_act1_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1_image", dialog_load_from_file("res/data/dialog/dialog_act1_image"));
         hashtable_Dialog_insert(test_dialog, "dialog_act1a_roxy", dialog_load_from_file("res/data/dialog/dialog_act1a_roxy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act1b_roxy", dialog_load_from_file("res/data/dialog/dialog_act1b_roxy"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1_emma", dialog_load_from_file("res/data/dialog/dialog_act1_emma"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1_image", dialog_load_from_file("res/data/dialog/dialog_act1_image"));
         break;
       }
     case GAME_ACT2:
       {
-        //
-        DialogQuestion **questions = NULL;
+        hashtable_Dialog_insert(test_dialog, "dialog_act2_roxy",    dialog_load_from_file("res/data/dialog/dialog_act2_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_emma",   dialog_load_from_file("res/data/dialog/dialog_act2b_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_parmy",  dialog_load_from_file("res/data/dialog/dialog_act2b_parmy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_nathan", dialog_load_from_file("res/data/dialog/dialog_act2b_nathan"));
 
-        questions = malloc(sizeof(questions) * 10);
-        for (u8 i = 1; i <= 10; ++i) {
-          char buf[50];
-          snprintf(buf, 50, "res/data/question/act2/q%d",i);
 
-          questions[i] = dialog_load_question_from_file(buf);
+        char npc[3][10]  = {"emma","parmy","nathan"};
+        char name[3][10] = {"Emma", "Parmy", "Nathan"};
+        Dialog *question = NULL;
+
+        for (u8 i = 0; i < 3; ++i) {
+          char buf[60];
+          snprintf(buf, 60, "res/data/dialog/dialog_act2a_%s", npc[i]);
+          LOG_DEBUG("Insert %s", buf);
+
+          // TODO: Make it random questions.
+          question = dialog_load_from_file(buf);
+          dialog_append_question_from_file(question, name[i], "res/data/question/act2/q1");
+          dialog_append_question_from_file(question, name[i], "res/data/question/act2/q2");
+
+          snprintf(buf, 60, "dialog_act2a_%s", npc[i]);
+          hashtable_Dialog_insert(test_dialog, buf,  question);
         }
-
-        Dialog *d = dialog_load_from_file("res/data/dialog/dialog_act2_roxy");
-        hashtable_Dialog_insert(test_dialog, "dialog_act2_roxy",  d);
-
-        d = dialog_load_from_file("res/data/dialog/dialog_act2_emma");
-        dialog_append(d, "Emma", DIALOG_TYPE_QUESTION, questions[0]);
-        dialog_append(d, "Emma", DIALOG_TYPE_QUESTION, questions[1]);
-        hashtable_Dialog_insert(test_dialog, "dialog_act2_emma",  d);
-
-        d = dialog_load_from_file("res/data/dialog/dialog_act2_parmy");
-        dialog_append(d, "Emma", DIALOG_TYPE_QUESTION, questions[2]);
-        dialog_append(d, "Emma", DIALOG_TYPE_QUESTION, questions[3]);
-        hashtable_Dialog_insert(test_dialog, "dialog_act2_parmy", d);
-
         break;
       }
     case GAME_ACT3:
@@ -81,18 +81,6 @@ static void _load_dialog(enum GameAct act) {
       break;
   }
 
-  /* for (int i = 0; i < HT_CAPACITY; i++) { */
-  /*   entry_t *curr = global.dialogs->entries[i]; */
-
-  /*   while (curr != NULL) { */
-  /*     entry_t *tmp = curr; */
-  /*     curr = curr->next; */
-
-  /*     Dialog *d = tmp->value; */
-  /*     dialog_list(d); */
-  /*   } */
-  /* } */
-
   LOG_DEBUG("Game: Dialog loaded");
 }
 
@@ -100,7 +88,7 @@ void game_setup_act(enum GameAct act) {
   u32 lock = 0, chr = 0, state = 0;
   global.game_state_flag = 0;
 
-  scene_reset_collider(global.scene);
+  scene_collider_reset(global.scene);
 
   switch (act) {
     case GAME_ACT1:
@@ -129,20 +117,54 @@ void game_setup_act(enum GameAct act) {
   _load_dialog(act);
 
   scene_fade_in(global.scene);
-  LOG_DEBUG("Game: Setup Act");
+  LOG_DEBUG("Game: Setup Act%d", (act+1));
 }
 
 void game_update_dialog_state(char *tag) {
   if (game_state_check(GAME_STATE_ACT1)) {
     if (strcmp("dialog_act1a_roxy", tag) == 0) {
-      game_state_toggle(ACT1_ROXY_TALKED);
-      game_state_toggle(ACT1_OG_HOME_KEY);
+      game_state_on(ACT1_ROXY_TALKED | ACT1_OG_HOME_KEY);
+
+      game_state_off(GAME_STATE_LOCK_OG_HOME);
+
+      LOG_DEBUG("Game: Finish talking to Roxy at act1");
+      LOG_DEBUG("Game: Get the key from Roxy on act1, unlock OG home");
     } 
-    if (strcmp("dialog_act1_image", tag) == 0) {
-      game_state_toggle(ACT1_GET_G_IMAGE);
+    else if (strcmp("dialog_act1_image", tag) == 0) {
+      game_state_on(ACT1_GET_G_IMAGE);
+
+      scene_fade_out(global.scene);
+      change = true;
+
+      LOG_DEBUG("Game: Get G image");
     } 
   }
+  else if (game_state_check(GAME_STATE_ACT2)) {
+    if (strcmp("dialog_act2a_emma", tag) == 0) {
+      game_state_on(ACT2_EMMA_TALKED);
 
+      LOG_DEBUG("Game: Emma talked");
+    } 
+    else if (strcmp("dialog_act2a_parmy", tag) == 0) {
+      game_state_on(ACT2_PARMY_TALKED);
+
+      LOG_DEBUG("Game: Parmy talked");
+    } 
+    else if (strcmp("dialog_act2a_nathan", tag) == 0) {
+      game_state_on(ACT2_NATHAN_TALKED);
+
+      LOG_DEBUG("Game: Nathan talked");
+    } 
+  }
+  else if (game_state_check(GAME_STATE_ACT3)) {
+    if (strcmp("dialog_act3a_tom", tag) == 0) {
+      game_state_on(ACT3_TOM_TALKED);
+    } 
+  }
+  else if (game_state_check(GAME_STATE_ACT4)) {
+  }
+
+  update = true;
   LOG_DEBUG("Game: Update Dialog State (tag: %s)", tag);
 }
 
@@ -162,7 +184,6 @@ void game_destroy(void) {
     quad_renderer_destroy(renderer[i]);
   }
   FREE(renderer);
-
   if (test_dialog) { hashtable_Dialog_destroy(test_dialog); }
 }
 
@@ -170,28 +191,19 @@ void game_update(void) {
   if (change && global.scene->faded) { game_setup_act(game_get_act() + 1); change = false; }
   if (!update) return;
 
-  if (game_state_check(GAME_STATE_ACT1)) {
-    if (game_state_check(ACT1_ROXY_TALKED)) {
-      LOG_DEBUG("Game: Finish talking to Roxy at act1");
-    }
-
-    if (game_state_check(ACT1_OG_HOME_KEY)) {
-      game_state_toggle(GAME_STATE_LOCK_OG_HOME);
-      LOG_DEBUG("Game: Get the key from Roxy at act1, unlock OG home");
-    }
-
-    if (game_state_check(ACT1_GET_G_IMAGE)) {
+  /* if (game_state_check(GAME_STATE_ACT1)) { */
+  /* } */
+  /* else if (game_state_check(GAME_STATE_ACT2)) { */
+  if (game_state_check(GAME_STATE_ACT2)) {
+    if (game_state_check(ACT2_EMMA_TALKED | ACT2_NATHAN_TALKED | ACT2_PARMY_TALKED)) {
       scene_fade_out(global.scene);
       change = true;
-      LOG_DEBUG("Game: Get G image");
     }
   }
-  else if (game_state_check(GAME_STATE_ACT2)) {
-  }
-  else if (game_state_check(GAME_STATE_ACT3)) {
-  }
-  else if (game_state_check(GAME_STATE_ACT4)) {
-  }
+  /* else if (game_state_check(GAME_STATE_ACT3)) { */
+  /* } */
+  /* else if (game_state_check(GAME_STATE_ACT4)) { */
+  /* } */
 
   update = false;
 }
@@ -210,7 +222,6 @@ u8 game_get_act(void) {
 
 void game_state_toggle(u32 flag) {
   global.game_state_flag ^= flag;
-  update = true;
 }
 
 void game_state_on(u32 flag) {
@@ -231,19 +242,45 @@ void game_get_dialog_tag(char buf[static 60], DialogPacket *packet) {
   switch (act) {
     case GAME_ACT1:
       if (strcmp(packet->dialog_tag, "roxy") == 0) {
-          if (game_state_check(ACT1_ROXY_TALKED)) {
-            snprintf(buf, 60, "dialog_act1b_roxy");
-          }
-          else {
-            snprintf(buf, 60, "dialog_act1a_roxy");
-          }
+        if (game_state_check(ACT1_ROXY_TALKED)) {
+          snprintf(buf, 60, "dialog_act1b_roxy");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act1a_roxy");
+        }
       }
       else {
         snprintf(buf, 60, "dialog_act1_%s",packet->dialog_tag);
       }
       break;
     case GAME_ACT2:
-      snprintf(buf, 60, "dialog_act2_%s",packet->dialog_tag);
+      if (strcmp(packet->dialog_tag, "parmy") == 0) {
+        if (game_state_check(ACT2_PARMY_TALKED)) {
+          snprintf(buf, 60, "dialog_act2b_parmy");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act2a_parmy");
+        }
+      }
+      else if (strcmp(packet->dialog_tag, "nathan") == 0) {
+        if (game_state_check(ACT2_NATHAN_TALKED)) {
+          snprintf(buf, 60, "dialog_act2b_nathan");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act2a_nathan");
+        }
+      }
+      else if (strcmp(packet->dialog_tag, "emma") == 0) {
+        if (game_state_check(ACT2_EMMA_TALKED)) {
+          snprintf(buf, 60, "dialog_act2b_emma");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act2a_emma");
+        }
+      }
+      else {
+        snprintf(buf, 60, "dialog_act2_%s",packet->dialog_tag);
+      }
       break;
     case GAME_ACT3:
       snprintf(buf, 60, "dialog_act3_%s",packet->dialog_tag);
@@ -351,59 +388,64 @@ void game_render(Body *player_body) {
 }
 
 void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
-  scene_change_chunk(global.scene, player_body, chunk_id, target_coord);
+  scene_chunk_change(global.scene, player_body, chunk_id, target_coord);
 
   switch (chunk_id) {
     case CHUNK_SPAWN            :
-      LOG_DEBUG("Change to CHUNK_SPAWN");
+      LOG_DEBUG("Game: Change to CHUNK_SPAWN");
       break;
     case CHUNK_VILLAGE_ENTRANCE :
-      LOG_DEBUG("Change to CHUNK_VILLAGE_ENTRANCE");
+      LOG_DEBUG("Game: Change to CHUNK_VILLAGE_ENTRANCE");
       break;
     case CHUNK_VILLAGE_LEFT     :
-      LOG_DEBUG("Change to CHUNK_LEFT");
+      LOG_DEBUG("Game: Change to CHUNK_LEFT");
       break;
     case CHUNK_VILLAGE_RIGHT    :
-      LOG_DEBUG("Change to CHUNK_RIGHT");
+      LOG_DEBUG("Game: Change to CHUNK_RIGHT");
       break;
     case CHUNK_VILLAGE_TOP      :
-      LOG_DEBUG("Change to CHUNK_TOP");
+      if (game_get_act() == GAME_ACT2) {
+        scene_chunk_add_prefab("nathan_down", (vec2s){12.3,11});
+        physics_static_body_create(global.physics, (vec2s){198,944} , (vec2s){14,21}, COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL);
+        scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){198,940}, (vec2s){14,4}, "nathan", .body_id = -1});
+      }
+      LOG_DEBUG("Game: Change to CHUNK_TOP");
       break;
     case CHUNK_VILLAGE_TOP_END  :
-      LOG_DEBUG("Change to CHUNK_TOP_END");
+      LOG_DEBUG("Game: Change to CHUNK_TOP_END");
       break;
     case CHUNK_VILLAGE_TOP_LEFT :
-      LOG_DEBUG("Change to CHUNK_TOP_LEFT");
+      LOG_DEBUG("Game: Change to CHUNK_TOP_LEFT");
       break;
     case CHUNK_VILLAGE_TOP_RIGHT:
-      LOG_DEBUG("Change to CHUNK_TOP_RIGHT");
+      LOG_DEBUG("Game: Change to CHUNK_TOP_RIGHT");
       break;
     case CHUNK_VILLAGE_TUNNEL   :
-      LOG_DEBUG("Change to CHUNK_TUNNEL");
+      LOG_DEBUG("Game: Change to CHUNK_TUNNEL");
       break;
     case CHUNK_INSIDE_LIBRARY   :
-      LOG_DEBUG("Change to CHUNK_INSIDE_LIBRARY");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_LIBRARY");
       break;
     case CHUNK_INSIDE_RESTAURANT:
-      LOG_DEBUG("Change to CHUNK_INSIDE_RESTAURANT");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_RESTAURANT");
       break;
     case CHUNK_INSIDE_CHURCH    :
-      LOG_DEBUG("Change to CHUNK_INSIDE_CHURCH");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_CHURCH");
       break;
     case CHUNK_INSIDE_FISH      :
-      LOG_DEBUG("Change to CHUNK_INSIDE_FISH");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_FISH");
       break;
     case CHUNK_INSIDE_OG_HOME   :
       if (game_get_act() == GAME_ACT1) {
-        scene_add_chunk_dialog(global.scene, (ChunkDialog){(vec2s){73,135}, (vec2s){13,4}, "image", .body_id = -1});
+        scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){73,135}, (vec2s){13,4}, "image", .body_id = -1});
       }
-      LOG_DEBUG("Change to CHUNK_INSIDE_OG_HOME");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_OG_HOME");
       break;
     case CHUNK_INSIDE_LJ_HOME   :
-      LOG_DEBUG("Change to CHUNK_INSIDE_LJ_HOME");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_LJ_HOME");
       break;
     case CHUNK_INSIDE_VC_HOME   : 
-      LOG_DEBUG("Change to CHUNK_INSIDE_VC_HOME");
+      LOG_DEBUG("Game: Change to CHUNK_INSIDE_VC_HOME");
       break;
   }
 }
@@ -419,7 +461,18 @@ void game_attach_dialog(DialogPacket *packet) {
   }
 
   item = hashtable_Dialog_search(test_dialog, buf);
-  LOG_DEBUG("Dialog tag: %s", buf);
 
-  scene_attach_dialog(global.scene, item->value, buf);
+  if (item == NULL) {
+    LOG_ERROR("Game: Cannot load dialog tag %s", buf);
+    return;
+  }
+  else {
+    LOG_DEBUG("Game: Attach dialog tag %s", buf);
+  }
+
+  scene_dialog_attach(global.scene, item->value, buf);
+}
+
+void game_toggle_man_page(void) {
+
 }

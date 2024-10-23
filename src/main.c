@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-//   ~88% (10% -> progression, 1% others, 2% sounds)
+//   ~90% (10% -> progression, 1% others, 2% sounds)
 //   Progression system       -- ON GOING --
 //   Finish Editor            -- PLANNED  --
 //   Sounds system            -- PLANNED  --
@@ -35,10 +35,14 @@
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
 //
 // Act 2
-// - TODO -
-// * Attach 2 question along to dialog when start the act (random)
-// * If correct all will update flag
-// * If wrong immediatly end
+// - Give the info after last dialog
+// Act 3
+// - Render Tom
+// - 5 or more questions.
+// Act 4
+//
+// TODO: Create LegendaryOfC man page
+// TODO: Allocator
 
 static b8 collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -72,16 +76,17 @@ static void _append_collider(void) {
 
 
 static ivec2s _get_char_coord(char c) {
-  static u8 text_index[3][27] = {
-    "!@#$%^&*()_+-={}[]:\";\'<>,.?",
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ/",
-    "abcdefghijklmnopqrstuvwxyz ",
+  static char text_index[4][26] = {
+    "/?0123456789              ",
+    "!@#$%^&*()_+-={}[]:\";'<>,.",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "abcdefghijklmnopqrstuvwxyz",
   };
 
   ivec2s result = {0};
 
-  for (u8 y = 0; y < 3; ++y) {
-    for (u8 x = 0; x < 27; ++x) {
+  for (u8 y = 0; y < 4; ++y) {
+    for (u8 x = 0; x < 26; ++x) {
       if (c == text_index[y][x]) {
         result.x = x;
         result.y = y;
@@ -124,7 +129,6 @@ static b8 _teleporter_check(char tag) {
       break;
   }
 
-  LOG_DEBUG("Check Teleporter tag %c", tag);
   return (!status);
 }
 
@@ -146,7 +150,7 @@ static void _dialog_callback(Static_Body *body, Body *other) {
     Static_Body *dialog_body = physics_static_body_get(global.physics, dialog->body_id);
     assert(dialog_body != NULL);
 
-    if (body == dialog_body) {
+    if (body == dialog_body && dialog_packet == NULL) {
       dialog_packet = dialog_packet_create(dialog->tag, true); 
       break;
     }
@@ -173,8 +177,6 @@ static void _teleporter_callback(Static_Body *body, Body *other) {
     assert(teleporter_body != NULL);
 
     if (body == teleporter_body) {
-      LOG_DEBUG("Teleporting");
-
       other->velocity = glms_vec2_zero();
       player_set_animation(IDLE, global.PlayerState.direction);
 
@@ -230,9 +232,12 @@ static void _load_prefab(void) {
   prefab_create("inside_lj_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){0,24,14,36});
   prefab_create("inside_vc_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){14,24,28,36});
   prefab_create("inside_og_home",    inside_spritesheet, WHITE, (vec2s){224,192}, (vec4s){28,24,42,36});
+
+  struct Spritesheet *npcs = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_NPC);
+  prefab_create("nathan_down", npcs, WHITE, (vec2s){16,23}, (vec4s){3,2,4,3});
 }
 
-static void input_handling(void) {
+static void input_handling(Body *player_body) {
   global.input_delay += global.dt;
 
   if (global.input_delay >= INPUT_DELAY) {
@@ -241,7 +246,6 @@ static void input_handling(void) {
       case SCENE_MENU:
       case SCENE_INTRO:
         if (window_get_key(global.window, GLFW_KEY_SPACE) && !global.scene->fading) {
-          LOG_DEBUG("SPACE");
           scene_fade_out(global.scene);
           global.input_delay = 0.0f;
         }
@@ -253,14 +257,10 @@ static void input_handling(void) {
           if (window_get_key(global.window, GLFW_KEY_E)) {
             if (dialog_packet) {
 
-              LOG_DEBUG("YES");
-
-              Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
               player_body->velocity = glms_vec2_zero();
               player_set_animation(IDLE, global.PlayerState.direction);
 
               game_attach_dialog(dialog_packet);
-              dialog_packet_free(&dialog_packet);
             }
             global.input_delay = 0.0f;
           }
@@ -316,7 +316,6 @@ static void input_handling(void) {
       default:
         break;
     }
-
   }
 }
 
@@ -327,7 +326,7 @@ void setup(void) {
   asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
   asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
   asset_manager_push_texture(global.asset_manager, TEXTURE_INTERACT, TEXTURE_INTERACT);
-  asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81, (ivec2s){27, 3}, (ivec2s){32,32});
+  asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81, (ivec2s){26, 4}, (ivec2s){32,32});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32, (ivec2s){ 8, 4}, (ivec2s){16,22});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_NPC,          21, (ivec2s){ 7, 3}, (ivec2s){16,23});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TILE,         56, (ivec2s){ 8, 7}, (ivec2s){16,16});
@@ -373,9 +372,10 @@ void update(void) {
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(0.0,0.0,0.0,1.0);
 
-  input_handling();
-
   Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
+
+  input_handling(player_body);
+
   scene_update(global.scene, player_body);
   timer_update(global.timer);
   game_update();

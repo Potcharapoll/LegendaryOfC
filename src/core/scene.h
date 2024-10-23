@@ -56,15 +56,19 @@ void scene_render(Scene *self);
 
 // So we've check the collision from callback function and if it is a teleporter will call 
 // this function to change to change chunk by geting target chunk_id and target_coord.
-void scene_change_chunk(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord);
 
+void scene_chunk_add_prefab(char *name, vec2s coord);
+void scene_chunk_change(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord);
+void scene_chunk_add_dialog(Scene *self, ChunkDialog dialog);
 void scene_change_scene(Scene *self, enum SceneState scene);
-DialogNode *scene_get_curr_dialog(Scene *self);
-void scene_dialog_next(Scene *self);
 
-void scene_add_chunk_dialog(Scene *self, ChunkDialog dialog);
-void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag);
-void scene_reset_collider(Scene *scene);
+void scene_dialog_set(Scene *self, DialogNode *dialog);
+void scene_dialog_attach(Scene *self, Dialog *dialog, char *tag);
+void scene_dialog_end(Scene *self);
+void scene_dialog_next(Scene *self);
+DialogNode *scene_get_curr_dialog(Scene *self);
+
+void scene_collider_reset(Scene *scene);
 
 void scene_fade_reset(Scene *self);
 void scene_fade_out(Scene *self);

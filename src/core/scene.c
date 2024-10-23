@@ -218,7 +218,7 @@ static void _scene_dialog_render(Scene *self) {
   }
 }
 
-void scene_reset_collider(Scene *scene) {
+void scene_collider_reset(Scene *scene) {
   _scene_setup_collider(scene);
 }
 
@@ -351,7 +351,7 @@ void scene_render(Scene *self) {
   quad_renderer_render(self->quad_renderer);
 }
 
-void scene_change_chunk(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord) {
+void scene_chunk_change(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord) {
   LOG_DEBUG("Scene: Change chunk from %d->%d (%.2f,%.2f)", self->chunk_id, chunk_id, target_coord.x, target_coord.y);
 
   _load_chunk(self, chunk_id);
@@ -383,7 +383,28 @@ void scene_fade_in(Scene *self) {
   self->fading     = true;
 }
 
-void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag) {
+void scene_change_scene(Scene *self, enum SceneState scene) {
+  self->scene_state = scene;
+
+  // TODO: Fix fadeing
+  switch (scene) {
+    case SCENE_MENU:
+      LOG_DEBUG("Scene: Menu state");
+      break;
+    case SCENE_INTRO:
+      scene_fade_in(self);
+      LOG_DEBUG("Scene: Intro state");
+      break;
+    case SCENE_INGAME:
+      scene_chunk_change(self, physics_body_get(global.physics, global.PlayerState.body_id), CHUNK_SPAWN, SPAWN_COORD);
+      LOG_DEBUG("Scene: Ingame state");
+      break;
+    case SCENE_ENDGAME:
+      break;
+  }
+}  
+
+void scene_dialog_attach(Scene *self, Dialog *dialog, char *tag) {
   if (self->dialog != NULL) {
     LOG_ERROR("Scene: Failed to attach dialog to scene, dialog isn't NULL");
     return;
@@ -398,53 +419,61 @@ void scene_attach_dialog(Scene *self, Dialog *dialog, char *tag) {
   self->on_dialog = true;
 }
 
-void scene_change_scene(Scene *self, enum SceneState scene) {
-  self->scene_state = scene;
-
-  // TODO: Fix fadeing
-  switch (scene) {
-    case SCENE_MENU:
-      LOG_DEBUG("Scene: Menu state");
-      break;
-    case SCENE_INTRO:
-      scene_fade_in(self);
-      LOG_DEBUG("Scene: Intro state");
-      break;
-    case SCENE_INGAME:
-      scene_change_chunk(self, physics_body_get(global.physics, global.PlayerState.body_id), CHUNK_SPAWN, SPAWN_COORD);
-      LOG_DEBUG("Scene: Ingame state");
-      break;
-    case SCENE_ENDGAME:
-      break;
-  }
-}  
-
-DialogNode *scene_get_curr_dialog(Scene *self) {
-  return self->dialog; 
-}
 
 void scene_dialog_next(Scene *self) {
   self->dialog = self->dialog->next;
+  self->selected_answer = 0;
 
   if (!self->dialog)  {
-    LOG_DEBUG("Scene: Dialog ended");
-    game_update_dialog_state(self->dialog_tag); 
+    if (self->dialog_tag) {
+      game_update_dialog_state(self->dialog_tag); 
+    }
 
     self->dialog    = NULL;
     self->on_dialog = false;
     FREE(self->dialog_tag);
+
+    LOG_DEBUG("Scene: Dialog ended");
   }
+}
+
+void scene_dialog_set(Scene *self, DialogNode *dialog) {
+  self->dialog = dialog;
+
+  // temp
+  if (self->dialog_tag) { FREE(self->dialog_tag); } 
+
+  LOG_DEBUG("Scene: Set Dialog");
+}
+
+void scene_dialog_end(Scene *self) {
+    self->dialog    = NULL;
+    self->on_dialog = false;
+    FREE(self->dialog_tag);
+
+    LOG_DEBUG("Scene: Dialog ended");
+}
+
+void scene_chunk_add_dialog(Scene *self, ChunkDialog dialog) {
+  dialog.body_id = physics_static_body_create(global.physics, dialog.pos, dialog.size, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, global.dialog_callback);
+  array_list_append(self->chunk_dialogs, &dialog);
 }
 
 ChunkRenderInfo* scene_get_chunk_render_info(void) {
   return (_curr_chunk) ? _curr_chunk->render_info : NULL;
 }
 
+void scene_chunk_add_prefab(char *name, vec2s coord) {
+  ChunkPrefab prefab = { .coord = coord };
+  strcpy(prefab.name, name);
+
+  array_list_append(_curr_chunk->render_info->prefab, &prefab);
+}
+
 Chunk* scene_get_curr_chunk(void) {
   return (_curr_chunk) ? _curr_chunk : NULL;
 }
 
-void scene_add_chunk_dialog(Scene *self, ChunkDialog dialog) {
-  dialog.body_id = physics_static_body_create(global.physics, dialog.pos, dialog.size, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, global.dialog_callback);
-  array_list_append(self->chunk_dialogs, &dialog);
+DialogNode *scene_get_curr_dialog(Scene *self) {
+  return self->dialog; 
 }

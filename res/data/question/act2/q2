@@ -1,6 +1,4 @@
-name: " "
-type: "question"
-text: "2?"
-answer: ["1a","2b","3c","4d"]
-wrong_answer_text: "Wrong"
-correct_answer: [0,"Right"]
+text: "The format identifier '%i' is also used for _____ data type."
+answer: ["char","int","float","double"]
+wrong: "(Check out Guide Book page 8)."
+correct: [1,"Right"]

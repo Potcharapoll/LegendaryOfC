@@ -1,4 +1,4 @@
-text: "1?"
-answer: ["1a","2b","3c","4d"]
-wrong_answer_text: "Wrong"
-correct_answer: [0,"Right"]
+text: "Choose valid #define statement from below."
+answer: ["#define N 5,M 10","#define array 11","#define PRICE$ 100","# define max 10"]
+wrong: "(Check out Guide Book page 10)."
+correct: [1,"Right"]

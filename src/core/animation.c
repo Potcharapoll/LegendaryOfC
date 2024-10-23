@@ -46,6 +46,7 @@ void animation_update(Animation *animation, f32 dt) {
 u32 animation_definition_create(Animation *animation, struct Spritesheet *spritesheet, f32 *durations, u8 *rows, u8 *cols, u8 frame_count) {
     if (frame_count > MAX_FRAMES) {
         LOG_ERROR("Animation: frame_count cannot be exceed the max_frames");
+        return -1;
     }
 
     AnimationDefinition adef = {0};
@@ -62,7 +63,7 @@ u32 animation_definition_create(Animation *animation, struct Spritesheet *sprite
     }
 
     array_list_append(animation->animation_definition_storage, &adef);
-    LOG_TRACE("Animation: Create new animation definition");
+    LOG_DEBUG("Animation: Create new animation definition");
     return animation->animation_definition_storage->len - 1;
 }
 
@@ -87,7 +88,7 @@ u32 animation_state_create(Animation *animation, u32 animation_definition_id, b8
     };
 
     array_list_append(animation->animation_state_storage, &astate);
-    LOG_TRACE("Animation: Create new animation state");
+    LOG_DEBUG("Animation: Create new animation state");
     return animation->animation_state_storage->len - 1;
 }
 
