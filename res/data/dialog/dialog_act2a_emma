@@ -1,3 +1,6 @@
+name: "YOU"
+type: "text"
+text: "Hello. I just wanted to ask you, do you know who is in this picture?"
 name: "Emma"
 type: "text"
-text: "Hi! I'm Emma."
+text: "If you can answer all of my questions correctly, I will respond."

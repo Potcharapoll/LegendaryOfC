@@ -1,0 +1,4 @@
+text: "Which keyword is used to define a new data type based on existing data types?"
+answer: ["enum","typedef","struct","union"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

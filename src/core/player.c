@@ -13,7 +13,10 @@ static u32 astate_idle[DIRECTION_LAST];
 static u32 astate_walk[DIRECTION_LAST];
 
 static f32 SPEED = 100.0f;
-static Body *player_body;
+
+static u32 _body_id      = -1;
+static u32 _animation_id = -1;
+static enum Direction _direction;
 
 void player_init(void) {
     struct Spritesheet *player_spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_PLAYER);
@@ -36,15 +39,15 @@ void player_init(void) {
     astate_idle[RIGHT] = animation_state_create(global.animations, adef_idle[RIGHT], false, false);
     astate_idle[LEFT]  = animation_state_create(global.animations, adef_idle[LEFT], false, true);
 
-    global.PlayerState.direction    = DOWN;
-    global.PlayerState.animation_id = astate_idle[DOWN];
-    global.PlayerState.body_id      = physics_body_create(global.physics, (vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER);
+    _direction    = DOWN;
+    _animation_id = astate_idle[DOWN];
+    _body_id      = physics_body_create(global.physics, (vec2s){0,0}, PLAYER_HITBOX, COLLISION_LAYER_SOLID | COLLISION_LAYER_TELEPORTER, COLLISION_LAYER_PLAYER);
 
     LOG_TRACE("Player: Successfully initialized player");
 }
 
 void player_input(void) {
-    player_body = physics_body_get(global.physics, global.PlayerState.body_id);
+    Body *player_body = physics_body_get(global.physics, _body_id);
 
     s32 up    = window_get_key(global.window, GLFW_KEY_W);
     s32 down  = window_get_key(global.window, GLFW_KEY_S);
@@ -78,12 +81,12 @@ void player_input(void) {
     }
 
     if (!up && !down && !right && !left) {
-        player_set_animation(IDLE, global.PlayerState.direction);
+        player_set_animation(IDLE, _direction);
     }
 }
 
 void player_get_tex_coord(f32 *tex_coord) {
-    AnimationState* astate = animation_state_get(global.animations, global.PlayerState.animation_id);
+    AnimationState* astate = animation_state_get(global.animations, _animation_id);
 
     u32 frame = astate->current_frame_index;
     u32 row   = astate->definition->frames[frame].row;
@@ -108,12 +111,28 @@ void player_get_tex_coord(f32 *tex_coord) {
 void player_set_animation(enum PlayerAnimation animation, enum Direction direction) {
     switch (animation) {
         case IDLE:
-            global.PlayerState.animation_id = astate_idle[direction];
-            global.PlayerState.direction    = direction;
+            _animation_id = astate_idle[direction];
+            _direction    = direction;
             break;
         case WALK:
-            global.PlayerState.animation_id = astate_walk[direction];
-            global.PlayerState.direction    = direction;
+            _animation_id = astate_walk[direction];
+            _direction    = direction;
             break;
     }
+}
+
+Body *player_get_body(void) {
+  return physics_body_get(global.physics, _body_id); 
+}
+
+AnimationState *player_get_animation(void) {
+  return animation_state_get(global.animations, _animation_id);
+}
+
+enum Direction player_get_direction(void) {
+  return _direction;
+}
+
+void player_set_direction(enum Direction direction) {
+  _direction = direction;
 }

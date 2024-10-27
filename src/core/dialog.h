@@ -3,7 +3,7 @@
 #define DIALOG_FRAME_COLOR (vec4s){0,0,0,0.3}
 #define DIALOG_TEXT_COLOR  (vec4s){1,1,1,1}
 #define DIALOG_FRAME_SIZE  (vec2s){PROJECTION_WIDTH, 75.0f}
-#define DIALOG_SELECT_SIZE (vec2s){2,2}
+#define DIALOG_SELECT_SIZE (vec2s){1.5,1.5}
 #define DIALOG_TEXT_SIZE   (vec2s){8,8}
 #include "../util/types.h"
 
@@ -48,11 +48,14 @@ void dialog_packet_free(DialogPacket **packet);
 
 Dialog* dialog_load_from_file(char *path);
 DialogQuestion* dialog_load_question_from_file(char *path);
-void dialog_delete(Dialog *dialog);
+DialogText *dialog_load_text_from_file(char *path);
 
+void dialog_append(Dialog *dialog, char *name, DialogType type, void *data);
 void dialog_append_last(Dialog *dialog, char *name, DialogType type, void *data);
 void dialog_append_question_from_file(Dialog *dialog, char *name, char *path);
-void dialog_append(Dialog *dialog, char *name, DialogType type, void *data);
+
+Dialog* dialog_init(void);
+void dialog_delete(Dialog *dialog);
 void dialog_render(void);
 void dialog_input(void);
 

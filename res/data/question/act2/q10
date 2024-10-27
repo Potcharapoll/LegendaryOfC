@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "Which of the following data types can be used to store the largest integer value in C?"
+answer: ["short","int","long","long long"]
+wrong: "(Check out Guide Book page X)."
+correct: [3,"Right"]

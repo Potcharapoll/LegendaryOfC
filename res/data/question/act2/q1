@@ -1,4 +1,4 @@
-text: "Choose valid #define statement from below."
-answer: ["#define N 5,M 10","#define array 11","#define PRICE$ 100","# define max 10"]
-wrong: "(Check out Guide Book page 10)."
-correct: [1,"Right"]
+text: "What is the correct keyword to define a constant value in C?"
+answer: ["const","static","define","immutable"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

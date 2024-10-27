@@ -1,0 +1,4 @@
+text: "What keyword would you use to limit the visibility of a variable to|the block it is declared in?"
+answer: ["public","static","extern","local"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

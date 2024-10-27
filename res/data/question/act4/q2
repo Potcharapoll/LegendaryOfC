@@ -1,0 +1,4 @@
+text: "What is the correct usage of 'srand' ?"
+answer: ["To seed the random number generator","To generate a random number","To end a program","To print a formatted string"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

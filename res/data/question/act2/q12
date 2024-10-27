@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "Which keyword is used to create a variable that cannot be modified|after its initial assignment?"
+answer: ["readonly","final","const","static"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

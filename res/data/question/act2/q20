@@ -1,0 +1,4 @@
+text: "What is the purpose of the 'volatile' keyword in C?"
+answer: ["To make a variable constant","To prevent compiler optimization","To allocate memory dynamically","To define a global variable"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

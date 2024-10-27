@@ -1,0 +1,4 @@
+text: "Which function safely formats and stores a string in a buffer with a specified size?"
+answer: ["sprintf","printf","snprintf","gets"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

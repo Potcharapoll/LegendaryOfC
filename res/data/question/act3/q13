@@ -1,0 +1,4 @@
+text: "Which of the following is NOT a valid identifier in C?"
+answer: ["my_variable","2nd_variable","_myVariable","myVariable123"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

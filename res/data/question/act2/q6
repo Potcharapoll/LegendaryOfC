@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "Which keyword is used to define a function that can take a variable number of arguments?"
+answer: ["varargs","ellipsis","...","any"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

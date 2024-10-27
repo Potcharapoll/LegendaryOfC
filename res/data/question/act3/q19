@@ -1,0 +1,4 @@
+text: "Which operator is used to assign a value to a variable?"
+answer: ["=",":=","=>","=="]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

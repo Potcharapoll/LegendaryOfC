@@ -1,0 +1,4 @@
+text: "Which function is used to print formatted output to the standard output in C?"
+answer: ["puts","print","printf","write"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

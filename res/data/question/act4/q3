@@ -1,0 +1,4 @@
+text: "Which function can be used to generate a random number in C?"
+answer: ["random","rand","randnum","randomize"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

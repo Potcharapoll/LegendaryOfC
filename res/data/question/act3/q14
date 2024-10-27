@@ -1,0 +1,4 @@
+text: "How do you return a value from a function in C?"
+answer: ["return value;","yield value;","send value;","output value;"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

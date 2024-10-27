@@ -1,0 +1,4 @@
+text: "Which symbol is used for comments in C?"
+answer: ["//","/* */","#","Both A and B"]
+wrong: "(Check out Guide Book page X)."
+correct: [3,"Right"]

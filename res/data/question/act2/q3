@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "Which keyword in C is used to define a function?"
+answer: ["func","define","void","return"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

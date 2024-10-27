@@ -1,0 +1,4 @@
+text: "Which of the following is the correct way to write a for loop?"
+answer: ["for (i = 0; i < 10; i++)","for i = 0 to 10","for (i < 10; i++)","for (i = 0; i < 10)"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

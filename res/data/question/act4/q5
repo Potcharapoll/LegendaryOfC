@@ -1,0 +1,4 @@
+text: "Which of the following functions should be used to read a single character|from standard input?"
+answer: ["gets","getchar","scanf","fgets"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

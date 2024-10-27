@@ -1,0 +1,4 @@
+text: "What does the gets function do?"
+answer: ["Reads a line of input into a buffer","Reads a single character from input","Writes a string to standard output","None of the above"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

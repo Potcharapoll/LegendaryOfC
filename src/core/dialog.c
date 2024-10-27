@@ -87,6 +87,13 @@ DialogQuestion* _get_new_dialog_question(char *question, char *answer[4], char *
 /*         animation_end = true; */
 /*     } */
 /* } */
+Dialog* dialog_init(void) {
+  Dialog *d   = malloc(sizeof(*d));
+  d->length   = 0;
+  d->contents = NULL;
+
+  return d;
+}
 
 Dialog* dialog_load_from_file(char *path) {
   FILE *fp;
@@ -348,6 +355,25 @@ void dialog_append(Dialog *dialog, char *name, DialogType type, void *data) {
 
 }
 
+DialogText *dialog_load_text_from_file(char *path) {
+  FILE *fp;
+
+  fp = fopen(path, "rb");
+  if (fp == NULL) {
+    LOG_ERROR("Dialog: Failed to load text from path \'%s\'", path);
+  }
+
+  char line[200];
+  char txt[200];
+
+  fgets(line, sizeof(line), fp);
+  sscanf(line, DIALOG_TEXT_FORMAT, txt);
+
+  fclose(fp);
+
+  return _get_new_dialog_text(txt);
+}
+
 DialogQuestion* dialog_load_question_from_file(char *path) {
   FILE *fp;
 
@@ -357,7 +383,6 @@ DialogQuestion* dialog_load_question_from_file(char *path) {
   }
 
   char line[200];
-
   char txt[100];
   char wrong[100];
   char correct[100];
@@ -398,33 +423,45 @@ void dialog_input(void) {
         DialogQuestion *qt = curr->dialog;
 
         // lost memory
-        DialogNode *node = malloc(sizeof(*node));
-        node->type = DIALOG_TYPE_TEXT;
-        node->next = NULL;
-        strcpy(node->name, curr->name);
+        DialogNode *ans = malloc(sizeof(*ans));
+        ans->type = DIALOG_TYPE_TEXT;
+        ans->next = NULL;
+        strcpy(ans->name, curr->name);
+
+        DialogNode *nex = malloc(sizeof(*nex));
+        nex->type = DIALOG_TYPE_TEXT;
+        nex->next = NULL;
+        strcpy(nex->name, curr->name);
 
 
         if (global.scene->selected_answer != qt->correct_idx) {
           LOG_DEBUG("Dialog: Select Wrong answer (%d != %d)", global.scene->selected_answer, qt->correct_idx);
 
-          node->dialog = _get_new_dialog_text(qt->wrong_text);
-          scene_dialog_set(global.scene, node);
+          ans->dialog = _get_new_dialog_text(qt->wrong_text);
+          scene_dialog_set(global.scene, ans);
         }
         else {
           if (curr->next == NULL) {
+            int act = -1;
             switch (game_get_act()) {
               case GAME_ACT2:
-                // check If the player talked to all npcs or not and then decide the dialog to send (ACT2)
-                node->dialog = _get_new_dialog_text(qt->correct_text);
-                curr->next   = node;
+                act = GAME_ACT2;
                 break;
               case GAME_ACT3:
+                act = GAME_ACT3;
                 break;
               case GAME_ACT4:
+                act = GAME_ACT4;
                 break;
               default:
                 break;
             }
+
+            ans->dialog = _get_new_dialog_text(qt->correct_text);
+            nex->dialog = game_get_act_dialog(act);
+
+            ans->next   = nex;
+            curr->next  = ans;
           }
 
           scene_dialog_next(global.scene);

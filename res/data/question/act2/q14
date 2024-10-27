@@ -1,0 +1,4 @@
+text: "What is the default return type of a function in C if no return type is specified?"
+answer: ["void","int","char","float"]
+wrong: "(Check out Guide Book page 10)."
+correct: [1,"Right"]

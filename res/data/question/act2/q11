@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
+text: "What data type is used to store a single character in C?"
+answer: ["char","string","int","bool"]
+wrong: "(Check out Guide Book page X)."
 correct: [0,"Right"]

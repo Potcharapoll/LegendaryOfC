@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "What does the sizeof operator do in C?"
+answer: ["Returns the length of an array","Returns the size of a variable or data type","Allocates memory dynamically","Initializes a variable"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

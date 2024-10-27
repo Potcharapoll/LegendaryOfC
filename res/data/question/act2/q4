@@ -1,4 +1,4 @@
-text: "..."
-answer: ["","","",""]
-wrong: ""
-correct: [0,"Right"]
+text: "What data type would you use to store a number with a fractional part?"
+answer: ["int","float","char","boolean"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

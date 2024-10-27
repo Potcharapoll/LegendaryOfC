@@ -3,7 +3,9 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
-#include "GLFW/glfw3.h"
+
+// temp
+static b8 should_close = false;
 
 static void error_callback(int err, const char *dest) {
     printf("GLFW Error Callback %d: %s\n", err, dest);
@@ -46,7 +48,7 @@ void window_loop(struct Window *self) {
     f32 last_frame = glfwGetTime();
     f32 current_frame;
 
-    while (!glfwWindowShouldClose(self->handle)) {
+    while (!glfwWindowShouldClose(self->handle) && !should_close) {
         glfwGetCursorPos(self->handle, &self->mouse.xpos, &self->mouse.ypos);
         glfwGetWindowSize(self->handle, &self->width, &self->height);
         glViewport(0, 0, self->width, self->height);
@@ -81,4 +83,8 @@ b8   window_get_key(struct Window *self, int key) {
 
 b8 window_get_mouse_button(struct Window *self, int button) {
     return (glfwGetMouseButton(self->handle, button) == GLFW_PRESS);
+}
+
+void window_trigger_close(void) {
+  should_close = true;
 }

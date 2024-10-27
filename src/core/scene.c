@@ -5,6 +5,7 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "player.h"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -25,13 +26,13 @@ typedef enum {
 } DialogRenderPosition;
 
 static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
-  { 14,       55,      0.0f},
-  { 15,       40,      0.0f},
-  { 15 + 50,  40 - 18, 0.0f},
-  { 15 + 50,  40 - 38, 0.0f},
-  { 15 + 150, 40 - 18, 0.0f},
+  { 14      , 55,      0.0f},
+  { 15      , 40,      0.0f},
+  { 15      , 40 - 28, 0.0f},
+  { 15      , 40 - 38, 0.0f},
+  { 15 + 150, 40 - 28, 0.0f},
   { 15 + 150, 40 - 38, 0.0f},
-  { 10,       -6,      0.0f},
+  { 5      , -3     , 0.0f},
 };
 
 /* static b8 next_dialog   = true; */
@@ -182,13 +183,14 @@ static void _scene_setup_collider(Scene *self) {
 static void _scene_dialog_render(Scene *self) {
   DialogNode *curr = self->dialog;
 
+  static u8 size = 6;
+
   vec3s camera_pos = { self->camera->position.x, self->camera->position.y, 0.0f};
   vec3s pos        = {0};
 
   quad_renderer_append_quad(self->quad_renderer, camera_pos, DIALOG_FRAME_SIZE, DIALOG_FRAME_COLOR);
 
   pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TITLE]);
-  text_renderer_append_text(self->text_renderer, curr->name, pos, 10, BLUE);
   text_renderer_append_text(self->text_renderer, curr->name, pos, 10, DIALOG_TEXT_COLOR);
 
   pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_TEXT]);
@@ -196,14 +198,14 @@ static void _scene_dialog_render(Scene *self) {
   if (curr->type == DIALOG_TYPE_QUESTION) {
     DialogQuestion *content = curr->dialog;
     /* dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
-    text_renderer_append_text(self->text_renderer, content->question, pos, 8, DIALOG_TEXT_COLOR);
+    text_renderer_append_text(self->text_renderer, content->question, pos, size, DIALOG_TEXT_COLOR);
 
     u8 selected_answer = (self->selected_answer + DIALOG_POSITION_LAST - 5);
     /* if (animation_end) { */
 
     for (u8 i = 0; i < 4; ++i) {
       pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER1+i]);
-      text_renderer_append_text(self->text_renderer, content->answer[i], pos, 8, DIALOG_TEXT_COLOR);
+      text_renderer_append_text(self->text_renderer, content->answer[i], pos, size, DIALOG_TEXT_COLOR);
     }
 
     pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], dialog_render_position[DIALOG_POSITION_SELECT]));
@@ -214,7 +216,7 @@ static void _scene_dialog_render(Scene *self) {
   else {
     DialogText *content = curr->dialog;
     /* dialog_render_text_animation(content->text, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
-    text_renderer_append_text(self->text_renderer, content->text, pos, 8, DIALOG_TEXT_COLOR);
+    text_renderer_append_text(self->text_renderer, content->text, pos, size, DIALOG_TEXT_COLOR);
   }
 }
 
@@ -340,6 +342,7 @@ void scene_render(Scene *self) {
       break;
     case SCENE_ENDGAME:
       text_renderer_append_text(self->text_renderer, "Congreatulation! You've cleared the game!" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
+      text_renderer_append_text(self->text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.25 - (25*3.5*0.5), 50}, 7, WHITE);
       break;
     default:
       break;
@@ -347,8 +350,14 @@ void scene_render(Scene *self) {
 
   quad_renderer_append_quad(self->quad_renderer, (vec3s){global.scene->camera->position.x,global.scene->camera->position.y,0.0f}, (vec2s){WIDTH, HEIGHT}, (vec4s){0,0,0, self->fade_alpha});
 
-  text_renderer_render(self->text_renderer);
-  quad_renderer_render(self->quad_renderer);
+  if (self->dialog != NULL) {
+    quad_renderer_render(self->quad_renderer);
+    text_renderer_render(self->text_renderer);
+  }
+  else {
+    text_renderer_render(self->text_renderer);
+    quad_renderer_render(self->quad_renderer);
+  }
 }
 
 void scene_chunk_change(Scene *self, Body *player_body, Chunks chunk_id, vec2s target_coord) {
@@ -396,10 +405,11 @@ void scene_change_scene(Scene *self, enum SceneState scene) {
       LOG_DEBUG("Scene: Intro state");
       break;
     case SCENE_INGAME:
-      scene_chunk_change(self, physics_body_get(global.physics, global.PlayerState.body_id), CHUNK_SPAWN, SPAWN_COORD);
+      scene_chunk_change(self, player_get_body(), CHUNK_SPAWN, SPAWN_COORD);
       LOG_DEBUG("Scene: Ingame state");
       break;
     case SCENE_ENDGAME:
+      scene_fade_in(self);
       break;
   }
 }  
@@ -412,8 +422,6 @@ void scene_dialog_attach(Scene *self, Dialog *dialog, char *tag) {
 
   self->dialog_tag = malloc(strlen(tag) + 1);
   strcpy(self->dialog_tag, tag);
-
-  LOG_WARN("Scene: Tag %s", self->dialog_tag);
 
   self->dialog    = dialog->contents;
   self->on_dialog = true;

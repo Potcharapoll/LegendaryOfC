@@ -1,0 +1,4 @@
+text: "Which function can be used to safely read a string from standard input,|limiting the number of characters?"
+answer: ["gets","scanf","fgets","read"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

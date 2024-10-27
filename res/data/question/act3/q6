@@ -1,0 +1,4 @@
+text: "What is the correct syntax to include a header file?"
+answer: ["include <header.h>","#include <header.h>","#include header.h","import <header.h>"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

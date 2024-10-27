@@ -1,0 +1,4 @@
+text: "What is the correct way to start a main function in C?"
+answer: ["function main()","void main()","int main()","main()"]
+wrong: "(Check out Guide Book page X)."
+correct: [2,"Right"]

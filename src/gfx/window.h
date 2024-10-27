@@ -24,4 +24,7 @@ void window_loop(struct Window *self);
 void window_destroy(struct Window *self);
 b8 window_get_key(struct Window *self, int key);
 b8 window_get_mouse_button(struct Window *self, int button);
+
+// temp
+void window_trigger_close(void);
 #endif

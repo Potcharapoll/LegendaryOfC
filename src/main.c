@@ -20,29 +20,19 @@
 
 #include <string.h>
 
-//   ~90% (10% -> progression, 1% others, 2% sounds)
-//   Progression system       -- ON GOING --
+//   ~96% (10% -> progression, 1% others, 2% sounds)
 //   Finish Editor            -- PLANNED  --
 //   Sounds system            -- PLANNED  --
 //
-//   ---------------------------- PLAN -- 
-//   camera                               (CAN SKIP)
-//   progression                          (25%)
-//
-//   Night gradient -> (64,25,71,140) or (0,0,0,174)
-
-// TODO: Scene text animation
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
-//
-// Act 2
-// - Give the info after last dialog
-// Act 3
-// - Render Tom
-// - 5 or more questions.
-// Act 4
+// TODO: Scene text animation (Optional)
+// TODO: Allocator (Optional)
 //
 // TODO: Create LegendaryOfC man page
-// TODO: Allocator
+//
+// BUG: Black screen sometime when teleport throught the map
+// Fix: John Dialog text bug 
+// Fix: Ending text
 
 static b8 collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -178,7 +168,7 @@ static void _teleporter_callback(Static_Body *body, Body *other) {
 
     if (body == teleporter_body) {
       other->velocity = glms_vec2_zero();
-      player_set_animation(IDLE, global.PlayerState.direction);
+      player_set_animation(IDLE, player_get_direction());
 
 
       if (_teleporter_check(teleporter->tag)) { 
@@ -235,6 +225,7 @@ static void _load_prefab(void) {
 
   struct Spritesheet *npcs = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_NPC);
   prefab_create("nathan_down", npcs, WHITE, (vec2s){16,23}, (vec4s){3,2,4,3});
+  prefab_create("john_down", npcs, WHITE, (vec2s){16,23}, (vec4s){5,2,6,3});
 }
 
 static void input_handling(Body *player_body) {
@@ -258,7 +249,7 @@ static void input_handling(Body *player_body) {
             if (dialog_packet) {
 
               player_body->velocity = glms_vec2_zero();
-              player_set_animation(IDLE, global.PlayerState.direction);
+              player_set_animation(IDLE, player_get_direction());
 
               game_attach_dialog(dialog_packet);
             }
@@ -311,6 +302,11 @@ static void input_handling(Body *player_body) {
 
         } else if (global.scene->on_dialog) {
           dialog_input();
+        }
+        break;
+      case SCENE_ENDGAME:
+        if (window_get_key(global.window, GLFW_KEY_SPACE)) {
+          window_trigger_close();          
         }
         break;
       default:
@@ -372,7 +368,7 @@ void update(void) {
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(0.0,0.0,0.0,1.0);
 
-  Body *player_body = physics_body_get(global.physics, global.PlayerState.body_id);
+  Body *player_body = player_get_body();
 
   input_handling(player_body);
 

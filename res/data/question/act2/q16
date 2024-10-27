@@ -1,0 +1,4 @@
+text: "What does the extern keyword indicate when used with a variable declaration?"
+answer: ["The variable is private to the file","The variable is defined in another file","The variable is a constant","The variable is local to a function"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

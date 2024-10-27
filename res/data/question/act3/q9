@@ -1,0 +1,4 @@
+text: "How do you define a macro in C?"
+answer: ["#define MACRO(value)","define MACRO value","define MACRO(value)","macro MACRO(value)"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

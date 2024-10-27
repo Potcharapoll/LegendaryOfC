@@ -4,11 +4,15 @@
 #include "../global.h"
 #include "../defs.h"
 
+#include "chunk.h"
 #include "dialog.h"
 #include "physics.h"
+#include "player.h"
 #include "scene.h"
+#include "timer.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 typedef enum {
   LAYER_BASE,
@@ -22,6 +26,7 @@ typedef enum {
 
 static b8 update = false;
 static b8 change = false;
+static u32 question_flag = 0;
 
 HASHTABLE_INIT(Dialog)
 
@@ -33,7 +38,47 @@ static void free_dialog(void *self) {
   dialog_delete(dialog);
 }
 
-static void _load_dialog(enum GameAct act) {
+static int _get_act_question_number(enum GameAct act) {
+  int num = -1;
+  int total = 0;
+
+  switch (act) {
+    case GAME_ACT2:
+      total = ACT2_TOTAL_QUESTION;
+      break;
+    case GAME_ACT3:
+      total = ACT3_TOTAL_QUESTION;
+      break;
+    case GAME_ACT4:
+      total = ACT4_TOTAL_QUESTION;
+      break;
+    default:
+      break;
+  }
+
+  srand(time(NULL));
+
+  int ran = (rand() % total) + 1;
+
+  LOG_INFO("ran: %i", ran);
+  while (true) {
+    if ((question_flag >> ran & 1) == 1) {
+      ran = (rand() % total) + 1;
+      LOG_INFO("ran: %i", ran);
+    }
+    else {
+      break;
+    }
+  }
+
+  question_flag |= (1 << ran);
+  num = ran;
+  LOG_INFO("ran: %i", ran);
+
+  return num;
+}
+
+static void _load_dialog(enum GameAct act, Body *player_body) {
   if (test_dialog) { hashtable_Dialog_destroy(test_dialog); }
   test_dialog = hashtable_Dialog_init(free_dialog);
 
@@ -60,25 +105,67 @@ static void _load_dialog(enum GameAct act) {
         char name[3][10] = {"Emma", "Parmy", "Nathan"};
         Dialog *question = NULL;
 
+        char buf[40];
         for (u8 i = 0; i < 3; ++i) {
-          char buf[60];
-          snprintf(buf, 60, "res/data/dialog/dialog_act2a_%s", npc[i]);
+          snprintf(buf, sizeof(buf), "res/data/dialog/dialog_act2a_%s", npc[i]);
           LOG_DEBUG("Insert %s", buf);
 
-          // TODO: Make it random questions.
           question = dialog_load_from_file(buf);
-          dialog_append_question_from_file(question, name[i], "res/data/question/act2/q1");
-          dialog_append_question_from_file(question, name[i], "res/data/question/act2/q2");
 
-          snprintf(buf, 60, "dialog_act2a_%s", npc[i]);
+          for (u8 j = 0; j < ACT2_QUESTION_COUNT; ++j) {
+            snprintf(buf, sizeof(buf), "res/data/question/act2/q%i", _get_act_question_number(GAME_ACT2));
+            dialog_append_question_from_file(question, name[i], buf);
+          }
+
+          snprintf(buf, sizeof(buf), "dialog_act2a_%s", npc[i]);
           hashtable_Dialog_insert(test_dialog, buf,  question);
         }
         break;
       }
     case GAME_ACT3:
-      break;
+      {
+        player_set_direction(RIGHT);
+        game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_roxy", dialog_load_from_file("res/data/dialog/dialog_act3_roxy"));
+
+        Dialog *dialog = dialog_load_from_file("res/data/dialog/dialog_act3_tom");
+
+        char buf[30];
+        for (int j = 0; j < ACT3_QUESTION_COUNT; ++j) {
+          snprintf(buf, sizeof(buf), "res/data/question/act3/q%i", _get_act_question_number(GAME_ACT3));
+          dialog_append_question_from_file(dialog, "Tom", buf);
+        }
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_tom", dialog);
+        break;
+      }
     case GAME_ACT4:
-      break;
+      {
+        player_set_direction(RIGHT);
+        game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act4_roxy", dialog_load_from_file("res/data/dialog/dialog_act4_roxy"));
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act4a_john", dialog_load_from_file("res/data/dialog/dialog_act4a_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4b_john", dialog_load_from_file("res/data/dialog/dialog_act4b_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4c_john", dialog_load_from_file("res/data/dialog/dialog_act4c_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4d_john", dialog_load_from_file("res/data/dialog/dialog_act4d_john"));
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act4a_parmy", dialog_load_from_file("res/data/dialog/dialog_act4a_parmy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4c_parmy", dialog_load_from_file("res/data/dialog/dialog_act4c_parmy"));
+
+        Dialog *d = dialog_load_from_file("res/data/dialog/dialog_act4b_parmy");
+        char buf[60];
+
+        for (u8 j = 0; j < ACT4_QUESTION_COUNT; ++j) {
+          snprintf(buf, sizeof(buf), "res/data/question/act4/q%i", _get_act_question_number(GAME_ACT4));
+          dialog_append_question_from_file(d, "Parmy", buf);
+        }
+
+        hashtable_Dialog_insert(test_dialog, "dialog_act4b_parmy", d);
+        break;
+      }
   }
 
   LOG_DEBUG("Game: Dialog loaded");
@@ -89,6 +176,7 @@ void game_setup_act(enum GameAct act) {
   global.game_state_flag = 0;
 
   scene_collider_reset(global.scene);
+
 
   switch (act) {
     case GAME_ACT1:
@@ -113,8 +201,10 @@ void game_setup_act(enum GameAct act) {
       break;
   }
 
+  question_flag = 0;
   global.game_state_flag |= (lock | chr | state);
-  _load_dialog(act);
+
+  _load_dialog(act, player_get_body());
 
   scene_fade_in(global.scene);
   LOG_DEBUG("Game: Setup Act%d", (act+1));
@@ -157,11 +247,31 @@ void game_update_dialog_state(char *tag) {
     } 
   }
   else if (game_state_check(GAME_STATE_ACT3)) {
-    if (strcmp("dialog_act3a_tom", tag) == 0) {
+    if (strcmp("dialog_act3_tom", tag) == 0) {
       game_state_on(ACT3_TOM_TALKED);
+
+      scene_fade_out(global.scene);
+      change = true;
     } 
   }
   else if (game_state_check(GAME_STATE_ACT4)) {
+
+    if (strcmp("dialog_act4a_john", tag) == 0) {
+      game_state_on(ACT4_VC_QUEST);
+
+      LOG_DEBUG("Game: VC Quest");
+    }
+    else if (strcmp("dialog_act4c_john", tag) == 0) {
+      game_state_on(ACT4_FINISH_QUEST);
+      game_state_off(GAME_STATE_LOCK_TUNNEL);
+
+      LOG_DEBUG("Game: Finish Quest and Unlock Tunnel");
+    }
+    else if (strcmp("dialog_act4b_parmy", tag) == 0) {
+      game_state_on(ACT4_FISH_GET);
+
+      LOG_DEBUG("Game: Get the fish");
+    }
   }
 
   update = true;
@@ -188,22 +298,25 @@ void game_destroy(void) {
 }
 
 void game_update(void) {
-  if (change && global.scene->faded) { game_setup_act(game_get_act() + 1); change = false; }
+  if (game_get_act() == GAME_ACT4 && global.timer->on_time) {
+      scene_fade_out(global.scene);
+      scene_change_scene(global.scene, SCENE_ENDGAME);
+      return;
+  }
+
+  if (change && global.scene->faded) { 
+    game_setup_act(game_get_act() + 1); 
+    change = false; 
+  }
+
   if (!update) return;
 
-  /* if (game_state_check(GAME_STATE_ACT1)) { */
-  /* } */
-  /* else if (game_state_check(GAME_STATE_ACT2)) { */
   if (game_state_check(GAME_STATE_ACT2)) {
     if (game_state_check(ACT2_EMMA_TALKED | ACT2_NATHAN_TALKED | ACT2_PARMY_TALKED)) {
       scene_fade_out(global.scene);
       change = true;
     }
   }
-  /* else if (game_state_check(GAME_STATE_ACT3)) { */
-  /* } */
-  /* else if (game_state_check(GAME_STATE_ACT4)) { */
-  /* } */
 
   update = false;
 }
@@ -286,7 +399,31 @@ void game_get_dialog_tag(char buf[static 60], DialogPacket *packet) {
       snprintf(buf, 60, "dialog_act3_%s",packet->dialog_tag);
       break;
     case GAME_ACT4:
-      snprintf(buf, 60, "dialog_act4_%s",packet->dialog_tag);
+      if (strcmp(packet->dialog_tag, "parmy") == 0) {
+        if (game_state_check(ACT4_VC_QUEST) && !game_state_check(ACT4_FISH_GET)) {
+          snprintf(buf, 60, "dialog_act4b_parmy");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act4a_parmy");
+        }
+      }
+      else if (strcmp(packet->dialog_tag, "john") == 0) {
+        if (game_state_check(ACT4_FINISH_QUEST)) {
+          snprintf(buf, 60, "dialog_act4d_john");
+        }
+        else if (game_state_check(ACT4_FISH_GET)){
+          snprintf(buf, 60, "dialog_act4c_john");
+        }
+        else if (game_state_check(ACT4_VC_QUEST)) {
+          snprintf(buf, 60, "dialog_act4b_john");
+        }
+        else {
+          snprintf(buf, 60, "dialog_act4a_john");
+        }
+      }
+      else {
+        snprintf(buf, 60, "dialog_act4_%s",packet->dialog_tag);
+      }
       break;
   }
 }
@@ -374,6 +511,12 @@ void game_render(Body *player_body) {
       game_state_off(GAME_STATE_SHOW_INTERACT);
     }
 
+    {
+      if (global.scene->chunk_id == CHUNK_INSIDE_LIBRARY && game_get_act() == GAME_ACT2) {
+        quad_renderer_append_quad(renderer[LAYER_STRUCTURE], (vec3s){52,133.8}, (vec2s){15,15}, (vec4s){0.25,0.25,0.25,1.0});
+      }
+    }
+
 #ifdef DEBUG
     { // append start_point, end_point, and cursor to LAYER_TOP
       quad_renderer_append_quad(renderer[LAYER_TOP], (vec3s){global.start_point[0], global.start_point[1], 0.0f}, (vec2s){1,1}, GREEN);
@@ -404,26 +547,37 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       LOG_DEBUG("Game: Change to CHUNK_RIGHT");
       break;
     case CHUNK_VILLAGE_TOP      :
-      if (game_get_act() == GAME_ACT2) {
+      if (game_get_act() != GAME_ACT1) {
         scene_chunk_add_prefab("nathan_down", (vec2s){12.3,11});
+
         physics_static_body_create(global.physics, (vec2s){198,944} , (vec2s){14,21}, COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL);
         scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){198,940}, (vec2s){14,4}, "nathan", .body_id = -1});
       }
       LOG_DEBUG("Game: Change to CHUNK_TOP");
       break;
     case CHUNK_VILLAGE_TOP_END  :
+      timer_start(global.timer, 3.0f);
       LOG_DEBUG("Game: Change to CHUNK_TOP_END");
       break;
     case CHUNK_VILLAGE_TOP_LEFT :
       LOG_DEBUG("Game: Change to CHUNK_TOP_LEFT");
       break;
     case CHUNK_VILLAGE_TOP_RIGHT:
+      if (game_get_act() == GAME_ACT4) {
+        scene_chunk_add_prefab("john_down", (vec2s){15.5,6.5});
+
+        physics_static_body_create(global.physics, (vec2s){729,872} , (vec2s){14,21}, COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL);
+        scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){729,868}, (vec2s){14,4}, "john", .body_id = -1});
+      }
       LOG_DEBUG("Game: Change to CHUNK_TOP_RIGHT");
       break;
     case CHUNK_VILLAGE_TUNNEL   :
       LOG_DEBUG("Game: Change to CHUNK_TUNNEL");
       break;
     case CHUNK_INSIDE_LIBRARY   :
+      if (game_get_act() == GAME_ACT3) {
+        scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){53,118}, (vec2s){10,6}, "tom", .body_id = -1});
+      }
       LOG_DEBUG("Game: Change to CHUNK_INSIDE_LIBRARY");
       break;
     case CHUNK_INSIDE_RESTAURANT:
@@ -438,6 +592,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
     case CHUNK_INSIDE_OG_HOME   :
       if (game_get_act() == GAME_ACT1) {
         scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){73,135}, (vec2s){13,4}, "image", .body_id = -1});
+
       }
       LOG_DEBUG("Game: Change to CHUNK_INSIDE_OG_HOME");
       break;
@@ -475,4 +630,32 @@ void game_attach_dialog(DialogPacket *packet) {
 
 void game_toggle_man_page(void) {
 
+}
+
+DialogText* game_get_act_dialog(enum GameAct act) {
+  DialogText *dialog = NULL;
+
+  switch (act) {
+    case GAME_ACT2:
+      {
+        static char state = 'a';
+
+        char buf[30];
+        snprintf(buf,30,"res/data/dialog/dialog_act2%c", state);
+        dialog = dialog_load_text_from_file(buf);
+        
+        state++;
+        break;
+      }
+    case GAME_ACT3:
+      dialog = dialog_load_text_from_file("res/data/dialog/dialog_act3");
+      break;
+    case GAME_ACT4:
+      dialog = dialog_load_text_from_file("res/data/dialog/dialog_act4");
+      break;
+    default:
+      break;
+  }
+
+  return dialog;
 }

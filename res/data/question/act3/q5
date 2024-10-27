@@ -1,0 +1,4 @@
+text: "How do you declare a variable in C?"
+answer: ["var x;","int x;","declare x;","x : int;"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

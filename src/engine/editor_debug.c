@@ -13,15 +13,15 @@ void debug_menu(void) {
     for (u8 i = 0; i < 32; ++i) {
       buf[i] = ((global.game_state_flag >> i) & 1) ? '1' : '0';
     }
+    igText("Act : %hhu", (game_get_act() + 1));
     igText("Flag: %s", buf);
-    igText("Act : %hhu", game_get_act());
     igSpacing();
 
     igText("Scene");
+    igText("Chunk: %d", global.scene->chunk_id);
     igText("SceneState: %s", (global.scene->scene_state == SCENE_MENU) ? "MENU" : (global.scene->scene_state == SCENE_INTRO) ? "INTRO" : (global.scene->scene_state == SCENE_INGAME) ? "INGAME" : "ENDGAME");
     igSpacing();
 
-    igText("ChunkId: %d", global.scene->chunk_id);
     if (igButton("Reset Chunk", (ImVec2){0,0})) {
         global.reset_chunk = true;
     }
@@ -32,19 +32,10 @@ void debug_menu(void) {
     igSpacing();
 
     igText("Fade");
-    igText("Faded: %s", (global.scene->faded) ? "True" : "False");
-    igText("State: %s", (global.scene->fade_state == FADE_NONE) ? "FADE_NONE" : (global.scene->fade_state == FADE_IN) ? "FADE_IN" : "FADE_OUT");
+    igText("State : %s", (global.scene->fade_state == FADE_NONE) ? "FADE_NONE" : (global.scene->fade_state == FADE_IN) ? "FADE_IN" : "FADE_OUT");
+    igText("Faded : %s", (global.scene->faded) ? "True" : "False");
+    igText("Fading: %s", (global.scene->fading) ? "True" : "False");
     igSliderFloat("Alpha", &global.scene->fade_alpha, 0.0f, 1.0f, "%.1f", 0);
-
-    if (igButton("Fade In", (ImVec2){})) {
-        global.scene->fade_state = FADE_IN;
-        global.scene->fade_alpha = 1.0f;
-    }
-    igSameLine(0.0f, 10.0f);
-    if (igButton("Fade Out", (ImVec2){})) {
-        global.scene->fade_state = FADE_OUT;
-        global.scene->fade_alpha = 0.0f;
-    }
     igSpacing();
 
     igText("Dialog");

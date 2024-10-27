@@ -1,0 +1,4 @@
+text: "What does 'scanf' return?"
+answer: ["The number of input items successfully read","The total number of characters read","A boolean indicating success","Nothing"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

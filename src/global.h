@@ -40,12 +40,6 @@ struct Global {
     u32 game_state_flag;
     pthread_mutex_t lock;
 
-    struct {
-        enum Direction direction;
-        u32 animation_id;
-        u32 body_id;
-    } PlayerState;
-
     void   (*dialog_callback)(Static_Body* body, Body *other);
     void   (*teleporter_callback)(Static_Body* body, Body *other);
     ivec2s (*get_char_coord)(char c);

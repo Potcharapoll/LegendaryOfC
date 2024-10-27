@@ -1,0 +1,4 @@
+text: "What is the purpose of the abort function?"
+answer: ["To exit the program gracefully","To terminate the program immediately","To generate a random number","To reset the program's state"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]

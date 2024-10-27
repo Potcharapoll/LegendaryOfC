@@ -59,6 +59,14 @@
 // (tunnel will unlock when player interact to it)
 // 00000000000001111111000000001000
 
+#define ACT2_TOTAL_QUESTION 20
+#define ACT3_TOTAL_QUESTION 20
+#define ACT4_TOTAL_QUESTION 12
+
+#define ACT3_QUESTION_COUNT 5
+#define ACT2_QUESTION_COUNT 5
+#define ACT4_QUESTION_COUNT 5
+
 enum GameAct {
     GAME_ACT1,
     GAME_ACT2,
@@ -88,6 +96,8 @@ void game_toggle_man_page(void);
 void game_state_toggle(u32 flag);
 void game_state_on(u32 flag);
 void game_state_off(u32 flag);
+
+DialogText* game_get_act_dialog(enum GameAct act);
 
 b8 game_state_check(u32 flag);
 u8 game_get_act(void);

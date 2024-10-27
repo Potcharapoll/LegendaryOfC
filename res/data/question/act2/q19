@@ -1,0 +1,4 @@
+text: "What is the purpose of the 'break' keyword in C?"
+answer: ["To exit a loop or switch statement","To pause the execution","To create a new function","To declare a variable"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

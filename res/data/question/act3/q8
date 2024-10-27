@@ -1,0 +1,4 @@
+text: "How do you access a member of a structure in C?"
+answer: ["struct.member","struct->member","member(struct)","struct::member"]
+wrong: "(Check out Guide Book page X)."
+correct: [0,"Right"]

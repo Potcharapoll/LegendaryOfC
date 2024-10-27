@@ -1,0 +1,4 @@
+text: "Which keyword is used to create a loop that runs indefinitely?"
+answer: ["forever","while (1)","repeat","loop"]
+wrong: "(Check out Guide Book page X)."
+correct: [1,"Right"]
