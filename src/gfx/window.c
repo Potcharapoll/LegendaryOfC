@@ -4,6 +4,8 @@
 #include "../global.h"
 #include "../defs.h"
 
+#include <assert.h>
+
 // temp
 static b8 should_close = false;
 
@@ -17,11 +19,11 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     ASSERT(glfwInit() != GLFW_FALSE, "Failed to initialize GLFW", __FILE__, __LINE__);
 
     LOG_TRACE("Successfully initialized GLFW");
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 
     self->init    = init;
     self->update  = update;
@@ -32,6 +34,8 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     ASSERT(self->handle != NULL, "Failed to create GLFWwindow", __FILE__, __LINE__);
     LOG_TRACE("Successfully initialized GLFWwindow");
     
+    glfwSetWindowSizeLimits(self->handle, WIDTH, HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
+
     glfwMakeContextCurrent(self->handle);
     glfwSwapInterval(1);
     glfwSetInputMode(self->handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);

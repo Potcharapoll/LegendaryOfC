@@ -1,19 +1,8 @@
-#pragma GCC diagnostic ignored "-Wmissing-braces"
-
 #include "engine/logger.h"
-
 #include "core/asset_manager.h"
-#include "core/renderer.h"
-#include "core/animation.h"
-#include "core/dialog.h"
-#include "core/physics.h"
-#include "core/player.h"
 #include "core/prefab.h"
 #include "core/scene.h"
-#include "core/timer.h"
 #include "core/game.h"
-
-#include "gfx/window.h"
 
 #include "global.h"
 #include "defs.h"
@@ -21,15 +10,15 @@
 #include <string.h>
 #include <assert.h>
 
-// ~97% (1% others, 2% sounds)
 // Sounds system            -- PLANNED  --
 //
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
+//
 // TODO: Scene text animation (Optional)
 // TODO: Allocator (Optional)
 // TODO: Create LegendaryOfC man page
 //
-// BUG: Black screen sometime when teleport throught the map
+// BUG: Black screen sometime when teleport throught the map (Sometime)
 
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -235,6 +224,7 @@ static void input_handling(Body *player_body) {
       case SCENE_INTRO:
         if (window_get_key(global.window, GLFW_KEY_SPACE) && !global.scene->fading) {
             scene_fade_out(global.scene);
+
             global.input_delay = 0.0f;
         }
         break;
@@ -244,7 +234,6 @@ static void input_handling(Body *player_body) {
 
           if (window_get_key(global.window, GLFW_KEY_E)) {
             if (dialog_packet) {
-
               player_body->velocity = glms_vec2_zero();
               player_set_animation(IDLE, player_get_direction());
 
@@ -296,7 +285,6 @@ static void input_handling(Body *player_body) {
             global.input_delay = 0.0f;
           }
 #endif
-
         } else if (global.scene->on_dialog) {
           dialog_input();
         }

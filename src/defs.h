@@ -3,7 +3,7 @@
 
 #define FREE(x) free(x); x = NULL;
 
-#define VERSION   0.1
+#define VERSION   0.90
 
 #define WIDTH     1280
 #define HEIGHT    768
@@ -57,7 +57,8 @@
 #define CHUNK_INSIDE_LJ_HOME_PATH    "res/data/chunks/chunk_inside_lj_home"
 #define CHUNK_INSIDE_OG_HOME_PATH    "res/data/chunks/chunk_inside_og_home"
 #define CHUNK_INSIDE_VC_HOME_PATH    "res/data/chunks/chunk_inside_vc_home"
-#define INPUT_DELAY 0.15f
+
+#define INPUT_DELAY 0.25f
 
 #define TAG_TUNNEL     'a'
 #define TAG_LIBRARY    'b'

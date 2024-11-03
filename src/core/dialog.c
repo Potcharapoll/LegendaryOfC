@@ -215,7 +215,7 @@ void dialog_append_question_from_file(Dialog *dialog, char *name, char *path) {
   new_node->type   = DIALOG_TYPE_QUESTION;
   new_node->dialog = q;
   new_node->next   = NULL;
-  strcpy(new_node->name, name);
+  strncpy(new_node->name, name, sizeof(new_node->name));
 
   DialogNode *curr = dialog->contents;
 
@@ -237,7 +237,7 @@ void dialog_append_last(Dialog *dialog, char *name, DialogType type, void *data)
   new_node->type   = type;
   new_node->dialog = data;
   new_node->next   = NULL;
-  strcpy(new_node->name, name);
+  strncpy(new_node->name, name, sizeof(new_node->name));
 
   DialogNode *curr = dialog->contents;
 
@@ -308,7 +308,7 @@ void dialog_append(Dialog *dialog, char *name, DialogType type, void *data) {
 
   node->next   = NULL;
 
-  strcpy(node->name, name);
+  strncpy(node->name, name, sizeof(node->name));
 
   if (type == DIALOG_TYPE_TEXT) {
 
@@ -427,12 +427,12 @@ void dialog_input(void) {
         DialogNode *ans = malloc(sizeof(*ans));
         ans->type = DIALOG_TYPE_TEXT;
         ans->next = NULL;
-        strcpy(ans->name, curr->name);
+        strncpy(ans->name, curr->name, sizeof(ans->name));
 
         DialogNode *nex = malloc(sizeof(*nex));
         nex->type = DIALOG_TYPE_TEXT;
         nex->next = NULL;
-        strcpy(nex->name, curr->name);
+        strncpy(nex->name, curr->name, sizeof(nex->name));
 
 
         if (global.scene->selected_answer != qt->correct_idx) {

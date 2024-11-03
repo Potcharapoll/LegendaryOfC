@@ -65,7 +65,6 @@ static int _get_act_question_number(enum GameAct act) {
   while (true) {
     if ((question_flag >> ran & 1) == 1) {
       ran = (rand() % total) + 1;
-      LOG_INFO("ran: %i", ran);
     }
     else {
       break;
@@ -74,7 +73,6 @@ static int _get_act_question_number(enum GameAct act) {
 
   question_flag |= (1 << ran);
   num = ran;
-  LOG_INFO("ran: %i", ran);
 
   return num;
 }
@@ -96,6 +94,7 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
       }
     case GAME_ACT2:
       {
+        hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
         hashtable_Dialog_insert(test_dialog, "dialog_act2_roxy",    dialog_load_from_file("res/data/dialog/act2/dialog_act2_roxy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act2b_emma",   dialog_load_from_file("res/data/dialog/act2/dialog_act2b_emma"));
         hashtable_Dialog_insert(test_dialog, "dialog_act2b_parmy",  dialog_load_from_file("res/data/dialog/act2/dialog_act2b_parmy"));
@@ -126,6 +125,7 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         player_set_direction(RIGHT);
         game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
 
+        hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
         hashtable_Dialog_insert(test_dialog, "dialog_act3_roxy",   dialog_load_from_file("res/data/dialog/act3/dialog_act3_roxy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act3_emma",   dialog_load_from_file("res/data/dialog/act3/dialog_act3_emma"));
         hashtable_Dialog_insert(test_dialog, "dialog_act3_parmy",  dialog_load_from_file("res/data/dialog/act3/dialog_act3_parmy"));
@@ -147,6 +147,7 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         player_set_direction(RIGHT);
         game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
 
+        hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_roxy",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_roxy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_emma",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_emma"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_nathan", dialog_load_from_file("res/data/dialog/act4/dialog_act4_nathan"));
