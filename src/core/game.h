@@ -26,38 +26,25 @@
 #define GAME_STATE_SHOW_JOEY       ((u32)1 << 17)
 #define GAME_STATE_SHOW_TOM        ((u32)1 << 18)
 #define GAME_STATE_SHOW_INTERACT   ((u32)1 << 19)
-#define GAME_STATE_TOGGLE_MAN_PAGE ((u32)1 << 20)
+#define GAME_STATE_GET_MAN_PAGE    ((u32)1 << 20)
 
 // act 1 flag (3 slots)
 #define ACT1_ROXY_TALKED ((u32)1 << 21)
 #define ACT1_OG_HOME_KEY ((u32)1 << 22)
 #define ACT1_GET_G_IMAGE ((u32)1 << 23)
-// (if all cleard will be go to the next act)
-// -> lock all expect for restaurant, show only emma and roxy
-// 00000000000000000011111111010001
 
 // act 2 flag (3 slots)
 #define ACT2_EMMA_TALKED   ((u32)1 << 21)
 #define ACT2_NATHAN_TALKED ((u32)1 << 22)
 #define ACT2_PARMY_TALKED  ((u32)1 << 23)
-// (the player will get the info when talk to the last one)
-// -> unlock all expect for tunnel, show only emma, roxy, nathan, and parmy
-// 00000000000000001111000000000010
 
 // act 3 flags (1 slots)
 #define ACT3_TOM_TALKED ((u32)1 << 21)
-// -> unlock all expect for tunnel, show only emma, roxy, nathan, parmy, and tom
-// 00000000000001001111000000000100
 
 // act 4 flags (2 slots)
 #define ACT4_VC_QUEST     ((u32)1 << 21)
 #define ACT4_FISH_GET     ((u32)1 << 22)
-#define ACT4_FINISH_QUEST ((u32)1 << 23)
-#define ACT4_TUNNEL_KEY   ((u32)1 << 24)
-// -> unlock all expect for tunnel, show all
-// (if all are true and talk to vc again will go to the next act)
-// (tunnel will unlock when player interact to it)
-// 00000000000001111111000000001000
+#define ACT4_TUNNEL_KEY   ((u32)1 << 23)
 
 #define ACT2_TOTAL_QUESTION 20
 #define ACT3_TOTAL_QUESTION 20

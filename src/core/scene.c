@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "chunk.h"
+#include "dialog.h"
 #include "game.h"
 
 #include "../engine/logger.h"
@@ -20,10 +21,8 @@ typedef enum {
   DIALOG_POSITION_ANSWER2,
   DIALOG_POSITION_ANSWER3,
   DIALOG_POSITION_ANSWER4,
-  DIALOG_POSITION_SELECT,
-
-  DIALOG_POSITION_LAST,
 } DialogRenderPosition;
+#define DIALOG_POSITION_LAST (DIALOG_POSITION_ANSWER4+1)
 
 static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
   { 14      , 55,      0.0f},
@@ -32,7 +31,6 @@ static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
   { 15      , 40 - 38, 0.0f},
   { 15 + 150, 40 - 28, 0.0f},
   { 15 + 150, 40 - 38, 0.0f},
-  { 5      , -3     , 0.0f},
 };
 
 static void _load_chunk(Scene *self, Chunks chunkId) {
@@ -194,26 +192,128 @@ static void _scene_dialog_render(Scene *self) {
 
   if (curr->type == DIALOG_TYPE_QUESTION) {
     DialogQuestion *content = curr->dialog;
-    /* dialog_render_text_animation(content->question, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
     text_renderer_append_text(self->text_renderer, content->question, pos, size, DIALOG_TEXT_COLOR);
-
-    u8 selected_answer = (self->selected_answer + DIALOG_POSITION_LAST - 5);
-    /* if (animation_end) { */
 
     for (u8 i = 0; i < 4; ++i) {
       pos = glms_vec3_add(camera_pos, dialog_render_position[DIALOG_POSITION_ANSWER1+i]);
-      text_renderer_append_text(self->text_renderer, content->answer[i], pos, size, DIALOG_TEXT_COLOR);
-    }
 
-    pos = glms_vec3_add(camera_pos, glms_vec3_sub(dialog_render_position[selected_answer], dialog_render_position[DIALOG_POSITION_SELECT]));
-    /* renderer_append_quad(LAYER_DIALOG, pos, DIALOG_SELECT_SIZE, DIALOG_TEXT_COLOR); */
-    quad_renderer_append_quad(self->quad_renderer, pos, DIALOG_SELECT_SIZE, DIALOG_TEXT_COLOR);
-    /* } */
+      if (i == self->selected) {
+        text_renderer_append_text(self->text_renderer, content->answer[i], pos, size, DIALOG_TEXT_SELECTED_COLOR);
+      }
+      else {
+        text_renderer_append_text(self->text_renderer, content->answer[i], pos, size, DIALOG_TEXT_COLOR);
+      }
+    }
   }
   else {
     DialogText *content = curr->dialog;
-    /* dialog_render_text_animation(content->text, DIALOG_TEXT_SIZE, pos, DIALOG_TEXT_COLOR); */
     text_renderer_append_text(self->text_renderer, content->text, pos, size, DIALOG_TEXT_COLOR);
+  }
+}
+
+void _scene_menu_render(Scene *self) {
+  vec3s cam_pos = { self->camera->position.x, self->camera->position.y, 0.0f};
+
+  const u8 FRAME_SIZE = 100;
+
+  switch (self->menu_state) {
+    case MENU_MAIN:
+      {
+        quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - FRAME_SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f},  (vec2s){FRAME_SIZE,FRAME_SIZE}, DIALOG_FRAME_COLOR);
+
+        vec4s man_page_color = (game_state_check(GAME_STATE_GET_MAN_PAGE)) ? DIALOG_TEXT_COLOR : (vec4s){0.5,0.5,0.5,1};
+        vec4s quest_color = WHITE;
+        vec4s exit_color  = WHITE;
+        switch (self->selected) {
+          case MENU_CHOICE_QUEST:
+            {
+              quest_color = LIGHT_BLUE;   
+              break;
+            }
+          case MENU_CHOICE_MAN_PAGE:
+            {
+              man_page_color = LIGHT_BLUE;
+              break;
+            }
+          case MENU_CHOICE_EXIT:
+            {
+              exit_color = LIGHT_BLUE;   
+              break;
+            }
+        }
+        text_renderer_append_text(self->text_renderer, "Quest",    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (5*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 60}, 10, quest_color);
+        text_renderer_append_text(self->text_renderer, "Man Page", (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (8*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 40}, 10, man_page_color);
+        text_renderer_append_text(self->text_renderer, "Exit",     (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (4*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 20}, 10, exit_color);
+        break;
+      }
+    case MENU_QUEST:
+      {
+        quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - FRAME_SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f},  (vec2s){FRAME_SIZE,FRAME_SIZE}, DIALOG_FRAME_COLOR);
+        text_renderer_append_text(self->text_renderer, "Quest",    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (5*10*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 70}, 20, WHITE);
+
+        // SUGGEST: May get the current quest from game module
+        switch (game_get_act()) {
+          case GAME_ACT1:
+            {
+              if (game_state_check(ACT1_ROXY_TALKED)) {
+                text_renderer_append_text(self->text_renderer, "Go to Yellow house", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                text_renderer_append_text(self->text_renderer, "(East side of the village)", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+              }
+              else {
+                text_renderer_append_text(self->text_renderer, "Investigate around", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+              }
+              break;
+            }
+          case GAME_ACT2:
+            {
+              text_renderer_append_text(self->text_renderer, "Find Information about", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+              text_renderer_append_text(self->text_renderer, "grandpa around village", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+              break;
+            }
+          case GAME_ACT3:
+            {
+              text_renderer_append_text(self->text_renderer, "Go to Tom at Library", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (20*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+              break;
+            }
+          case GAME_ACT4:
+            {
+              if (game_state_check(ACT4_TUNNEL_KEY)) {
+                text_renderer_append_text(self->text_renderer, "Go through the tunnel", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (21*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+              }
+              else if (game_state_check(ACT4_FISH_GET)) {
+                text_renderer_append_text(self->text_renderer, "Give the fish to Village chief", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (30*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+              }
+              else if (game_state_check(ACT4_VC_QUEST)) {
+                text_renderer_append_text(self->text_renderer, "Get the fish from Parmy", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (23*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                text_renderer_append_text(self->text_renderer, "(Fish Shop)", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (11*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+              }
+              else {
+                text_renderer_append_text(self->text_renderer, "Go to Village Chief Home", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (24*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                text_renderer_append_text(self->text_renderer, "(Northeast of the village)", 
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+              }
+              break;
+            }
+        }
+        break;
+      }
+    case MENU_MAN_PAGE:
+      {
+        quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - FRAME_SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f},  (vec2s){FRAME_SIZE,FRAME_SIZE}, DIALOG_FRAME_COLOR);
+        text_renderer_append_text(self->text_renderer, "Man Page", (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (8*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 60}, 10, WHITE);
+        break;
+      }
   }
 }
 
@@ -229,11 +329,13 @@ Scene* scene_init(void) {
   scene->fade_state        = FADE_NONE;
   scene->fading            = false;
   scene->faded             = false;
+  scene->on_menu           = false;
+  scene->menu_state        = MENU_MAIN;
   scene->quad_renderer     = quad_renderer_init();
   scene->text_renderer     = text_renderer_init(global.get_char_coord);
   scene->dialog            = NULL;
   scene->on_dialog         = false;
-  scene->selected_answer   = 0;
+  scene->selected          = 0;
   scene->camera            = camera_init((vec2s){0,0});
   scene->chunk_id          = 99;
   scene->chunk_dialogs     = NULL;
@@ -322,7 +424,7 @@ void scene_render(Scene *self) {
   switch (self->scene_state) {
     case SCENE_MENU:
       {
-        text_renderer_append_text(self->text_renderer, "LEGENDARY OF C" ,            (vec3s){PROJECTION_WIDTH*0.5 - (14*15*0.5), 100}, 30, BLUE);
+        text_renderer_append_text(self->text_renderer, "LEGENDARY OF C" ,            (vec3s){PROJECTION_WIDTH*0.5 - (14*15*0.5), 100}, 30, LIGHT_BLUE);
         text_renderer_append_text(self->text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
       }
       break;
@@ -336,13 +438,16 @@ void scene_render(Scene *self) {
       if (self->on_dialog && !self->faded) {
         _scene_dialog_render(self);
       }
+      else if (self->on_menu) {
+        _scene_menu_render(self);
+      }
       break;
     case SCENE_ENDGAME:
       {
         vec2s cam_pos = self->camera->position;
-        text_renderer_append_text(self->text_renderer, "Congreatulation!" ,             (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (16*7.5*0.5),  cam_pos.y + 120}, 15, YELLOW);
-        text_renderer_append_text(self->text_renderer, "You've cleared the game." ,     (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (24*7.5*0.5),  cam_pos.y + 100}, 15, YELLOW);
-        text_renderer_append_text(self->text_renderer, "Press SPACE to exit the game" , (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (28*3.5*0.5), cam_pos.y + 50},  7, WHITE);
+        text_renderer_append_text(self->text_renderer, "Congreatulation!" ,             (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (16*7.5*0.5), cam_pos.y + 120}, 15, YELLOW);
+        text_renderer_append_text(self->text_renderer, "You've cleared the game." ,     (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (24*7.5*0.5), cam_pos.y + 100}, 15, YELLOW);
+        text_renderer_append_text(self->text_renderer, "Press SPACE to exit the game" , (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (28*3.5*0.5), cam_pos.y +  50},  7, WHITE);
         break;
       }
     default:
@@ -351,7 +456,7 @@ void scene_render(Scene *self) {
 
   quad_renderer_append_quad(self->quad_renderer, (vec3s){global.scene->camera->position.x,global.scene->camera->position.y,0.0f}, (vec2s){WIDTH, HEIGHT}, (vec4s){0,0,0, self->fade_alpha});
 
-  if (self->dialog != NULL) {
+  if (self->dialog != NULL || self->on_menu) {
     quad_renderer_render(self->quad_renderer);
     text_renderer_render(self->text_renderer);
   }
@@ -430,7 +535,7 @@ void scene_dialog_attach(Scene *self, Dialog *dialog, char *tag) {
 
 void scene_dialog_next(Scene *self) {
   self->dialog = self->dialog->next;
-  self->selected_answer = 0;
+  self->selected = 0;
 
   if (!self->dialog)  {
     if (self->dialog_tag) {

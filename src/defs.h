@@ -21,14 +21,15 @@
 #define PLAYER_SIZE   (vec2s){16,22}
 #define PLAYER_HITBOX (vec2s){16,8}
 
-#define WHITE  (vec4s){1,1,1,1}
-#define BLACK  (vec4s){0,0,0,1}
-#define RED    (vec4s){1,0,0,1}
-#define GREEN  (vec4s){0,1,0,1}
-#define BLUE   (vec4s){0,0,1,1}
-#define ORANGE (vec4s){1,0.6,0.3,1}
-#define CYAN   (vec4s){0,1,1,1}
-#define YELLOW (vec4s){1,1,0.4,1}
+#define WHITE      (vec4s){1,1,1,1}
+#define BLACK      (vec4s){0,0,0,1}
+#define RED        (vec4s){1,0,0,1}
+#define GREEN      (vec4s){0,1,0,1}
+#define BLUE       (vec4s){0,0,1,1}
+#define ORANGE     (vec4s){1,0.6,0.3,1}
+#define CYAN       (vec4s){0,1,1,1}
+#define YELLOW     (vec4s){1,1,0.4,1}
+#define LIGHT_BLUE (vec4s){0,0.5,1,1}
 
 #define SPAWN_COORD (vec2s){5,3}
 
@@ -58,7 +59,7 @@
 #define CHUNK_INSIDE_OG_HOME_PATH    "res/data/chunks/chunk_inside_og_home"
 #define CHUNK_INSIDE_VC_HOME_PATH    "res/data/chunks/chunk_inside_vc_home"
 
-#define INPUT_DELAY 0.25f
+#define INPUT_DELAY 0.18f
 
 #define TAG_TUNNEL     'a'
 #define TAG_LIBRARY    'b'

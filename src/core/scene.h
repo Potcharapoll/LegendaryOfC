@@ -19,32 +19,43 @@ enum SceneState {
     SCENE_ENDGAME,
 };
 
-typedef struct Scene {
-    enum SceneState scene_state;
-    Camera         *camera;
+typedef enum {
+  MENU_MAIN,
+  MENU_QUEST,
+  MENU_MAN_PAGE
+} Menu;
 
-    Chunks      chunk_id; 
+typedef enum {
+  MENU_CHOICE_QUEST,
+  MENU_CHOICE_MAN_PAGE,
+  MENU_CHOICE_EXIT 
+} MenuChoice;
+
+typedef struct Scene {
+    QuadRenderer *quad_renderer;
+    TextRenderer *text_renderer;
+
+    Camera *camera;
     array_list *chunk_colliders;
     array_list *chunk_teleporters;
     array_list *chunk_dialogs;
 
+    enum SceneState scene_state;
     enum FadeState fade_state;
-    f32            fade_alpha;
-    b8             faded; 
-    b8             fading;
+    Chunks chunk_id; 
+    Menu menu_state;
 
     // !!temp
     DialogNode *dialog;
-    char       *dialog_tag;
-    b8          on_dialog;
-    u8          selected_answer;
+    char *dialog_tag;
+    f32 fade_alpha;
 
-    // for render text, dialog, and other things in the corresponding scene
-    //
-    // So we could have quad renderer to render everything, but it's fine 
-    // to have quad renderer and text renderer separately I think?
-    QuadRenderer *quad_renderer;
-    TextRenderer *text_renderer;
+    u8 selected;
+
+    b8 faded; 
+    b8 fading;
+    b8 on_menu;
+    b8 on_dialog;
 }Scene;
 
 Scene* scene_init(void);

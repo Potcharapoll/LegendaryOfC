@@ -1,6 +1,6 @@
 name: "YOU"
 type: "text"
-text: "Hello. Could you please contact the village chief?|I was told that you can contact the village chief, so I would appreciate it."
+text: "Hi! I was told that you know the village chief and can contact him,|so I would appreciate it if you contact him for me."
 name: "Tom"
 type: "text"
-text: "If you can answer all my questions correctly, I will contact the village chief."
+text: "If you can answer all my questions correctly, I will contact the village chief for you."

@@ -4,21 +4,22 @@
 #include "core/scene.h"
 #include "core/game.h"
 
+#include "gfx/window.h"
 #include "global.h"
 #include "defs.h"
 
 #include <string.h>
 #include <assert.h>
 
-// Sounds system            -- PLANNED  --
-//
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
 //
 // TODO: Scene text animation (Optional)
-// TODO: Allocator (Optional)
-// TODO: Create LegendaryOfC man page
+// TODO: Allocator            (Optional)
+// TODO: Sound System
+// TODO: Create LegendaryOfC man page (DOING)
 //
-// BUG: Black screen sometime when teleport throught the map (Sometime)
+// BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
+// BUG: Cannot move after teleport? (sometime) [Linux]
 
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -109,7 +110,6 @@ static b8 _teleporter_check(char tag) {
 }
 
 static void _dialog_callback(Static_Body *body, Body *other) {
-
   if (global.scene->chunk_dialogs == NULL) {
     LOG_ERROR("Cannot run _dialog_callback due to chunk_dialogs is NULL");
     return;
@@ -229,16 +229,28 @@ static void input_handling(Body *player_body) {
         }
         break;
       case SCENE_INGAME:
-        if (global.scene->fade_state == FADE_NONE && !global.scene->on_dialog) {
+        if (global.scene->fade_state == FADE_NONE && !global.scene->on_dialog && !global.scene->on_menu) {
           player_input();
 
-          if (window_get_key(global.window, GLFW_KEY_E)) {
+          if (window_get_key(global.window, GLFW_KEY_ESCAPE)) {
+            player_body->velocity = glms_vec2_zero();
+            player_set_animation(IDLE, player_get_direction());
+
+            global.scene->selected = MENU_CHOICE_QUEST;
+            global.scene->on_menu  = true;
+
+            LOG_DEBUG("Q Pressed");
+            global.input_delay = 0.0f;
+          }
+          else if (window_get_key(global.window, GLFW_KEY_E)) {
             if (dialog_packet) {
               player_body->velocity = glms_vec2_zero();
               player_set_animation(IDLE, player_get_direction());
 
               game_attach_dialog(dialog_packet);
             }
+
+            LOG_DEBUG("E Pressed");
             global.input_delay = 0.0f;
           }
 
@@ -287,6 +299,42 @@ static void input_handling(Body *player_body) {
 #endif
         } else if (global.scene->on_dialog) {
           dialog_input();
+        }
+        else if (global.scene->on_menu) {
+          if (window_get_key(global.window, GLFW_KEY_ESCAPE)) {
+            global.scene->menu_state = MENU_MAIN;
+            global.scene->on_menu    = false;
+            global.scene->selected   = 0;
+
+            global.input_delay = 0.0f;
+          }
+
+          if (window_get_key(global.window, GLFW_KEY_SPACE)) {
+            switch (global.scene->selected) {
+              case MENU_CHOICE_QUEST:
+                global.scene->menu_state = MENU_QUEST;
+                break;
+              case MENU_CHOICE_MAN_PAGE:
+                global.scene->menu_state = MENU_MAN_PAGE;
+                break;
+              case MENU_CHOICE_EXIT:
+                window_trigger_close();
+                break;
+            }
+          }
+          
+          if (window_get_key(global.window, GLFW_KEY_S)) {
+            global.scene->selected = (global.scene->selected < MENU_CHOICE_EXIT) ? global.scene->selected + 1 : global.scene->selected;
+            if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected++;
+
+            global.input_delay = 0.0f;
+          }
+          else if (window_get_key(global.window, GLFW_KEY_W)) {
+            global.scene->selected = (global.scene->selected > MENU_CHOICE_QUEST) ? global.scene->selected - 1 : global.scene->selected;
+            if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected--;
+            global.input_delay = 0.0f;
+          }
+
         }
         break;
       case SCENE_ENDGAME:

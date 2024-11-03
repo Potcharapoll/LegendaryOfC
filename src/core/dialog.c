@@ -260,16 +260,12 @@ void dialog_delete(Dialog *dialog) {
     switch (tmp->type) {
       case DIALOG_TYPE_TEXT:
         {
-          LOG_WARN("Delete Text");
-
           DialogText *text = tmp->dialog;
           FREE(text->text);
           break;
         }
       case DIALOG_TYPE_QUESTION: 
         {
-          LOG_WARN("Delete Question");
-
           DialogQuestion *question = tmp->dialog;
           FREE(question->question);
           FREE(question->answer[0]);
@@ -435,8 +431,8 @@ void dialog_input(void) {
         strncpy(nex->name, curr->name, sizeof(nex->name));
 
 
-        if (global.scene->selected_answer != qt->correct_idx) {
-          LOG_DEBUG("Dialog: Select Wrong answer (%d != %d)", global.scene->selected_answer, qt->correct_idx);
+        if (global.scene->selected != qt->correct_idx) {
+          LOG_DEBUG("Dialog: Select Wrong answer (%d != %d)", global.scene->selected, qt->correct_idx);
 
           ans->dialog = _get_new_dialog_text(qt->wrong_text);
           scene_dialog_set(global.scene, ans);
@@ -471,15 +467,15 @@ void dialog_input(void) {
       }
 
       if (window_get_key(global.window, GLFW_KEY_S)) {
-        global.scene->selected_answer = (global.scene->selected_answer < 3) ? global.scene->selected_answer + 1 : global.scene->selected_answer;
+        global.scene->selected = (global.scene->selected < 3) ? global.scene->selected + 1 : global.scene->selected;
 
-        LOG_DEBUG("Dialog: Select %d", global.scene->selected_answer);
+        LOG_DEBUG("Dialog: Select %d", global.scene->selected);
         global.input_delay = 0.0f;
       }
       else if (window_get_key(global.window, GLFW_KEY_W)) {
-        global.scene->selected_answer = (global.scene->selected_answer > 0) ? global.scene->selected_answer - 1 : global.scene->selected_answer;
+        global.scene->selected = (global.scene->selected > 0) ? global.scene->selected - 1 : global.scene->selected;
 
-          LOG_DEBUG("Dialog: Select %d", global.scene->selected_answer);
+          LOG_DEBUG("Dialog: Select %d", global.scene->selected);
           global.input_delay = 0.0f;
       }
     }

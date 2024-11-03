@@ -1,10 +1,11 @@
 #ifndef DIALOG_H
 #define DIALOG_H
-#define DIALOG_FRAME_COLOR (vec4s){0,0,0,0.3}
-#define DIALOG_TEXT_COLOR  (vec4s){1,1,1,1}
-#define DIALOG_FRAME_SIZE  (vec2s){PROJECTION_WIDTH, 75.0f}
-#define DIALOG_SELECT_SIZE (vec2s){1.5,1.5}
-#define DIALOG_TEXT_SIZE   (vec2s){8,8}
+#define DIALOG_FRAME_COLOR          (vec4s){0,0,0,0.6}
+#define DIALOG_TEXT_COLOR           (vec4s){1,1,1,1}
+#define DIALOG_TEXT_SELECTED_COLOR  (vec4s){0,0.5,1,1}
+#define DIALOG_FRAME_SIZE           (vec2s){PROJECTION_WIDTH, 75.0f}
+#define DIALOG_SELECT_SIZE          (vec2s){1.5,1.5}
+#define DIALOG_TEXT_SIZE            (vec2s){8,8}
 #include "../util/types.h"
 
 typedef enum {

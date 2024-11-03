@@ -60,8 +60,6 @@ static int _get_act_question_number(enum GameAct act) {
   srand(time(NULL));
 
   int ran = (rand() % total) + 1;
-
-  LOG_INFO("ran: %i", ran);
   while (true) {
     if ((question_flag >> ran & 1) == 1) {
       ran = (rand() % total) + 1;
@@ -150,11 +148,14 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_roxy",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_roxy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_emma",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4_tom",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_tom"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4_nathan", dialog_load_from_file("res/data/dialog/act4/dialog_act4_nathan"));
+        
         hashtable_Dialog_insert(test_dialog, "dialog_act4a_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4a_john"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4b_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4b_john"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4c_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4c_john"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4d_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4d_john"));
+
         hashtable_Dialog_insert(test_dialog, "dialog_act4a_parmy", dialog_load_from_file("res/data/dialog/act4/dialog_act4a_parmy"));
         hashtable_Dialog_insert(test_dialog, "dialog_act4c_parmy", dialog_load_from_file("res/data/dialog/act4/dialog_act4c_parmy"));
 
@@ -190,17 +191,17 @@ void game_setup_act(enum GameAct act) {
     case GAME_ACT2:
       lock  = GAME_STATE_LOCK_TUNNEL;
       chr   = (GAME_STATE_SHOW_ROXY | GAME_STATE_SHOW_EMMA | GAME_STATE_SHOW_PARMY | GAME_STATE_SHOW_NATHAN);
-      state = GAME_STATE_ACT2;
+      state = GAME_STATE_ACT2 | GAME_STATE_GET_MAN_PAGE;
       break;
     case GAME_ACT3:
       lock  = GAME_STATE_LOCK_TUNNEL;
       chr   = (GAME_STATE_SHOW_ROXY | GAME_STATE_SHOW_EMMA | GAME_STATE_SHOW_PARMY | GAME_STATE_SHOW_NATHAN | GAME_STATE_SHOW_TOM);
-      state = GAME_STATE_ACT3;
+      state = GAME_STATE_ACT3 | GAME_STATE_GET_MAN_PAGE;
       break;
     case GAME_ACT4:
       lock  = GAME_STATE_LOCK_TUNNEL;
       chr   = (GAME_STATE_SHOW_ROXY | GAME_STATE_SHOW_EMMA | GAME_STATE_SHOW_PARMY | GAME_STATE_SHOW_NATHAN | GAME_STATE_SHOW_TOM | GAME_STATE_SHOW_VC | GAME_STATE_SHOW_JOEY);
-      state = GAME_STATE_ACT4;
+      state = GAME_STATE_ACT4 | GAME_STATE_GET_MAN_PAGE;
       break;
   }
 
@@ -217,6 +218,7 @@ void game_update_dialog_state(char *tag) {
   if (game_state_check(GAME_STATE_ACT1)) {
     if (strcmp("dialog_act1a_roxy", tag) == 0) {
       game_state_on(ACT1_ROXY_TALKED | ACT1_OG_HOME_KEY);
+      game_state_on(GAME_STATE_GET_MAN_PAGE);
 
       game_state_off(GAME_STATE_LOCK_OG_HOME);
 
@@ -265,7 +267,8 @@ void game_update_dialog_state(char *tag) {
       LOG_DEBUG("Game: VC Quest");
     }
     else if (strcmp("dialog_act4c_john", tag) == 0) {
-      game_state_on(ACT4_FINISH_QUEST);
+      game_state_on(ACT4_TUNNEL_KEY);
+
       game_state_off(GAME_STATE_LOCK_TUNNEL);
 
       LOG_DEBUG("Game: Finish Quest and Unlock Tunnel");
@@ -410,7 +413,7 @@ void game_get_dialog_tag(char buf[static 60], DialogPacket *packet) {
         }
       }
       else if (strcmp(packet->dialog_tag, "john") == 0) {
-        if (game_state_check(ACT4_FINISH_QUEST)) {
+        if (game_state_check(ACT4_TUNNEL_KEY)) {
           snprintf(buf, 60, "dialog_act4d_john");
         }
         else if (game_state_check(ACT4_FISH_GET)){
@@ -558,7 +561,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       LOG_DEBUG("Game: Change to CHUNK_TOP");
       break;
     case CHUNK_VILLAGE_TOP_END  :
-      timer_start(global.timer, 1.0f);
+      timer_start(global.timer, 2.0f);
       LOG_DEBUG("Game: Change to CHUNK_TOP_END");
       break;
     case CHUNK_VILLAGE_TOP_LEFT :
@@ -628,10 +631,6 @@ void game_attach_dialog(DialogPacket *packet) {
   }
 
   scene_dialog_attach(global.scene, item->value, buf);
-}
-
-void game_toggle_man_page(void) {
-
 }
 
 DialogText* game_get_act_dialog(enum GameAct act) {
