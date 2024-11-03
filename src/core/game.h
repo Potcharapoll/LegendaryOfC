@@ -76,9 +76,6 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord);
 // call everytime at the end of dialog to update game state flag 
 void game_update_dialog_state(char *tag);
 
-// unlock after talking to Roxy in Act 1
-void game_toggle_man_page(void);
-
 // toggle game state flag
 void game_state_toggle(u32 flag);
 void game_state_on(u32 flag);

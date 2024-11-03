@@ -1,10 +1,12 @@
 #include "engine/logger.h"
+
 #include "core/asset_manager.h"
 #include "core/prefab.h"
 #include "core/scene.h"
 #include "core/game.h"
 
 #include "gfx/window.h"
+
 #include "global.h"
 #include "defs.h"
 
@@ -16,10 +18,10 @@
 // TODO: Scene text animation (Optional)
 // TODO: Allocator            (Optional)
 // TODO: Sound System
-// TODO: Create LegendaryOfC man page (DOING)
+// (bool is missing in Man Page)
 //
 // BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
-// BUG: Cannot move after teleport? (sometime) [Linux]
+// BUG: Cannot move after teleport? (sometime)                          [Linux]
 
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -301,6 +303,7 @@ static void input_handling(Body *player_body) {
           dialog_input();
         }
         else if (global.scene->on_menu) {
+
           if (window_get_key(global.window, GLFW_KEY_ESCAPE)) {
             global.scene->menu_state = MENU_MAIN;
             global.scene->on_menu    = false;
@@ -308,7 +311,6 @@ static void input_handling(Body *player_body) {
 
             global.input_delay = 0.0f;
           }
-
           if (window_get_key(global.window, GLFW_KEY_SPACE)) {
             switch (global.scene->selected) {
               case MENU_CHOICE_QUEST:
@@ -322,19 +324,38 @@ static void input_handling(Body *player_body) {
                 break;
             }
           }
-          
-          if (window_get_key(global.window, GLFW_KEY_S)) {
-            global.scene->selected = (global.scene->selected < MENU_CHOICE_EXIT) ? global.scene->selected + 1 : global.scene->selected;
-            if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected++;
 
-            global.input_delay = 0.0f;
-          }
-          else if (window_get_key(global.window, GLFW_KEY_W)) {
-            global.scene->selected = (global.scene->selected > MENU_CHOICE_QUEST) ? global.scene->selected - 1 : global.scene->selected;
-            if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected--;
-            global.input_delay = 0.0f;
-          }
+          switch (global.scene->menu_state) {
+            case MENU_QUEST:
+              break;
+            case MENU_MAIN:
+              {
+                if (window_get_key(global.window, GLFW_KEY_S)) {
+                  global.scene->selected = (global.scene->selected < MENU_CHOICE_EXIT) ? global.scene->selected + 1 : global.scene->selected;
+                  if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected++;
 
+                  global.input_delay = 0.0f;
+                }
+                else if (window_get_key(global.window, GLFW_KEY_W)) {
+                  global.scene->selected = (global.scene->selected > MENU_CHOICE_QUEST) ? global.scene->selected - 1 : global.scene->selected;
+                  if (global.scene->selected == MENU_CHOICE_MAN_PAGE && !game_state_check(GAME_STATE_GET_MAN_PAGE)) global.scene->selected--;
+                  global.input_delay = 0.0f;
+                }
+                break;
+              }
+            case MENU_MAN_PAGE:
+              {
+                if (window_get_key(global.window, GLFW_KEY_D)) {
+                  global.scene->man_page = (global.scene->man_page < MAN_PAGE6) ? global.scene->man_page + 1 : global.scene->man_page;
+                  global.input_delay = 0.0f;
+                }
+                else if (window_get_key(global.window, GLFW_KEY_A)) {
+                  global.scene->man_page = (global.scene->man_page > MAN_PAGE1) ? global.scene->man_page - 1 : global.scene->man_page;
+                  global.input_delay = 0.0f;
+                }
+                break;
+              }
+          }
         }
         break;
       case SCENE_ENDGAME:

@@ -22,15 +22,6 @@ void debug_menu(void) {
     igText("SceneState: %s", (global.scene->scene_state == SCENE_MENU) ? "MENU" : (global.scene->scene_state == SCENE_INTRO) ? "INTRO" : (global.scene->scene_state == SCENE_INGAME) ? "INGAME" : "ENDGAME");
     igSpacing();
 
-    if (igButton("Reset Chunk", (ImVec2){0,0})) {
-        global.reset_chunk = true;
-    }
-    igSameLine(0.0f, 10.0f);
-    if (igButton("Reload Chunk", (ImVec2){0,0})) {
-        global.reload_chunk = true;
-    }
-    igSpacing();
-
     igText("Fade");
     igText("State : %s", (global.scene->fade_state == FADE_NONE) ? "FADE_NONE" : (global.scene->fade_state == FADE_IN) ? "FADE_IN" : "FADE_OUT");
     igText("Faded : %s", (global.scene->faded) ? "True" : "False");

@@ -31,6 +31,15 @@ typedef enum {
   MENU_CHOICE_EXIT 
 } MenuChoice;
 
+typedef enum {
+  MAN_PAGE1,
+  MAN_PAGE2,
+  MAN_PAGE3,
+  MAN_PAGE4,
+  MAN_PAGE5,
+  MAN_PAGE6,
+} MAN_PAGE;
+
 typedef struct Scene {
     QuadRenderer *quad_renderer;
     TextRenderer *text_renderer;
@@ -51,6 +60,7 @@ typedef struct Scene {
     f32 fade_alpha;
 
     u8 selected;
+    u8 man_page;
 
     b8 faded; 
     b8 fading;

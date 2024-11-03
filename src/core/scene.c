@@ -257,51 +257,51 @@ void _scene_menu_render(Scene *self) {
             {
               if (game_state_check(ACT1_ROXY_TALKED)) {
                 text_renderer_append_text(self->text_renderer, "Go to Yellow house", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
                 text_renderer_append_text(self->text_renderer, "(East side of the village)", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, LIGHT_BLUE);
               }
               else {
                 text_renderer_append_text(self->text_renderer, "Investigate around", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (18*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
               }
               break;
             }
           case GAME_ACT2:
             {
               text_renderer_append_text(self->text_renderer, "Find Information about", 
-                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
               text_renderer_append_text(self->text_renderer, "grandpa around village", 
-                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (22*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, LIGHT_BLUE);
               break;
             }
           case GAME_ACT3:
             {
               text_renderer_append_text(self->text_renderer, "Go to Tom at Library", 
-                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (20*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (20*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
               break;
             }
           case GAME_ACT4:
             {
               if (game_state_check(ACT4_TUNNEL_KEY)) {
                 text_renderer_append_text(self->text_renderer, "Go through the tunnel", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (21*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (21*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
               }
               else if (game_state_check(ACT4_FISH_GET)) {
                 text_renderer_append_text(self->text_renderer, "Give the fish to Village chief", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (30*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (30*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
               }
               else if (game_state_check(ACT4_VC_QUEST)) {
                 text_renderer_append_text(self->text_renderer, "Get the fish from Parmy", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (23*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (23*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
                 text_renderer_append_text(self->text_renderer, "(Fish Shop)", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (11*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (11*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, LIGHT_BLUE);
               }
               else {
                 text_renderer_append_text(self->text_renderer, "Go to Village Chief Home", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (24*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (24*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 45}, 6, LIGHT_BLUE);
                 text_renderer_append_text(self->text_renderer, "(Northeast of the village)", 
-                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, WHITE);
+                    (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (26*3*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 39}, 6, LIGHT_BLUE);
               }
               break;
             }
@@ -310,8 +310,366 @@ void _scene_menu_render(Scene *self) {
       }
     case MENU_MAN_PAGE:
       {
-        quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - FRAME_SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f},  (vec2s){FRAME_SIZE,FRAME_SIZE}, DIALOG_FRAME_COLOR);
-        text_renderer_append_text(self->text_renderer, "Man Page", (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (8*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - FRAME_SIZE/2.0f + 60}, 10, WHITE);
+        // SUGGEST: Change from manual to load from file
+
+        const u8 SIZE = 200;
+
+        quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f},  (vec2s){SIZE,SIZE}, DIALOG_FRAME_COLOR);
+        text_renderer_append_text(self->text_renderer, "Man Page", (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (8*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 180}, 10, WHITE);
+
+        char page[5];
+        snprintf(page, sizeof(page), "%d/%d", self->man_page+1, MAN_PAGE6+1);
+        text_renderer_append_text(self->text_renderer, page, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 + 80, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 190}, 8, WHITE);
+
+
+        switch (self->man_page) {
+          case MAN_PAGE1:
+            {
+              text_renderer_append_text(self->text_renderer, "Data Type", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 8, (vec4s){0.6,0.6,0.6,1.0});
+
+              text_renderer_append_text(self->text_renderer, "int: Represents integers (whole numbers). The size typically is 4 bytes,|but this can vary depending on the system.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 152}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "int", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 152}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "float: Represents single-precision floating-point numbers.|It usually takes up to 4 bytes.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 137}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "float", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 137}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "double: Represents double-precision floating-point numbers. It usually|takes up 8 bytes and provides more precision than float.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 122}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "double", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 122}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "char: Represents a single character. It usually occupies 1 byte|and can hold ASCII values.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 107}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "char", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 107}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "short: Typically a smaller version of int, usually 2 bytes.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "short", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "long: Typically a larger version of int, usually 4 or 8 bytes,|depending on the system.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 82}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "long", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 82}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "unsigned: Used with integer types to represent only non-negative values.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 67}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "unsigned", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 67}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "signed: The default for integer types; explicitly indicates|a signed type.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 57}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "signed", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 57}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "void: Represents the absence of a value. Used in functions that do not|return a value or pointers that do not have a specific type.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 42}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "void", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 42}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "Structures (struct): A user-defined type that groups|different types together.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 27}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "Structures (struct)", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 27}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "Unions (union): Similar to structures, but can hold only one of its|non-static data members at a time, saving memory.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "Unions (union)", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, LIGHT_BLUE);
+              break;
+            }
+
+          case MAN_PAGE2:
+            {
+              text_renderer_append_text(self->text_renderer, "Enumerations (enum): A user-defined type consisting of a set of|named integer constants.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "Enumerations (enum)", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, LIGHT_BLUE);
+
+
+
+              text_renderer_append_text(self->text_renderer, "Keywords", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 135}, 8, (vec4s){0.6,0.6,0.6,1.0});
+
+              text_renderer_append_text(self->text_renderer, "auto: Indicates automatic storage duration. It is rarely used since|local variables are automatically auto by default.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 127}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "auto", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 127}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "break: Exits a loop or switch statement prematurely.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 112}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "break", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 112}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "case: Defines a branch in a switch statement.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 102}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "case", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 102}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "const: Declares a variable whose value cannot be changed|after initialization.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "const", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "continue: Skips the current iteration of a loop and proceeds to the|next iteration.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 77}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "continue", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 77}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "default: Specifies the default case in a switch statement if no cases match.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 62}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "default", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 62}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "do: Used in a do-while loop to execute a block of code at least once.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 52}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "do", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 52}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "else: Specifies the block of code to execute if the condition in an if|statement is false.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 42}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "else", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 42}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "extern: Declares a variable or function that is defined in another|file or module.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 27}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "extern", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 27}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "for: Starts a for loop, which is used for iterating a set number of times.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "for", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, LIGHT_BLUE);
+              break;
+            }
+
+          case MAN_PAGE3:
+            {
+              text_renderer_append_text(self->text_renderer, "goto: Transfers control to a labeled statement. It is generally|discouraged due to potential confusion in code flow.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "goto", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "if: Starts a conditional statement to execute code based on whether a|condition is true.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 145}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "if", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 145}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "register: Suggests to the compiler that a variable should be stored in|a CPU register for faster access.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 130}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "register", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 130}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "return: Exits a function and optionally returns a value.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 115}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "return", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 115}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "signed: Specifies that a variable can hold both negative and positive|values.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 105}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "signed", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 105}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "sizeof: Returns the size (in bytes) of a data type or variable.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 90}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "sizeof", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 90}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "static: Declares a variable with static storage duration, retaining its|value between function calls.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 80}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 80}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "switch: Starts a switch statement for multi-way branching.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 65}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "switch", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 65}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "typedef: Creates a new name (alias) for an existing data type.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 55}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "typedef", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 55}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "void: Indicates no value or type; used for functions that do not|return a value.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 45}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "void", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 45}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "volatile: Indicates that a variable may change unexpectedly|(used in multithreading or hardware interactions).", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 30}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "volatile", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 30}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "while: Starts a while loop, which executes a block of code as long as|a condition is true.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 15}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "while", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 15}, 5, LIGHT_BLUE);
+              break;
+            }
+
+          case MAN_PAGE4:
+            {
+              text_renderer_append_text(self->text_renderer, "Syntax", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 8, (vec4s){0.6,0.6,0.6,1.0});
+
+              text_renderer_append_text(self->text_renderer, "Variable Declaration", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 150}, 5, LIGHT_BLUE);
+              text_renderer_append_text(self->text_renderer, "int age;|float height = 5.9f;|float x = 1.0, y = 2.0;", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 142}, 5, WHITE);
+
+
+              text_renderer_append_text(self->text_renderer, "Function Declaration (Prototype)", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 120}, 5, LIGHT_BLUE);
+              text_renderer_append_text(self->text_renderer, "returnType functionName(parameterType1 param1, parameterType2 param2);", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 112}, 5, WHITE);
+
+
+              text_renderer_append_text(self->text_renderer, "If-Else Statement", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 100}, 5, LIGHT_BLUE);
+              text_renderer_append_text(self->text_renderer, "if (condition) { // Code to execute if condition is true }|else { // Code to execute if condition is false }",
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "if (condition1) { // Code for condition1 }|else if (condition2) { // Code for condition2 }|else { // Code if none of the above conditions are true } ",
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 72}, 5, WHITE);
+
+
+              text_renderer_append_text(self->text_renderer, "While Loop", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 46}, 5, LIGHT_BLUE);
+              text_renderer_append_text(self->text_renderer, "while (condition) { // Code to execute repeatedly }", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 38}, 5, WHITE);
+
+
+              break;
+            }
+
+          case MAN_PAGE5:
+            {
+              text_renderer_append_text(self->text_renderer, "Switch Case", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, LIGHT_BLUE);
+              text_renderer_append_text(self->text_renderer, "switch (expression) {|case constant1: // Code to execute if expression equals constant1 break;|case constant2: // Code to execute if expression equals constant2 break;|default: // Code to execute if expression doesn't match any case break;|}", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 152}, 5, WHITE);
+
+
+              text_renderer_append_text(self->text_renderer, "Functions", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 110}, 8, (vec4s){0.6,0.6,0.6,1.0});
+
+              text_renderer_append_text(self->text_renderer, "printf: Outputs formatted text to the standard output.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 102}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "printf", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 102}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "sprintf: Similar to printf, but instead of printing to the console,|it writes formatted data to a string (buffer).", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "sprintf", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 92}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "snprintf: A safer version of sprintf, it limits the number of|characters written to the buffer to prevent buffer overflows.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 77}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "snprintf", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 77}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "scanf: Reads formatted input from the standard input.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 62}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "scanf", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 62}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "sscanf: Similar to scanf, but it reads formatted data from a|string instead of standard input.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 52}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "sscanf", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 52}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "gets: Reads a line from standard input into a string until a newline|or EOF is encountered.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 37}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "gets", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 37}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "getchar: Reads the next character from the standard input and returns it.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 22}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "getchar", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 22}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "puts: Outputs a string to the standard output followed by a newline|character.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "puts", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 12}, 5, LIGHT_BLUE);
+              break;
+            }
+
+          case MAN_PAGE6:
+            {
+              text_renderer_append_text(self->text_renderer, "putchar: Outputs a single character to the standard output.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "putchar", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 160}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "rand: Returns a pseudo-random integer in the range of 0 to RAND_MAX.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 150}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "rand", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 150}, 5, LIGHT_BLUE);
+
+              text_renderer_append_text(self->text_renderer, "srand: Seeds the random number generator used by rand.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 140}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "srand", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 140}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "abort: Causes the program to terminate abnormally. It does not return|a status code but can generate a core dump.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 130}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "abort", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 130}, 5, LIGHT_BLUE);
+
+
+              text_renderer_append_text(self->text_renderer, "exit: Terminates the program, optionally returning a status code to the|operating system.", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 115}, 5, WHITE);
+              text_renderer_append_text(self->text_renderer, "exit", 
+                  (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 115}, 5, LIGHT_BLUE);
+              break;
+            }
+        }
+
         break;
       }
   }
@@ -331,6 +689,7 @@ Scene* scene_init(void) {
   scene->faded             = false;
   scene->on_menu           = false;
   scene->menu_state        = MENU_MAIN;
+  scene->man_page          = 0;
   scene->quad_renderer     = quad_renderer_init();
   scene->text_renderer     = text_renderer_init(global.get_char_coord);
   scene->dialog            = NULL;
@@ -367,34 +726,6 @@ void scene_destroy(Scene *self) {
 }
 
 void scene_update(Scene *self, Body *player_body) {
-
-/* #ifdef DEBUG */ 
-/*     // relaod chunk from file */
-/*     if (global.reload_chunk) { */
-/*       pthread_mutex_lock(&global.lock); */
-/*       for (u32 i = 0; i < CHUNK_LAST; ++i) { */
-/*         chunk_destroy(&_chunks[i]); */
-/*       } */              
-/*       free(_chunks); */
-/*       _chunks = NULL; */
-
-/*       _scene_load_chunk(); */
-/*       _scene_setup_collider(self); */
-/*       pthread_mutex_unlock(&global.lock); */
-
-/*       global.reload_chunk = false; */
-/*     } */
-
-/*     // reset chunk */
-/*     if (global.reset_chunk) { */
-/*       pthread_mutex_lock(&global.lock); */
-/*       _scene_setup_collider(self); */
-/*       pthread_mutex_unlock(&global.lock); */
-
-/*       global.reset_chunk = false; */
-/*     } */
-/* #endif */
-
   _fade_update(self);
 
   if (self->scene_state == SCENE_INGAME) {
