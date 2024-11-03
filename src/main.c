@@ -30,8 +30,6 @@
 // TODO: Create LegendaryOfC man page
 //
 // BUG: Black screen sometime when teleport throught the map
-//
-// Fix: John Dialog text bug 
 
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;

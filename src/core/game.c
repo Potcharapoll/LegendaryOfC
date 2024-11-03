@@ -88,29 +88,27 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
       {
         hashtable_Dialog_insert(test_dialog, "dialog_start",      dialog_load_from_file("res/data/dialog/dialog_start"));
         hashtable_Dialog_insert(test_dialog, "dialog_locked",     dialog_load_from_file("res/data/dialog/dialog_locked"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1_emma",  dialog_load_from_file("res/data/dialog/dialog_act1_emma"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1_image", dialog_load_from_file("res/data/dialog/dialog_act1_image"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1a_roxy", dialog_load_from_file("res/data/dialog/dialog_act1a_roxy"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act1b_roxy", dialog_load_from_file("res/data/dialog/dialog_act1b_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1_emma",  dialog_load_from_file("res/data/dialog/act1/dialog_act1_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1_image", dialog_load_from_file("res/data/dialog/act1/dialog_act1_image"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1a_roxy", dialog_load_from_file("res/data/dialog/act1/dialog_act1a_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act1b_roxy", dialog_load_from_file("res/data/dialog/act1/dialog_act1b_roxy"));
         break;
       }
     case GAME_ACT2:
       {
-        hashtable_Dialog_insert(test_dialog, "dialog_act2_roxy",    dialog_load_from_file("res/data/dialog/dialog_act2_roxy"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act2b_emma",   dialog_load_from_file("res/data/dialog/dialog_act2b_emma"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act2b_parmy",  dialog_load_from_file("res/data/dialog/dialog_act2b_parmy"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act2b_nathan", dialog_load_from_file("res/data/dialog/dialog_act2b_nathan"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2_roxy",    dialog_load_from_file("res/data/dialog/act2/dialog_act2_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_emma",   dialog_load_from_file("res/data/dialog/act2/dialog_act2b_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_parmy",  dialog_load_from_file("res/data/dialog/act2/dialog_act2b_parmy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act2b_nathan", dialog_load_from_file("res/data/dialog/act2/dialog_act2b_nathan"));
 
 
         char npc[3][10]  = {"emma","parmy","nathan"};
         char name[3][10] = {"Emma", "Parmy", "Nathan"};
         Dialog *question = NULL;
 
-        char buf[40];
+        char buf[50];
         for (u8 i = 0; i < 3; ++i) {
-          snprintf(buf, sizeof(buf), "res/data/dialog/dialog_act2a_%s", npc[i]);
-          LOG_DEBUG("Insert %s", buf);
-
+          snprintf(buf, sizeof(buf), "res/data/dialog/act2/dialog_act2a_%s", npc[i]);
           question = dialog_load_from_file(buf);
 
           for (u8 j = 0; j < ACT2_QUESTION_COUNT; ++j) {
@@ -128,9 +126,12 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         player_set_direction(RIGHT);
         game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
 
-        hashtable_Dialog_insert(test_dialog, "dialog_act3_roxy", dialog_load_from_file("res/data/dialog/dialog_act3_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_roxy",   dialog_load_from_file("res/data/dialog/act3/dialog_act3_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_emma",   dialog_load_from_file("res/data/dialog/act3/dialog_act3_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_parmy",  dialog_load_from_file("res/data/dialog/act3/dialog_act3_parmy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act3_nathan", dialog_load_from_file("res/data/dialog/act3/dialog_act3_nathan"));
 
-        Dialog *dialog = dialog_load_from_file("res/data/dialog/dialog_act3_tom");
+        Dialog *dialog = dialog_load_from_file("res/data/dialog/act3/dialog_act3_tom"); 
 
         char buf[30];
         for (int j = 0; j < ACT3_QUESTION_COUNT; ++j) {
@@ -146,17 +147,17 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         player_set_direction(RIGHT);
         game_change_chunk(player_body, CHUNK_INSIDE_OG_HOME, (vec2s){70.0f / TILE_SIZE, 121.0f / TILE_SIZE});
 
-        hashtable_Dialog_insert(test_dialog, "dialog_act4_roxy", dialog_load_from_file("res/data/dialog/dialog_act4_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4_roxy",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_roxy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4_emma",   dialog_load_from_file("res/data/dialog/act4/dialog_act4_emma"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4_nathan", dialog_load_from_file("res/data/dialog/act4/dialog_act4_nathan"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4a_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4a_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4b_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4b_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4c_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4c_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4d_john",  dialog_load_from_file("res/data/dialog/act4/dialog_act4d_john"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4a_parmy", dialog_load_from_file("res/data/dialog/act4/dialog_act4a_parmy"));
+        hashtable_Dialog_insert(test_dialog, "dialog_act4c_parmy", dialog_load_from_file("res/data/dialog/act4/dialog_act4c_parmy"));
 
-        hashtable_Dialog_insert(test_dialog, "dialog_act4a_john", dialog_load_from_file("res/data/dialog/dialog_act4a_john"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act4b_john", dialog_load_from_file("res/data/dialog/dialog_act4b_john"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act4c_john", dialog_load_from_file("res/data/dialog/dialog_act4c_john"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act4d_john", dialog_load_from_file("res/data/dialog/dialog_act4d_john"));
-
-        hashtable_Dialog_insert(test_dialog, "dialog_act4a_parmy", dialog_load_from_file("res/data/dialog/dialog_act4a_parmy"));
-        hashtable_Dialog_insert(test_dialog, "dialog_act4c_parmy", dialog_load_from_file("res/data/dialog/dialog_act4c_parmy"));
-
-        Dialog *d = dialog_load_from_file("res/data/dialog/dialog_act4b_parmy");
+        Dialog *d = dialog_load_from_file("res/data/dialog/act4/dialog_act4b_parmy");
         char buf[60];
 
         for (u8 j = 0; j < ACT4_QUESTION_COUNT; ++j) {
@@ -575,7 +576,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       LOG_DEBUG("Game: Change to CHUNK_TUNNEL");
       break;
     case CHUNK_INSIDE_LIBRARY   :
-      if (game_get_act() == GAME_ACT3) {
+      if (game_get_act() == GAME_ACT3 || game_get_act() == GAME_ACT4) {
         scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){53,118}, (vec2s){10,6}, "tom", .body_id = -1});
       }
       LOG_DEBUG("Game: Change to CHUNK_INSIDE_LIBRARY");
@@ -640,18 +641,18 @@ DialogText* game_get_act_dialog(enum GameAct act) {
       {
         static char state = 'a';
 
-        char buf[30];
-        snprintf(buf,30,"res/data/dialog/dialog_act2%c", state);
+        char buf[50];
+        snprintf(buf,sizeof(buf),"res/data/dialog/act2/dialog_act2%c", state);
         dialog = dialog_load_text_from_file(buf);
         
         state++;
         break;
       }
     case GAME_ACT3:
-      dialog = dialog_load_text_from_file("res/data/dialog/dialog_act3");
+      dialog = dialog_load_text_from_file("res/data/dialog/act3/dialog_act3");
       break;
     case GAME_ACT4:
-      dialog = dialog_load_text_from_file("res/data/dialog/dialog_act4");
+      dialog = dialog_load_text_from_file("res/data/dialog/act4/dialog_act4");
       break;
     default:
       break;

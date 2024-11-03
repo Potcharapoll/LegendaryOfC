@@ -112,7 +112,7 @@ Dialog* dialog_load_from_file(char *path) {
 
   char name[24];
   char type[24];
-  char line[200];
+  char line[300];
 
   while (fgets(line, sizeof(line), fp) != NULL) {
 
@@ -383,7 +383,7 @@ DialogQuestion* dialog_load_question_from_file(char *path) {
     LOG_ERROR("Dialog: Failed to load question from path \'%s\'", path);
   }
 
-  char line[200];
+  char line[300];
   char txt[100];
   char wrong[100];
   char correct[100];
