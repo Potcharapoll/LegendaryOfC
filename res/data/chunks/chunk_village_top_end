@@ -58,7 +58,7 @@ count:1
 coord:[13,12] g_home
 
 [collider]
-count:14
+count:15
 pos:[0,1824] size:[480,96]
 pos:[396,1796] size:[84,8]
 pos:[359,1702] size:[16,9]
@@ -71,8 +71,9 @@ pos:[0,1535] size:[240,81]
 pos:[272,1535] size:[208,63]
 pos:[372,1619] size:[9,16]
 pos:[386,1598] size:[9,25]
-pos:[210,1730] size:[37,94]
-pos:[263,1730] size:[37,94]
+pos:[210,1730] size:[90,94]
+pos:[235,1616] size:[5,114]
+pos:[272,1598] size:[5,132]
 
 [teleporter]
 count:1

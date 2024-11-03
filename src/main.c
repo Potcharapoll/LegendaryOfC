@@ -19,22 +19,21 @@
 #include "defs.h"
 
 #include <string.h>
+#include <assert.h>
 
-//   ~96% (10% -> progression, 1% others, 2% sounds)
-//   Finish Editor            -- PLANNED  --
-//   Sounds system            -- PLANNED  --
+// ~97% (1% others, 2% sounds)
+// Sounds system            -- PLANNED  --
 //
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
 // TODO: Scene text animation (Optional)
 // TODO: Allocator (Optional)
-//
 // TODO: Create LegendaryOfC man page
 //
 // BUG: Black screen sometime when teleport throught the map
+//
 // Fix: John Dialog text bug 
-// Fix: Ending text
 
-static b8 collide_dialog = false;
+static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
 
 #ifdef DEBUG
@@ -225,7 +224,7 @@ static void _load_prefab(void) {
 
   struct Spritesheet *npcs = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_NPC);
   prefab_create("nathan_down", npcs, WHITE, (vec2s){16,23}, (vec4s){3,2,4,3});
-  prefab_create("john_down", npcs, WHITE, (vec2s){16,23}, (vec4s){5,2,6,3});
+  prefab_create("john_down",   npcs, WHITE, (vec2s){16,23}, (vec4s){5,2,6,3});
 }
 
 static void input_handling(Body *player_body) {
@@ -237,8 +236,8 @@ static void input_handling(Body *player_body) {
       case SCENE_MENU:
       case SCENE_INTRO:
         if (window_get_key(global.window, GLFW_KEY_SPACE) && !global.scene->fading) {
-          scene_fade_out(global.scene);
-          global.input_delay = 0.0f;
+            scene_fade_out(global.scene);
+            global.input_delay = 0.0f;
         }
         break;
       case SCENE_INGAME:
@@ -317,7 +316,7 @@ static void input_handling(Body *player_body) {
 
 void setup(void) {
   pthread_mutex_init(&global.lock, NULL);
-  global.asset_manager       = asset_manager_init();
+  global.asset_manager = asset_manager_init();
 
   asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
   asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
@@ -374,13 +373,10 @@ void update(void) {
 
   scene_update(global.scene, player_body);
   timer_update(global.timer);
-  game_update();
-
-  if (!collide_dialog && dialog_packet) { dialog_packet_free(&dialog_packet); }
-  collide_dialog = false;
 
   switch (global.scene->scene_state) {
     case SCENE_MENU:
+      LOG_DEBUG("IN MENU");
       if (global.scene->faded) { 
         scene_change_scene(global.scene, SCENE_INTRO); 
       }
@@ -402,6 +398,11 @@ void update(void) {
       }
       break;
     case SCENE_INGAME:
+      game_update();
+
+      if (!collide_dialog && dialog_packet) { dialog_packet_free(&dialog_packet); }
+      collide_dialog = false;
+
       animation_update(global.animations, global.dt);
       physics_update(global.physics, global.dt);
       game_render(player_body);

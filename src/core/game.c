@@ -13,6 +13,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 typedef enum {
   LAYER_BASE,
@@ -299,7 +300,6 @@ void game_destroy(void) {
 
 void game_update(void) {
   if (game_get_act() == GAME_ACT4 && global.timer->on_time) {
-      scene_fade_out(global.scene);
       scene_change_scene(global.scene, SCENE_ENDGAME);
       return;
   }
@@ -556,7 +556,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       LOG_DEBUG("Game: Change to CHUNK_TOP");
       break;
     case CHUNK_VILLAGE_TOP_END  :
-      timer_start(global.timer, 3.0f);
+      timer_start(global.timer, 1.0f);
       LOG_DEBUG("Game: Change to CHUNK_TOP_END");
       break;
     case CHUNK_VILLAGE_TOP_LEFT :

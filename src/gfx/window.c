@@ -62,8 +62,8 @@ void window_loop(struct Window *self) {
         global.dt     = (current_frame - last_frame);
         last_frame    = current_frame;
 
-        glfwPollEvents();
         self->update();
+        glfwPollEvents();
         glfwSwapBuffers(self->handle);
     }
 }

@@ -35,9 +35,6 @@ static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
   { 5      , -3     , 0.0f},
 };
 
-/* static b8 next_dialog   = true; */
-/* static b8 animation_end = false; */
-
 static void _load_chunk(Scene *self, Chunks chunkId) {
   pthread_mutex_lock(&global.lock);
 
@@ -267,7 +264,6 @@ void scene_destroy(Scene *self) {
   LOG_TRACE("Scene: Successfully destroyed scene");
 }
 
-// Use this when state is ingame
 void scene_update(Scene *self, Body *player_body) {
 
 /* #ifdef DEBUG */ 
@@ -300,9 +296,7 @@ void scene_update(Scene *self, Body *player_body) {
   _fade_update(self);
 
   if (self->scene_state == SCENE_INGAME) {
-    /* Chunk *chunk = _chunks[self->chunk_id]; */
     Chunk *chunk = _curr_chunk;
-
 
     if (chunk == NULL) {
       LOG_ERROR("Scene: Chunk is NULL, cannot reload or reset the chunk");
@@ -327,7 +321,10 @@ void scene_render(Scene *self) {
 
   switch (self->scene_state) {
     case SCENE_MENU:
-      text_renderer_append_text(self->text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
+      {
+        text_renderer_append_text(self->text_renderer, "LEGENDARY OF C" ,            (vec3s){PROJECTION_WIDTH*0.5 - (14*15*0.5), 100}, 30, BLUE);
+        text_renderer_append_text(self->text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
+      }
       break;
     case SCENE_INTRO:
       text_renderer_append_text(self->text_renderer, "A few days ago, I received a letter, It was written about my" ,     (vec3s){PROJECTION_WIDTH*0.5 - (60*3.5*0.5), 120}, 7, YELLOW);
@@ -341,9 +338,13 @@ void scene_render(Scene *self) {
       }
       break;
     case SCENE_ENDGAME:
-      text_renderer_append_text(self->text_renderer, "Congreatulation! You've cleared the game!" , (vec3s){PROJECTION_WIDTH*0.5 - (25*3.5*0.5), 50}, 7, WHITE);
-      text_renderer_append_text(self->text_renderer, "Press SPACE to start game" , (vec3s){PROJECTION_WIDTH*0.25 - (25*3.5*0.5), 50}, 7, WHITE);
-      break;
+      {
+        vec2s cam_pos = self->camera->position;
+        text_renderer_append_text(self->text_renderer, "Congreatulation!" ,             (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (16*7.5*0.5),  cam_pos.y + 120}, 15, YELLOW);
+        text_renderer_append_text(self->text_renderer, "You've cleared the game." ,     (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (24*7.5*0.5),  cam_pos.y + 100}, 15, YELLOW);
+        text_renderer_append_text(self->text_renderer, "Press SPACE to exit the game" , (vec3s){cam_pos.x + PROJECTION_WIDTH*0.5 - (28*3.5*0.5), cam_pos.y + 50},  7, WHITE);
+        break;
+      }
     default:
       break;
   }
@@ -395,7 +396,6 @@ void scene_fade_in(Scene *self) {
 void scene_change_scene(Scene *self, enum SceneState scene) {
   self->scene_state = scene;
 
-  // TODO: Fix fadeing
   switch (scene) {
     case SCENE_MENU:
       LOG_DEBUG("Scene: Menu state");
@@ -409,7 +409,7 @@ void scene_change_scene(Scene *self, enum SceneState scene) {
       LOG_DEBUG("Scene: Ingame state");
       break;
     case SCENE_ENDGAME:
-      scene_fade_in(self);
+      LOG_DEBUG("Scene: Engame state");
       break;
   }
 }  

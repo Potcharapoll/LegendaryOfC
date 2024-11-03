@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 DialogText* _get_new_dialog_text(char *txt) {
   DialogText *new_text = malloc(sizeof(*new_text));
