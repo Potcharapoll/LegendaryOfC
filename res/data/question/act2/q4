@@ -1,4 +1,4 @@
 text: "What data type would you use to store a number with a fractional part?"
 answer: ["int","float","char","boolean"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

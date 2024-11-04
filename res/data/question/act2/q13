@@ -1,4 +1,4 @@
 text: "Which of the following data types can store only two values (true or false)?"
 answer: ["int","char","bool","float"]
 wrong: "Sorry but it's wrong."
-correct: [2,"Right"]
+correct: [2,"Correct"]

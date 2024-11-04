@@ -1,4 +1,4 @@
 text: "What is the size of the 'double' data type in C?"
 answer: ["4 bytes","8 bytes","16 bytes","varies by compiler"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

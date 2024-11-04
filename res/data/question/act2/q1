@@ -1,4 +1,4 @@
 text: "What is the correct keyword to define a constant value in C?"
 answer: ["const","static","define","immutable"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

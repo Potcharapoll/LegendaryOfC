@@ -1,4 +1,4 @@
 text: "Which keyword is used to define a function that can take a variable number of arguments?"
 answer: ["varargs","ellipsis","...","any"]
 wrong: "Sorry but it's wrong."
-correct: [2,"Right"]
+correct: [2,"Correct"]

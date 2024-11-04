@@ -1,4 +1,4 @@
 text: "Which of the following is NOT a valid identifier in C?"
 answer: ["my_variable","2nd_variable","_myVariable","myVariable123"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

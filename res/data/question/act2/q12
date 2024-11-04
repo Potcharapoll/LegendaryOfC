@@ -1,4 +1,4 @@
 text: "Which keyword is used to create a variable that cannot be modified|after its initial assignment?"
 answer: ["readonly","final","const","static"]
 wrong: "Sorry but it's wrong."
-correct: [2,"Right"]
+correct: [2,"Correct"]

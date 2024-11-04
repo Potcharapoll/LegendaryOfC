@@ -1,4 +1,4 @@
 text: "Which keyword in C is used to define a function?"
 answer: ["func","define","void","return"]
 wrong: "Sorry but it's wrong."
-correct: [2,"Right"]
+correct: [2,"Correct"]

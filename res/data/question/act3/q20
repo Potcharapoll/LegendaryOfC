@@ -1,4 +1,4 @@
 text: "What is the correct way to declare a pointer to an integer?"
 answer: ["int* ptr;","ptr int;","int ptr*;","pointer int;"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

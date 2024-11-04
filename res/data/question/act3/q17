@@ -1,4 +1,4 @@
 text: "How do you end a statement in C?"
 answer: [".",";",",",":"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

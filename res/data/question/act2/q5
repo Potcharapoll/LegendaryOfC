@@ -1,4 +1,4 @@
 text: "Which keyword is used to create an alias for another data type?"
 answer: ["typedef","alias","typecast","rename"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

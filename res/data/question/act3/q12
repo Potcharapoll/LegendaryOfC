@@ -1,4 +1,4 @@
 text: "What is the correct syntax for a while loop?"
 answer: ["while (x < 10) {}","while x < 10 {}","while (x < 10) then {}","while: (x < 10) {}"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

@@ -1,4 +1,4 @@
 text: "Which operator is used to assign a value to a variable?"
 answer: ["=",":=","=>","=="]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

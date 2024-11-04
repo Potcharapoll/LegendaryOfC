@@ -1,4 +1,4 @@
 text: "What is the correct syntax to include a header file?"
 answer: ["include <header.h>","#include <header.h>","#include header.h","import <header.h>"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

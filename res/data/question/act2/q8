@@ -1,4 +1,4 @@
 text: "Which keyword is used to define a structure in C?"
 answer: ["struct","class","union","type"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]

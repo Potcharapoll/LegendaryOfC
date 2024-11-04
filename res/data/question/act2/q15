@@ -1,4 +1,4 @@
 text: "Which keyword is used to define a new data type based on existing data types?"
 answer: ["enum","typedef","struct","union"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

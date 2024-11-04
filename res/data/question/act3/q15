@@ -1,4 +1,4 @@
 text: "What is the correct way to define a function in C?"
 answer: ["function myFunc() {}","void myFunc() {}","def myFunc() {}","myFunc() = void {}"]
 wrong: "Sorry but it's wrong."
-correct: [1,"Right"]
+correct: [1,"Correct"]

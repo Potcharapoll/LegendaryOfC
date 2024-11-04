@@ -1,4 +1,4 @@
 text: "How do you access a member of a structure in C?"
 answer: ["struct.member","struct->member","member(struct)","struct::member"]
 wrong: "Sorry but it's wrong."
-correct: [0,"Right"]
+correct: [0,"Correct"]
