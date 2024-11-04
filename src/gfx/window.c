@@ -19,7 +19,6 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     ASSERT(glfwInit() != GLFW_FALSE, "Failed to initialize GLFW", __FILE__, __LINE__);
 
     LOG_TRACE("Successfully initialized GLFW");
-    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
