@@ -3,6 +3,7 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
+#include "GLFW/glfw3.h"
 
 #include <assert.h>
 
@@ -22,7 +23,6 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 
     self->init    = init;
     self->update  = update;
@@ -50,11 +50,18 @@ void window_loop(struct Window *self) {
 
     f32 last_frame = glfwGetTime();
     f32 current_frame;
+    char title[100];
 
     while (!glfwWindowShouldClose(self->handle) && !should_close) {
         glfwGetCursorPos(self->handle, &self->mouse.xpos, &self->mouse.ypos);
         glfwGetWindowSize(self->handle, &self->width, &self->height);
         glViewport(0, 0, self->width, self->height);
+
+#ifdef DEBUG
+        snprintf(title, sizeof(title), "%s [Debug] (FPS:%.5f/%.5fms)", TITLE, 1 / global.dt, global.dt * 1000);
+#else
+        snprintf(title, sizeof(title), "%s [Release] (FPS:%.5f/%.5fms)", TITLE, 1 / global.dt, global.dt * 1000);
+#endif
 
         // normalize mouse position
         self->mouse.ypos    = self->height - self->mouse.ypos;
