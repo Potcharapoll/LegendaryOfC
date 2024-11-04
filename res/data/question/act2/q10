@@ -1,4 +1,4 @@
 text: "Which of the following data types can be used to store the largest integer value in C?"
 answer: ["short","int","long","long long"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [3,"Right"]

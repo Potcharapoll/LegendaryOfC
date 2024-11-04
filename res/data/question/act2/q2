@@ -1,4 +1,4 @@
 text: "What is the size of the int data type in C on a typical|32-bit system?"
 answer: ["2 bytes","4 bytes","8 bytes","16 bytes"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [1,"Right"]

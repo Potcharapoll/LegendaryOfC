@@ -1,4 +1,4 @@
 text: "What is the correct way to declare an array of 10 integers?"
 answer: ["int array[10];","array int[10];","int[10] array","int array(10);"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [0,"Right"]

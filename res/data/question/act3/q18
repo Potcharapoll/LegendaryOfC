@@ -1,4 +1,4 @@
 text: "What is the correct syntax to create a conditional statement in C?"
 answer: ["if x > 0 then","if (x > 0)","if x > 0 {","if: x > 0"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [1,"Right"]

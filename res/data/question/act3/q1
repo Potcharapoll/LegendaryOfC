@@ -1,4 +1,4 @@
 text: "How do you handle multiple conditions in an if statement?"
 answer: ["if (x < 0 && x > 10)","if (x < 0, x > 10)","if (x < 0 or x > 10)","if (x < 0; x > 10)"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [0,"Right"]

@@ -1,4 +1,4 @@
 text: "What does the 'exit' function do in C?"
 answer: ["Terminates the program immediately","Returns control to the operating system","Exits a loop","Both A and B"]
-wrong: "(Check out Guide Book page X)."
-correct: [3,"Right"]
+wrong: "Sorry but it's wrong."
+correct: [3,"Correct"]

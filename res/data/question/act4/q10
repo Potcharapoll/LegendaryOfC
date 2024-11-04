@@ -1,4 +1,4 @@
 text: "What does 'sscanf' do?"
 answer: ["Reads formatted input from a string","Writes formatted output to a string","Reads a line from standard input","Converts strings to numbers"]
-wrong: "(Check out Guide Book page X)."
-correct: [0,"Right"]
+wrong: "Sorry but it's wrong."
+correct: [0,"Correct"]

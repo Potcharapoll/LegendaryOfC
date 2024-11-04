@@ -1,4 +1,4 @@
 text: "What is the purpose of the 'puts' function in C?"
 answer: ["To read a string from input","To print a string followed by a newline","To print a formatted string","To write a single character"]
-wrong: "(Check out Guide Book page X)."
-correct: [1,"Right"]
+wrong: "Sorry but it's wrong."
+correct: [1,"Correct"]

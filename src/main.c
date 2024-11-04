@@ -22,6 +22,7 @@
 //
 // BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
 // BUG: Cannot move after teleport? (sometime)                          [Linux]
+// BUG: Camera shake on low fps?                                        [Windows10VM]
 
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
@@ -497,9 +498,9 @@ void cleanup(void) {
 
 int main(void) {
 #ifdef DEBUG
-  LOG_INFO("LegendaryOfC Version %.1f DEBUG Mode", VERSION);
+  LOG_INFO("%s Version %.1f DEBUG Mode", TITLE, VERSION);
 #else
-  LOG_INFO("LegendaryOfC Version %.1f Release Mode", VERSION);
+  LOG_INFO("%s Version %.1f Release Mode", TITLE, VERSION);
 #endif
 
   struct Window window = {0};

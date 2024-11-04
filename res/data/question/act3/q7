@@ -1,4 +1,4 @@
 text: "What is the correct syntax for a switch statement?"
 answer: ["switch (x) { case 1: ... }","switch x { case 1: ... }","switch (x) case 1: ...","switch { x }"]
-wrong: "(Check out Guide Book page X)."
+wrong: "Sorry but it's wrong."
 correct: [0,"Right"]
