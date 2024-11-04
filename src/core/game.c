@@ -103,7 +103,7 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
         char name[3][10] = {"Emma", "Parmy", "Nathan"};
         Dialog *question = NULL;
 
-        char buf[50];
+        char buf[100];
         for (u8 i = 0; i < 3; ++i) {
           snprintf(buf, sizeof(buf), "res/data/dialog/act2/dialog_act2a_%s", npc[i]);
           question = dialog_load_from_file(buf);
@@ -113,7 +113,7 @@ static void _load_dialog(enum GameAct act, Body *player_body) {
             dialog_append_question_from_file(question, name[i], buf);
           }
 
-          snprintf(buf, sizeof(buf), "dialog_act2a_%s", npc[i]);
+          snprintf(buf, sizeof(buf), "dialog_act2a_%10s", npc[i]);
           hashtable_Dialog_insert(test_dialog, buf,  question);
         }
         break;

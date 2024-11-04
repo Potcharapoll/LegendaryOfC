@@ -77,3 +77,4 @@ _deps
 core
 *.cache/
 *build/*
+imgui.ini

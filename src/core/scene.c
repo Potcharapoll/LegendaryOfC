@@ -317,7 +317,7 @@ void _scene_menu_render(Scene *self) {
         quad_renderer_append_quad(self->quad_renderer, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - SIZE/2.0f, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f},  (vec2s){SIZE,SIZE}, DIALOG_FRAME_COLOR);
         text_renderer_append_text(self->text_renderer, "Man Page", (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - (8*5*0.5), cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 180}, 10, WHITE);
 
-        char page[5];
+        char page[30];
         snprintf(page, sizeof(page), "%d/%d", self->man_page+1, MAN_PAGE6+1);
         text_renderer_append_text(self->text_renderer, page, (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 + 80, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 190}, 8, WHITE);
 
