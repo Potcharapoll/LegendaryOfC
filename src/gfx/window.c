@@ -62,6 +62,8 @@ void window_loop(struct Window *self) {
 #else
         snprintf(title, sizeof(title), "%s [Release] (FPS:%.5f/%.5fms)", TITLE, 1 / global.dt, global.dt * 1000);
 #endif
+        
+        glfwSetWindowTitle(self->handle, title);
 
         // normalize mouse position
         self->mouse.ypos    = self->height - self->mouse.ypos;

@@ -45,6 +45,25 @@
 | 
 | 24/08/20
 |  - Refactor Dialog System      (95%)
-|
-| 24/09/14
-| 24/09/15
+----------------------------------------------------------------------
+
+// SUGGEST: Change from physics (Static_Body, Body) to ECS
+// SUGGEST: Add DEBUG_ENABLE_CIMGUI directive to enable or disable cimgui in debug mode
+//
+// TODO: Scene text animation (Optional)
+// TODO: Allocator            (Optional)
+// TODO: Sound System         (Maybe)
+// (bool is missing in Man Page)
+//
+// BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
+// BUG: Cannot move after teleport? (sometime)                          [Linux]
+// BUG: Camera shake on low fps?                                        [Windows10VM]
+//
+// FIX: Cannot build Debug Mode in Windows due to cimgui setup -lGL
+
+
+// Needed Sounds:
+// - BGM   (maybe 2 -> menu, ingame)
+// - Walk 
+// - Go in (open door)
+

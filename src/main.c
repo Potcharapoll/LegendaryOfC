@@ -13,17 +13,6 @@
 #include <string.h>
 #include <assert.h>
 
-// SUGGEST: Change from physics (Static_Body, Body) to ECS
-//
-// TODO: Scene text animation (Optional)
-// TODO: Allocator            (Optional)
-// TODO: Sound System
-// (bool is missing in Man Page)
-//
-// BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
-// BUG: Cannot move after teleport? (sometime)                          [Linux]
-// BUG: Camera shake on low fps?                                        [Windows10VM]
-
 static b8           collide_dialog = false;
 static DialogPacket *dialog_packet = NULL;
 
@@ -374,8 +363,8 @@ void setup(void) {
   pthread_mutex_init(&global.lock, NULL);
   global.asset_manager = asset_manager_init();
 
-  asset_manager_push_shader(global.asset_manager, "default_shader", "res/shaders/default.vert", "res/shaders/default.frag");
-  asset_manager_push_shader(global.asset_manager, "texture_shader", "res/shaders/texture.vert", "res/shaders/texture.frag");
+  asset_manager_push_shader(global.asset_manager, "default_shader", "../res/shaders/default.vert", "../res/shaders/default.frag");
+  asset_manager_push_shader(global.asset_manager, "texture_shader", "../res/shaders/texture.vert", "../res/shaders/texture.frag");
   asset_manager_push_texture(global.asset_manager, TEXTURE_INTERACT, TEXTURE_INTERACT);
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_TEXT,         81, (ivec2s){26, 4}, (ivec2s){32,32});
   asset_manager_push_spritesheet(global.asset_manager, TEXTURE_PLAYER,       32, (ivec2s){ 8, 4}, (ivec2s){16,22});
@@ -405,7 +394,7 @@ void setup(void) {
   glm_vec2_zero(global.start_point);
   glm_vec2_zero(global.end_point);
 
-  asset_manager_push_shader(global.asset_manager, "line_shader", "res/shaders/line.vert", "res/shaders/line.frag");
+  asset_manager_push_shader(global.asset_manager, "line_shader", "../res/shaders/line.vert", "../res/shaders/line.frag");
   line_renderer = line_renderer_init();
   editor_init();
 #endif

@@ -2,7 +2,10 @@
 
 #include "../util/array_list.h"
 #include "../engine/logger.h"
-#include "../global.h"
+
+#include <cglm/struct.h>
+#include <stdlib.h>
+#include <math.h>
 
 static void collision_response(Body *body, Static_Body *static_body, AABB minkowski) {
 #ifdef DEBUG
