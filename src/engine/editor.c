@@ -1,4 +1,4 @@
-#ifdef DEBUG
+#if defined (DEBUG) && defined (DEBUG_ENABLE_IMGUI)
 #include "editor.h"
 #include "editor_internal.h"
 #include "logger.h"

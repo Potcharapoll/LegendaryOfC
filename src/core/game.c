@@ -522,7 +522,7 @@ void game_render(Body *player_body) {
       }
     }
 
-#ifdef DEBUG
+#if defined (DEBUG) && defined (DEBUG_ENABLE_IMGUI)
     { // append start_point, end_point, and cursor to LAYER_TOP
       quad_renderer_append_quad(renderer[LAYER_TOP], (vec3s){global.start_point[0], global.start_point[1], 0.0f}, (vec2s){1,1}, GREEN);
       quad_renderer_append_quad(renderer[LAYER_TOP], (vec3s){global.end_point[0], global.end_point[1], 0.0f}, (vec2s){1,1}, BLUE);

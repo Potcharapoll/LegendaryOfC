@@ -48,7 +48,6 @@
 ----------------------------------------------------------------------
 
 // SUGGEST: Change from physics (Static_Body, Body) to ECS
-// SUGGEST: Add DEBUG_ENABLE_CIMGUI directive to enable or disable cimgui in debug mode
 //
 // TODO: Scene text animation (Optional)
 // TODO: Allocator            (Optional)

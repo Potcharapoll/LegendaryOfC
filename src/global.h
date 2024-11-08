@@ -2,7 +2,8 @@
 #define GLOBAL_H
 
 #pragma GCC diagnostic ignored "-Wmissing-braces"
-#ifdef DEBUG
+
+#if defined (DEBUG) && defined (DEBUG_ENABLE_IMGUI)
 #include "engine/editor.h"
 #endif
 
@@ -13,7 +14,6 @@
 #include "core/asset_manager.h"
 #include "core/animation.h"
 #include "core/physics.h"
-#include "core/player.h"
 #include "core/scene.h"
 #include "core/timer.h"
 
@@ -46,16 +46,15 @@ struct Global {
 
 #ifdef DEBUG
     struct {
+#ifdef DEBUG_ENABLE_IMGUI
         struct ImGui *editor;
+        b8 toggle_editor;
         vec2 start_point, end_point;
         enum CursorMode cursor_mode;
+#endif
 
-        b8 toggle_editor;
         b8 toggle_collision;
         b8 toggle_show_collider;
-
-        b8 reload_chunk;
-        b8 reset_chunk;
     };
 #endif
 };

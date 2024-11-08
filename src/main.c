@@ -1,6 +1,7 @@
 #include "engine/logger.h"
 
 #include "core/asset_manager.h"
+#include "core/player.h"
 #include "core/prefab.h"
 #include "core/scene.h"
 #include "core/game.h"
@@ -264,6 +265,8 @@ static void input_handling(Body *player_body) {
             global.toggle_show_collider = !global.toggle_show_collider;
             global.input_delay = 0.0f;
           }
+
+#ifdef DEBUG_ENABLE_IMGUI
           if (window_get_key(global.window, GLFW_KEY_Y)) {
             global.toggle_editor = !global.toggle_editor;
             global.input_delay = 0.0f;
@@ -288,6 +291,8 @@ static void input_handling(Body *player_body) {
             global.cursor_mode = (global.cursor_mode + 1) % CURSOR_MODE_LAST;
             global.input_delay = 0.0f;
           }
+#endif
+
 #endif
         } else if (global.scene->on_dialog) {
           dialog_input();
@@ -390,13 +395,16 @@ void setup(void) {
   game_init();
 
 #ifdef DEBUG 
+
+#ifdef DEBUG_ENABLE_IMGUI
   global.cursor_mode = CURSOR_MODE_NORMAL;
   glm_vec2_zero(global.start_point);
   glm_vec2_zero(global.end_point);
+  editor_init();
+#endif
 
   asset_manager_push_shader(global.asset_manager, "line_shader", "../res/shaders/line.vert", "../res/shaders/line.frag");
   line_renderer = line_renderer_init();
-  editor_init();
 #endif
 
   glEnable(GL_BLEND);
@@ -421,7 +429,6 @@ void update(void) {
 
   switch (global.scene->scene_state) {
     case SCENE_MENU:
-      LOG_DEBUG("IN MENU");
       if (global.scene->faded) { 
         scene_change_scene(global.scene, SCENE_INTRO); 
       }
@@ -462,7 +469,9 @@ void update(void) {
   if (global.toggle_show_collider) _append_collider();
   line_renderer_render(line_renderer);
 
+#ifdef DEBUG_ENABLE_IMGUI
   if (global.toggle_editor) editor_render();
+#endif
 #endif
 }
 
@@ -479,7 +488,9 @@ void cleanup(void) {
 
 #ifdef DEBUG
   line_renderer_destroy(line_renderer);
+#ifdef DEBUG_ENABLE_IMGUI
   editor_destroy();
+#endif
 #endif
 
   LOG_TRACE("Window: Cleaning up");

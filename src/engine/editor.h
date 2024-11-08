@@ -1,4 +1,4 @@
-#ifdef DEBUG
+#if defined (DEBUG) && defined (DEBUG_ENABLE_IMGUI)
 #ifndef EDITOR_H
 #define EDITOR_H
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
