@@ -508,7 +508,7 @@ void _scene_menu_render(Scene *self) {
 
               text_renderer_append_text(self->text_renderer, "static: Declares a variable with static storage duration, retaining its|value between function calls.", 
                   (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 80}, 5, WHITE);
-              text_renderer_append_text(self->text_renderer, "", 
+              text_renderer_append_text(self->text_renderer, "static", 
                   (vec3s){cam_pos.x + PROJECTION_WIDTH * 0.5 - 90, cam_pos.y + PROJECTION_HEIGHT * 0.5 - SIZE/2.0f + 80}, 5, LIGHT_BLUE);
 
 

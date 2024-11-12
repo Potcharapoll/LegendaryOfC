@@ -55,10 +55,7 @@
 // (bool is missing in Man Page)
 //
 // BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
-// BUG: Cannot move after teleport? (sometime)                          [Linux]
-// BUG: Camera shake on low fps?                                        [Windows10VM]
-//
-// FIX: Cannot build Debug Mode in Windows due to cimgui setup -lGL
+// BUG: Cannot move after teleport? (sometime)                          [LinuxVM]
 
 
 // Needed Sounds:

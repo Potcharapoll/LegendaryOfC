@@ -19,5 +19,14 @@ This game is made for learning C language and includes these topics of C languag
 git clone --recursive https://github.com/Potcharapoll/LegendaryOfC && cd LegendaryOfC
 cmake -DCMAKE_BUILD_TYPE:STRING=Release -G Ninja -B build -S .
 ninja -C build
-./build/legendaryofc
+cd build && ./legendaryofc
 ```
+
+### Control
+| Key | Description |
+| --- | --- |
+| WASD | Move around |
+| E | Interact |
+| Escape | Open/Close Menu |
+| Spacebar | Continue dialog |
+| A/D | Move between page in Man pages |
