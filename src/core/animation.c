@@ -3,6 +3,10 @@
 #include "../util/array_list.h"
 #include "../engine/logger.h"
 
+static b8 _animation_check_flag(AnimationState *astate, u8 flag) {
+  return (astate->flag & flag) == flag;
+}
+
 Animation* animation_init(void) {
     Animation *animation = malloc(sizeof(*animation));
     animation->animation_state_storage      = array_list_init(sizeof(AnimationState), 0);
@@ -23,6 +27,12 @@ void animation_destroy(Animation *animation) {
 void animation_update(Animation *animation, f32 dt) {
     for (u32 i = 0; i < animation->animation_state_storage->len; ++i) {
         AnimationState *astate = array_list_get(animation->animation_state_storage, i);
+
+        if (!_animation_check_flag(astate, ANIMATION_UPDATE)) { 
+          astate->current_frame_index = 0;
+          continue;
+        }
+
         AnimationDefinition *adef = astate->definition;
         astate->current_frame_time -= dt;
 
@@ -30,7 +40,7 @@ void animation_update(Animation *animation, f32 dt) {
             astate->current_frame_index += 1;
 
             if (astate->current_frame_index == astate->definition->frame_count) {
-                if (astate->does_loop) {
+                if (_animation_check_flag(astate, ANIMATION_LOOP)) {
                     astate->current_frame_index = 0;
                 }
                 else {
@@ -71,7 +81,7 @@ AnimationDefinition* animation_definition_get(Animation *animation, u32 animatio
     return array_list_get(animation->animation_definition_storage, animation_definition_id);
 }
 
-u32 animation_state_create(Animation *animation, u32 animation_definition_id, b8 does_loop, b8 flipped) {
+u32 animation_state_create(Animation *animation, u32 animation_definition_id, u8 flag) {
     AnimationDefinition *adef = array_list_get(animation->animation_definition_storage, animation_definition_id);
 
     if (adef == NULL) {
@@ -81,8 +91,7 @@ u32 animation_state_create(Animation *animation, u32 animation_definition_id, b8
 
     AnimationState astate = (AnimationState){
         .definition = adef,
-        .does_loop  = does_loop,
-        .flipped    = flipped,
+        .flag       = flag,
         .current_frame_time = 0.0f,
         .current_frame_index = 0
     };

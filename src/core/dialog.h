@@ -40,12 +40,19 @@ typedef struct Dialog {
 } Dialog;
 
 typedef struct {
-  char *dialog_tag;
-  b8    append_act;
+  char dialog_tag[50];
+  b8   append_act;
 } DialogPacket;
 
-DialogPacket* dialog_packet_create(char *tag, b8 append_act);
+enum {
+  DP_NORMAL,
+  DP_APPEND_ACT,
+};
+
+DialogPacket* dialog_packet_create(void);
 void dialog_packet_free(DialogPacket **packet);
+
+void dialog_packet_set_tag(DialogPacket *self, char *tag, b8 append_act);
 
 Dialog* dialog_load_from_file(char *path);
 DialogQuestion* dialog_load_question_from_file(char *path);

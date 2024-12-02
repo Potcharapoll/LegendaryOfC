@@ -33,8 +33,9 @@
 
 #define SPAWN_COORD (vec2s){5,3}
 
+#define LOGO_PATH       "../res/images/logo.png"
+
 #define TEXTURE_TEXT       "../res/images/font.png"
-#define TEXTURE_LOGO       "../res/images/logo.png"
 #define TEXTURE_PLAYER     "../res/images/characters/character.png"
 #define TEXTURE_NPC        "../res/images/characters/npc.png"
 #define TEXTURE_TILE       "../res/images/tilesets/tileset.png"

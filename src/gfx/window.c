@@ -3,7 +3,8 @@
 #include "../engine/logger.h"
 #include "../global.h"
 #include "../defs.h"
-#include "GLFW/glfw3.h"
+
+#include <stb_image.h>
 
 #include <assert.h>
 
@@ -33,6 +34,15 @@ void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
     ASSERT(self->handle != NULL, "Failed to create GLFWwindow", __FILE__, __LINE__);
     LOG_TRACE("Successfully initialized GLFWwindow");
     
+
+    { // set window icon
+      GLFWimage image[1];
+      image[0].pixels = stbi_load(LOGO_PATH, &image[0].width, &image[0].height, 0, 4);
+
+      glfwSetWindowIcon(self->handle, 1, image);
+      stbi_image_free(image[0].pixels);
+    }
+
     glfwSetWindowSizeLimits(self->handle, WIDTH, HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
     glfwMakeContextCurrent(self->handle);

@@ -179,9 +179,6 @@ void game_setup_act(enum GameAct act) {
   u32 lock = 0, chr = 0, state = 0;
   global.game_state_flag = 0;
 
-  scene_collider_reset(global.scene);
-
-
   switch (act) {
     case GAME_ACT1:
       lock  = (GAME_STATE_LOCK_FISH | GAME_STATE_LOCK_CHURCH | GAME_STATE_LOCK_TUNNEL | GAME_STATE_LOCK_LIBRARY | GAME_STATE_LOCK_LJ_HOME | GAME_STATE_LOCK_OG_HOME | GAME_STATE_LOCK_VC_HOME);
@@ -204,6 +201,8 @@ void game_setup_act(enum GameAct act) {
       state = GAME_STATE_ACT4 | GAME_STATE_GET_MAN_PAGE;
       break;
   }
+
+  scene_reset(global.scene);
 
   question_flag = 0;
   global.game_state_flag |= (lock | chr | state);
@@ -435,8 +434,9 @@ void game_get_dialog_tag(char buf[static 60], DialogPacket *packet) {
 
 // get curr chunk from scene to render
 void game_render(Body *player_body) {
-  ChunkRenderInfo *render_info = scene_get_chunk_render_info();
-  if(render_info == NULL) return;
+  ASSERT(global.scene->chunk != NULL, "Chunk is NULL", __FILE__, __LINE__);
+
+  ChunkRenderInfo *render_info = global.scene->chunk->render_info;
 
   { // render
     struct Spritesheet *spritesheet = asset_manager_get_spritesheet(global.asset_manager, TEXTURE_TILE);
@@ -553,7 +553,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       break;
     case CHUNK_VILLAGE_TOP      :
       if (game_get_act() != GAME_ACT1) {
-        scene_chunk_add_prefab("nathan_down", (vec2s){12.3,11});
+        scene_chunk_add_prefab(global.scene, "nathan_down", (vec2s){12.3,11});
 
         physics_static_body_create(global.physics, (vec2s){198,944} , (vec2s){14,21}, COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL);
         scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){198,940}, (vec2s){14,4}, "nathan", .body_id = -1});
@@ -569,7 +569,7 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       break;
     case CHUNK_VILLAGE_TOP_RIGHT:
       if (game_get_act() == GAME_ACT4) {
-        scene_chunk_add_prefab("john_down", (vec2s){15.5,6.5});
+        scene_chunk_add_prefab(global.scene, "john_down", (vec2s){15.5,6.5});
 
         physics_static_body_create(global.physics, (vec2s){729,872} , (vec2s){14,21}, COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL);
         scene_chunk_add_dialog(global.scene, (ChunkDialog){(vec2s){729,868}, (vec2s){14,4}, "john", .body_id = -1});
@@ -606,6 +606,8 @@ void game_change_chunk(Body *player_body, Chunks chunk_id, vec2s target_coord) {
       break;
     case CHUNK_INSIDE_VC_HOME   : 
       LOG_DEBUG("Game: Change to CHUNK_INSIDE_VC_HOME");
+      break;
+    default:
       break;
   }
 }

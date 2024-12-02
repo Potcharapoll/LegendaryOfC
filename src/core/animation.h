@@ -5,6 +5,10 @@
 #include "../gfx/spritesheet.h"
 #define MAX_FRAMES 16
 
+#define ANIMATION_FLIPPED (u8)1 << 0
+#define ANIMATION_LOOP    (u8)1 << 1
+#define ANIMATION_UPDATE  (u8)1 << 2
+
 typedef struct {
     f32 duration;
     u8 row;
@@ -22,8 +26,7 @@ typedef struct {
     f32 current_frame_time;
     u8 current_frame_index;
 
-    b8 flipped;
-    b8 does_loop;
+    u8 flag;
 } AnimationState;
 
 typedef struct Animation {
@@ -38,6 +41,6 @@ void animation_update(Animation *animation, f32 dt);
 u32 animation_definition_create(Animation *animation, struct Spritesheet *spritesheet, f32 *durations, u8 *rows, u8 *col, u8 frame_count);
 AnimationDefinition* animation_definition_get(Animation *animation, u32 animation_definition_id);
 
-u32 animation_state_create(Animation *animation, u32 animation_definition_id, b8 does_loop, b8 flipped);
+u32 animation_state_create(Animation *animation, u32 animation_definition_id, u8 flag);
 AnimationState* animation_state_get(Animation *animation, u32 animation_state_id);
 #endif

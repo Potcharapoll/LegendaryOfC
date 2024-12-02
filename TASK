@@ -54,7 +54,7 @@
 // TODO: Sound System         (Maybe)
 // (bool is missing in Man Page)
 //
-// BUG: Black screen sometime when teleport throught the map (sometime) [Linux]
+// BUG: Black screen sometime when teleport throught the map (sometime) [Linux/Windows]
 // BUG: Cannot move after teleport? (sometime)                          [LinuxVM]
 
 
@@ -63,3 +63,6 @@
 // - Walk 
 // - Go in (open door)
 
+24/11/24
+- Fix Animation Jump.
+- Change from load per chunk to load all chunk.

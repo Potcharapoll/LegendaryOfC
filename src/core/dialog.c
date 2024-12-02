@@ -519,13 +519,12 @@ void dialog_list(Dialog *dialog) {
   }
 }
 
-DialogPacket* dialog_packet_create(char *tag, b8 append_act) {
+DialogPacket* dialog_packet_create(void) {
   DialogPacket *new = malloc(sizeof(*new));
-  new->append_act = append_act;
-  new->dialog_tag = tag;
+  new->dialog_tag[0] = '\0';
+  new->append_act = false;
 
   LOG_DEBUG("Dialog: Create new dialog packet");
-
   return new;
 }
 
@@ -534,4 +533,12 @@ void dialog_packet_free(DialogPacket **packet) {
   *packet = NULL;
 
   LOG_DEBUG("Dialog: Destroy dialog packet");
+}
+
+void dialog_packet_set_tag(DialogPacket *self, char *tag, b8 append_act) {
+  u32 len = strlen(tag);
+
+  strncpy(self->dialog_tag, tag, len);
+  self->dialog_tag[len] = '\0';
+  self->append_act = append_act;
 }

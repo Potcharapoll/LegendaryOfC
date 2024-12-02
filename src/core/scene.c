@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static Chunk *_curr_chunk = NULL;
+static Chunk *_chunks[CHUNK_LAST];
 
 typedef enum {
   DIALOG_POSITION_TITLE,
@@ -36,62 +36,29 @@ static vec3s dialog_render_position[DIALOG_POSITION_LAST] = {
 static void _load_chunk(Scene *self, Chunks chunkId) {
   pthread_mutex_lock(&global.lock);
 
-  if (_curr_chunk) {
-    chunk_destroy(&_curr_chunk);
+  if (self->chunk->dialog) {
+    array_list_destroy(self->chunk->dialog);
+  }
+  if (self->chunk->collider) {
+    array_list_destroy(self->chunk->collider);
+  }
+  if (self->chunk->teleporter) {
+    array_list_destroy(self->chunk->teleporter);
+  }
+  if (self->chunk->render_info->prefab) {
+    array_list_destroy(self->chunk->render_info->prefab);
   }
 
   self->chunk_id = chunkId;
 
-  switch (chunkId) {
-    case CHUNK_SPAWN             :
-      _curr_chunk = chunk_load_from_file(CHUNK_SPAWN_PATH);
-      break;
-    case CHUNK_VILLAGE_ENTRANCE  :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_ENTRANCE_PATH);
-      break;
-    case CHUNK_VILLAGE_LEFT      :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_LEFT_PATH);
-      break;
-    case CHUNK_VILLAGE_RIGHT     :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_RIGHT_PATH);
-      break;
-    case CHUNK_VILLAGE_TOP       :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_TOP_PATH);
-      break;
-    case CHUNK_VILLAGE_TOP_END   :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_TOP_END_PATH);
-      break;
-    case CHUNK_VILLAGE_TOP_LEFT  :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_TOP_LEFT_PATH);
-      break;
-    case CHUNK_VILLAGE_TOP_RIGHT :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_TOP_RIGHT_PATH);
-      break;
-    case CHUNK_VILLAGE_TUNNEL    :
-      _curr_chunk = chunk_load_from_file(CHUNK_VILLAGE_TUNNEL_PATH);
-      break;
-    case CHUNK_INSIDE_LIBRARY    :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_LIBRARY_PATH);
-      break;
-    case CHUNK_INSIDE_RESTAURANT :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_RESTAURANT_PATH);
-      break;
-    case CHUNK_INSIDE_CHURCH     :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_CHURCH_PATH);
-      break;
-    case CHUNK_INSIDE_FISH       :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_FISH_PATH);
-      break;
-    case CHUNK_INSIDE_OG_HOME    :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_OG_HOME_PATH);
-      break;
-    case CHUNK_INSIDE_LJ_HOME    :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_LJ_HOME_PATH);
-      break;
-    case CHUNK_INSIDE_VC_HOME    :
-      _curr_chunk = chunk_load_from_file(CHUNK_INSIDE_VC_HOME_PATH);
-      break;
-  }
+  self->chunk->dialog     = array_list_init_from_list(_chunks[chunkId]->dialog);
+  self->chunk->teleporter = array_list_init_from_list(_chunks[chunkId]->teleporter);
+  self->chunk->collider   = array_list_init_from_list(_chunks[chunkId]->collider);
+
+  self->chunk->render_info->prefab = array_list_init_from_list(_chunks[chunkId]->render_info->prefab);
+  self->chunk->render_info->prefab_count = _chunks[chunkId]->render_info->prefab_count;
+  self->chunk->render_info->position = _chunks[chunkId]->render_info->position;
+  memcpy(self->chunk->render_info->uv, _chunks[chunkId]->render_info->uv, (CHUNK_SIZE_X * CHUNK_SIZE_Y * 2) * sizeof(*self->chunk->render_info->uv));
 
   pthread_mutex_unlock(&global.lock);
 }
@@ -136,20 +103,12 @@ static void _border_collision(vec2s *a, vec2s size, vec4s position) {
 }
 
 static void _scene_setup_collider(Scene *self) {
-  ASSERT(_curr_chunk != NULL, "Curr Chunk is NULL", __FILE__, __LINE__);
-  Chunk *chunk = _curr_chunk;
+  ASSERT(self->chunk != NULL, "Curr Chunk is NULL", __FILE__, __LINE__);
 
-  if (self->chunk_teleporters) { FREE(self->chunk_teleporters); }
-  if (self->chunk_dialogs)     { FREE(self->chunk_dialogs); }
-  if (self->chunk_colliders)   { FREE(self->chunk_colliders); }
-
-  self->chunk_teleporters = array_list_init_from_list(chunk->teleporter);
-  self->chunk_colliders   = array_list_init_from_list(chunk->collider);
-  self->chunk_dialogs     = array_list_init_from_list(chunk->dialog);
   physics_static_body_reset(global.physics);
 
-  for (u32 i = 0; i < self->chunk_colliders->len; ++i) {
-    ChunkCollider *collider = array_list_get(self->chunk_colliders, i);
+  for (u32 i = 0; i < self->chunk->collider->len; ++i) {
+    ChunkCollider *collider = array_list_get(self->chunk->collider, i);
 
     physics_static_body_create(global.physics,
         (vec2s){collider->pos.x, collider->pos.y}, 
@@ -157,8 +116,8 @@ static void _scene_setup_collider(Scene *self) {
         COLLISION_LAYER_PLAYER, COLLISION_LAYER_SOLID, NULL); 
   } 
 
-  for (u32 i = 0; i < self->chunk_teleporters->len; ++i) {
-    ChunkTeleporter *teleporter = array_list_get(self->chunk_teleporters, i);
+  for (u32 i = 0; i < self->chunk->teleporter->len; ++i) {
+    ChunkTeleporter *teleporter = array_list_get(self->chunk->teleporter, i);
 
     teleporter->body_id = physics_static_body_create(global.physics,
         (vec2s){teleporter->pos.x, teleporter->pos.y}, 
@@ -166,8 +125,8 @@ static void _scene_setup_collider(Scene *self) {
         COLLISION_LAYER_PLAYER, COLLISION_LAYER_TELEPORTER, global.teleporter_callback); 
   } 
 
-  for (u32 i = 0; i < self->chunk_dialogs->len; ++i) {
-    ChunkDialog *dialog = array_list_get(self->chunk_dialogs, i);
+  for (u32 i = 0; i < self->chunk->dialog->len; ++i) {
+    ChunkDialog *dialog = array_list_get(self->chunk->dialog, i);
 
     dialog->body_id = physics_static_body_create(global.physics,
         (vec2s){dialog->pos.x,dialog->pos.y}, 
@@ -675,7 +634,8 @@ void _scene_menu_render(Scene *self) {
   }
 }
 
-void scene_collider_reset(Scene *scene) {
+void scene_reset(Scene *scene) {
+  _load_chunk(scene, scene->chunk_id);
   _scene_setup_collider(scene);
 }
 
@@ -696,12 +656,34 @@ Scene* scene_init(void) {
   scene->on_dialog         = false;
   scene->selected          = 0;
   scene->camera            = camera_init((vec2s){0,0});
-  scene->chunk_id          = 99;
-  scene->chunk_dialogs     = NULL;
-  scene->chunk_colliders   = NULL;
-  scene->chunk_teleporters = NULL;
+  scene->chunk_id          = CHUNK_NONE;
 
-  _curr_chunk = NULL;
+  // Fix
+  scene->chunk = malloc(sizeof(*scene->chunk));
+  scene->chunk->render_info = malloc(sizeof(*scene->chunk->render_info));
+  scene->chunk->render_info->uv = malloc((CHUNK_SIZE_X * CHUNK_SIZE_Y * 2) * sizeof(*scene->chunk->render_info->uv));
+  scene->chunk->dialog = NULL;
+  scene->chunk->collider = NULL;
+  scene->chunk->teleporter = NULL;
+  scene->chunk->render_info->prefab = NULL;
+
+
+  _chunks[CHUNK_SPAWN] = chunk_load_from_file(CHUNK_SPAWN_PATH);
+  _chunks[CHUNK_VILLAGE_ENTRANCE] = chunk_load_from_file(CHUNK_VILLAGE_ENTRANCE_PATH);
+  _chunks[CHUNK_VILLAGE_LEFT] = chunk_load_from_file(CHUNK_VILLAGE_LEFT_PATH);
+  _chunks[CHUNK_VILLAGE_RIGHT] = chunk_load_from_file(CHUNK_VILLAGE_RIGHT_PATH);
+  _chunks[CHUNK_VILLAGE_TOP] = chunk_load_from_file(CHUNK_VILLAGE_TOP_PATH);
+  _chunks[CHUNK_VILLAGE_TOP_END] = chunk_load_from_file(CHUNK_VILLAGE_TOP_END_PATH);
+  _chunks[CHUNK_VILLAGE_TOP_LEFT] = chunk_load_from_file(CHUNK_VILLAGE_TOP_LEFT_PATH);
+  _chunks[CHUNK_VILLAGE_TOP_RIGHT] = chunk_load_from_file(CHUNK_VILLAGE_TOP_RIGHT_PATH);
+  _chunks[CHUNK_VILLAGE_TUNNEL] = chunk_load_from_file(CHUNK_VILLAGE_TUNNEL_PATH);
+  _chunks[CHUNK_INSIDE_LIBRARY] = chunk_load_from_file(CHUNK_INSIDE_LIBRARY_PATH);
+  _chunks[CHUNK_INSIDE_RESTAURANT] = chunk_load_from_file(CHUNK_INSIDE_RESTAURANT_PATH);
+  _chunks[CHUNK_INSIDE_CHURCH] = chunk_load_from_file(CHUNK_INSIDE_CHURCH_PATH);
+  _chunks[CHUNK_INSIDE_FISH] = chunk_load_from_file(CHUNK_INSIDE_FISH_PATH);
+  _chunks[CHUNK_INSIDE_OG_HOME] = chunk_load_from_file(CHUNK_INSIDE_OG_HOME_PATH);
+  _chunks[CHUNK_INSIDE_LJ_HOME] = chunk_load_from_file(CHUNK_INSIDE_LJ_HOME_PATH);
+  _chunks[CHUNK_INSIDE_VC_HOME] = chunk_load_from_file(CHUNK_INSIDE_VC_HOME_PATH);
 
   LOG_TRACE("Scene: Successfully initialized scene");
   return scene;
@@ -709,17 +691,19 @@ Scene* scene_init(void) {
 
 void scene_destroy(Scene *self) {
 
-  if (_curr_chunk) {
-    chunk_destroy(&_curr_chunk);
+  for (u8 i = 0; i < CHUNK_LAST; ++i) {
+    chunk_destroy(&_chunks[i]);
+  }
+
+  // Cause double free (prev) 
+  if (self->chunk) {
+    chunk_destroy(&self->chunk);
   }
 
   quad_renderer_destroy(self->quad_renderer);
   text_renderer_destroy(self->text_renderer);
   camera_destroy(self->camera);
 
-  FREE(self->chunk_dialogs);
-  FREE(self->chunk_colliders);
-  FREE(self->chunk_teleporters);
   FREE(self);
 
   LOG_TRACE("Scene: Successfully destroyed scene");
@@ -729,15 +713,14 @@ void scene_update(Scene *self, Body *player_body) {
   _fade_update(self);
 
   if (self->scene_state == SCENE_INGAME) {
-    Chunk *chunk = _curr_chunk;
 
-    if (chunk == NULL) {
+    if (self->chunk_id == CHUNK_NONE) {
       LOG_ERROR("Scene: Chunk is NULL, cannot reload or reset the chunk");
       return;
     }
 
     camera_center_to_obj(self->camera, player_body->position, PLAYER_HITBOX);
-    _border_collision(&self->camera->position, (vec2s){PROJECTION_WIDTH, PROJECTION_HEIGHT}, chunk->render_info->position);
+    _border_collision(&self->camera->position, (vec2s){PROJECTION_WIDTH, PROJECTION_HEIGHT}, self->chunk->render_info->position);
   }
 
   camera_update(self->camera); 
@@ -801,12 +784,13 @@ void scene_chunk_change(Scene *self, Body *player_body, Chunks chunk_id, vec2s t
   LOG_DEBUG("Scene: Change chunk from %d->%d (%.2f,%.2f)", self->chunk_id, chunk_id, target_coord.x, target_coord.y);
 
   _load_chunk(self, chunk_id);
-  Chunk *chunk = _curr_chunk;
+
+  ASSERT(self->chunk != NULL, "Chunk is NULL", __FILE__, __LINE__);
 
   player_body->position = 
-    (target_coord.x == -1) ? (vec2s){player_body->position.x, chunk->render_info->position.y + target_coord.y * TILE_SIZE}  :
-    (target_coord.y == -1) ? (vec2s){chunk->render_info->position.x + target_coord.x * TILE_SIZE, player_body->position.y}  :
-                             (vec2s){chunk->render_info->position.x + target_coord.x * TILE_SIZE, chunk->render_info->position.y + target_coord.y * TILE_SIZE};
+    (target_coord.x == -1) ? (vec2s){player_body->position.x, self->chunk->render_info->position.y + target_coord.y * TILE_SIZE}  :
+    (target_coord.y == -1) ? (vec2s){self->chunk->render_info->position.x + target_coord.x * TILE_SIZE, player_body->position.y}  :
+                             (vec2s){self->chunk->render_info->position.x + target_coord.x * TILE_SIZE, self->chunk->render_info->position.y + target_coord.y * TILE_SIZE};
 
   _scene_setup_collider(self);
 
@@ -899,25 +883,20 @@ void scene_dialog_end(Scene *self) {
 }
 
 void scene_chunk_add_dialog(Scene *self, ChunkDialog dialog) {
+  ASSERT(self->chunk != NULL, "CurrChunk is NULL", __FILE__, __LINE__);
+
   dialog.body_id = physics_static_body_create(global.physics, dialog.pos, dialog.size, COLLISION_LAYER_PLAYER, COLLISION_LAYER_DIALOG, global.dialog_callback);
-  array_list_append(self->chunk_dialogs, &dialog);
+  array_list_append(self->chunk->dialog, &dialog);
 }
 
-ChunkRenderInfo* scene_get_chunk_render_info(void) {
-  return (_curr_chunk) ? _curr_chunk->render_info : NULL;
-}
-
-void scene_chunk_add_prefab(char *name, vec2s coord) {
+void scene_chunk_add_prefab(Scene *self, char *name, vec2s coord) {
   ChunkPrefab prefab = { .coord = coord };
   strcpy(prefab.name, name);
 
-  array_list_append(_curr_chunk->render_info->prefab, &prefab);
-}
-
-Chunk* scene_get_curr_chunk(void) {
-  return (_curr_chunk) ? _curr_chunk : NULL;
+  array_list_append(self->chunk->render_info->prefab, &prefab);
 }
 
 DialogNode *scene_get_curr_dialog(Scene *self) {
   return self->dialog; 
 }
+

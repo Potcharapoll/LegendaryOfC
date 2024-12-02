@@ -104,7 +104,9 @@ void quad_renderer_render(QuadRenderer *renderer) {
 
 // weird?
 void quad_renderer_append_prefab(QuadRenderer *renderer, vec2s coord, char *prefab_name) {
-  ChunkRenderInfo *render_info = scene_get_chunk_render_info();
+  ASSERT(global.scene->chunk != NULL, "Chunk is NULL", __FILE__, __LINE__);
+
+  ChunkRenderInfo *render_info = global.scene->chunk->render_info;
   Prefab *prefab = prefab_get(prefab_name);
 
   vec3s position = { 

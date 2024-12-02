@@ -1,6 +1,7 @@
 #include "engine/logger.h"
 
 #include "core/asset_manager.h"
+#include "core/dialog.h"
 #include "core/player.h"
 #include "core/prefab.h"
 #include "core/scene.h"
@@ -14,8 +15,7 @@
 #include <string.h>
 #include <assert.h>
 
-static b8           collide_dialog = false;
-static DialogPacket *dialog_packet = NULL;
+static DialogPacket *_dialog_packet;
 
 #ifdef DEBUG
 LineRenderer *line_renderer;
@@ -103,13 +103,12 @@ static b8 _teleporter_check(char tag) {
 }
 
 static void _dialog_callback(Static_Body *body, Body *other) {
-  if (global.scene->chunk_dialogs == NULL) {
-    LOG_ERROR("Cannot run _dialog_callback due to chunk_dialogs is NULL");
+  if (global.scene->chunk->dialog == NULL) {
+    LOG_ERROR("Cannot run _dialog_callback due to chunk->dialog is NULL");
     return;
   }
 
-  collide_dialog = true;
-  array_list *dialog_list = global.scene->chunk_dialogs;
+  array_list *dialog_list = global.scene->chunk->dialog;
 
   for (u8 i = 0; i < dialog_list->len; ++i) {
 
@@ -119,23 +118,21 @@ static void _dialog_callback(Static_Body *body, Body *other) {
     Static_Body *dialog_body = physics_static_body_get(global.physics, dialog->body_id);
     assert(dialog_body != NULL);
 
-    if (body == dialog_body && dialog_packet == NULL) {
-      dialog_packet = dialog_packet_create(dialog->tag, true); 
+    if (body == dialog_body) {
+      dialog_packet_set_tag(_dialog_packet, dialog->tag, DP_APPEND_ACT);
       break;
     }
   }
-
-  game_state_on(GAME_STATE_SHOW_INTERACT);
 }
 
 static void _teleporter_callback(Static_Body *body, Body *other) {
 
-  if (global.scene->chunk_teleporters == NULL) {
-    LOG_ERROR("Cannot run _teleporter_callback due to chunk_teleporters is NULL");
+  if (global.scene->chunk->teleporter == NULL) {
+    LOG_ERROR("Cannot run _teleporter_callback due to chunk->teleporter is NULL");
     return;
   }
 
-  array_list *teleporter_list = global.scene->chunk_teleporters;
+  array_list *teleporter_list = global.scene->chunk->teleporter;
 
   for (u32 i = 0; i < teleporter_list->len; ++i) {
 
@@ -166,7 +163,7 @@ static void _teleporter_callback(Static_Body *body, Body *other) {
         other->position.x += pv.x;
         other->position.y += pv.y;
 
-        if (!dialog_packet) { dialog_packet = dialog_packet_create("dialog_locked", false); }
+        dialog_packet_set_tag(_dialog_packet, "dialog_locked", DP_NORMAL);
       }
     }
   }
@@ -218,6 +215,7 @@ static void input_handling(Body *player_body) {
         if (window_get_key(global.window, GLFW_KEY_SPACE) && !global.scene->fading) {
             scene_fade_out(global.scene);
 
+            LOG_DEBUG("Space Pressed");
             global.input_delay = 0.0f;
         }
         break;
@@ -236,11 +234,11 @@ static void input_handling(Body *player_body) {
             global.input_delay = 0.0f;
           }
           else if (window_get_key(global.window, GLFW_KEY_E)) {
-            if (dialog_packet) {
+            if (_dialog_packet->dialog_tag[0] != '\0') {
               player_body->velocity = glms_vec2_zero();
               player_set_animation(IDLE, player_get_direction());
 
-              game_attach_dialog(dialog_packet);
+              game_attach_dialog(_dialog_packet);
             }
 
             LOG_DEBUG("E Pressed");
@@ -365,6 +363,9 @@ static void input_handling(Body *player_body) {
 }
 
 void setup(void) {
+
+  _dialog_packet = dialog_packet_create();
+
   pthread_mutex_init(&global.lock, NULL);
   global.asset_manager = asset_manager_init();
 
@@ -427,6 +428,8 @@ void update(void) {
   scene_update(global.scene, player_body);
   timer_update(global.timer);
 
+
+
   switch (global.scene->scene_state) {
     case SCENE_MENU:
       if (global.scene->faded) { 
@@ -452,8 +455,12 @@ void update(void) {
     case SCENE_INGAME:
       game_update();
 
-      if (!collide_dialog && dialog_packet) { dialog_packet_free(&dialog_packet); }
-      collide_dialog = false;
+      if (_dialog_packet->dialog_tag[0] != '\0') {
+        LOG_DEBUG("TAG: %s", _dialog_packet->dialog_tag);
+        game_state_on(GAME_STATE_SHOW_INTERACT);
+
+        _dialog_packet->dialog_tag[0] = '\0'; 
+      }
 
       animation_update(global.animations, global.dt);
       physics_update(global.physics, global.dt);

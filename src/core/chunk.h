@@ -48,6 +48,7 @@ typedef struct {
 } Chunk;
 
 typedef enum {
+  CHUNK_NONE              = -1,
   CHUNK_SPAWN             = 0,
   CHUNK_VILLAGE_ENTRANCE  = 1,
   CHUNK_VILLAGE_LEFT      = 2,
