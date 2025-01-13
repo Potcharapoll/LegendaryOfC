@@ -5,14 +5,13 @@
 #include "../defs.h"
 
 #include <stb_image.h>
-
 #include <assert.h>
 
 // temp
 static b8 should_close = false;
 
 static void error_callback(int err, const char *dest) {
-    printf("GLFW Error Callback %d: %s\n", err, dest);
+    LOG_ERROR("GLFW Error Callback %d: %s", err, dest);
 }
 
 void window_init(struct Window *self, wfunc init, wfunc update, wfunc cleanup) {
