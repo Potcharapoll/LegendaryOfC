@@ -6,6 +6,7 @@
 #include "core/prefab.h"
 #include "core/scene.h"
 #include "core/game.h"
+#include "core/sound.h"
 
 #include "gfx/window.h"
 
@@ -15,7 +16,9 @@
 #include <string.h>
 #include <assert.h>
 
+
 static DialogPacket *_dialog_packet;
+static Sound *bgm;
 
 #ifdef DEBUG
 LineRenderer *line_renderer;
@@ -387,6 +390,11 @@ void setup(void) {
   global.animations          = animation_init();
   global.scene               = scene_init();
 
+  global.sound_ctx.device  = alcOpenDevice(NULL);
+  global.sound_ctx.context = alcCreateContext(global.sound_ctx.device, NULL);
+  alcMakeContextCurrent(global.sound_ctx.context);
+
+  bgm = sound_create("../res/sounds/hit.wav", true);
 
   prefab_init();
   _load_prefab();
@@ -415,6 +423,8 @@ void setup(void) {
   glCullFace(GL_BACK);
 
   scene_change_scene(global.scene, SCENE_MENU);
+
+  sound_play(bgm);
 }
 
 void update(void) {
@@ -427,7 +437,6 @@ void update(void) {
 
   scene_update(global.scene, player_body);
   timer_update(global.timer);
-
 
 
   switch (global.scene->scene_state) {
@@ -490,6 +499,13 @@ void cleanup(void) {
   scene_destroy(global.scene);
   prefab_destroy();
   game_destroy();
+
+  alcMakeContextCurrent(NULL);
+  alcDestroyContext(global.sound_ctx.context);
+  alcCloseDevice(global.sound_ctx.device);
+
+  global.sound_ctx.device  = alcOpenDevice(NULL);
+  sound_delete(bgm);
 
   asset_manager_destroy(global.asset_manager);
 

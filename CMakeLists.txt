@@ -10,14 +10,17 @@ endif()
 
 add_subdirectory(lib/glfw)
 add_subdirectory(lib/cglm)
+add_subdirectory(lib/openal-soft)
 
 include_directories(lib/glfw/include)
 include_directories(lib/cglm/include)
 include_directories(lib/glad/include)
+include_directories(liib/openal-soft/include)
 include_directories(lib/stb)
 
 list(APPEND LIB glfw)
 list(APPEND LIB cglm)
+list(APPEND LIB openal)
 list(APPEND LIB m)
 
 add_compile_options(-Wno-missing-braces -Wno-unused-result -Wno-unused-parameter)
@@ -93,6 +96,7 @@ add_executable(${PROJECT_NAME}
   src/core/scene.c
   src/core/timer.c
   src/core/game.c
+  src/core/sound.c
 
   src/engine/logger.c
   src/engine/editor.c
@@ -101,6 +105,7 @@ add_executable(${PROJECT_NAME}
 
   src/util/hashtable.c
   src/util/array_list.c
+  src/util/wave.c
 
   src/main.c
   src/global.c
